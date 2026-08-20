@@ -431,5 +431,145 @@ const WINES = [
     flavors: ["Blackberry", "Violet", "Graphite", "Spice"],
     alsoKnownAs: [],
     note: "The Left Bank seasoning grape - a few percent for colour, tannin and violet perfume. Often refuses to ripen in Bordeaux, which is why it does better in Australia and Spain."
+  },
+  {
+    name: "Vermentino",
+    color: "White", country: "Italy", region: "Sardinia", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 4, climate: 3,
+    oak: "Rare",
+    flavors: ["Citrus", "Green Apple", "Saline", "Almond"],
+    alsoKnownAs: ["Rolle", "Pigato", "Favorita"],
+    note: "The Mediterranean coastal white — Sardinia, Liguria, Corsica, and Provence, where it goes by Rolle. Keeps its bite in real heat, which is rarer than it sounds."
+  },
+  {
+    name: "Marsanne",
+    color: "White", country: "France", region: "Northern Rhône", continent: "Europe",
+    colorInt: 3,
+    body: 5, tannin: 1, acidity: 1, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Quince", "Almond", "Honeysuckle", "Wax"],
+    alsoKnownAs: [],
+    note: "Heavy, waxy and low in acid — the reason it is almost always blended with Roussanne, which supplies the lift it lacks. White Hermitage is the serious version."
+  },
+  {
+    name: "Roussanne",
+    color: "White", country: "France", region: "Northern Rhône", continent: "Europe",
+    colorInt: 2,
+    body: 4, tannin: 1, acidity: 3, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Pear", "Herbal Tea", "Apricot", "Quince"],
+    alsoKnownAs: [],
+    note: "Marsanne's partner and its opposite: more aromatic, higher acid, far harder to grow. Named for the russet colour the skins turn when ripe."
+  },
+  {
+    name: "Melon de Bourgogne",
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    colorInt: 1,
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Citrus", "Saline", "Bread"],
+    alsoKnownAs: ["Muscadet"],
+    note: "Muscadet is the wine, Melon de Bourgogne the grape. Neutral to the point of blankness on its own — the bready weight comes from months resting on the lees, sur lie."
+  },
+  {
+    name: "Godello",
+    color: "White", country: "Spain", region: "Valdeorras", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 4, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Pear", "Citrus", "Herbal", "Almond"],
+    alsoKnownAs: [],
+    note: "Down to a few hundred vines by the 1970s and rescued deliberately. Fuller and more textural than Albariño, and it takes oak in a way Albariño does not."
+  },
+  {
+    name: "Trebbiano",
+    color: "White", country: "Italy", region: "Abruzzo", continent: "Europe",
+    colorInt: 1,
+    body: 2, tannin: 1, acidity: 5, climate: 3,
+    oak: "Rare",
+    flavors: ["Lemon", "Green Apple", "Almond", "Herbal"],
+    alsoKnownAs: ["Ugni Blanc", "Trebbiano Toscano"],
+    note: "One of the most planted white grapes on earth and one of the least remarked upon. As Ugni Blanc in France it is grown thin and acidic on purpose, then distilled into Cognac."
+  },
+  {
+    name: "Xinomavro",
+    color: "Red", country: "Greece", region: "Naoussa", continent: "Europe",
+    colorInt: 2,
+    body: 4, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Sour Cherry", "Tomato", "Olive", "Earthy"],
+    alsoKnownAs: [],
+    note: "The name means sour-black, which is fair warning. Pale, tannic and savoury enough that it gets called the Greek Nebbiolo — sun-dried tomato is the note nothing else gives you."
+  },
+  {
+    name: "Agiorgitiko",
+    color: "Red", country: "Greece", region: "Nemea", continent: "Europe",
+    colorInt: 4,
+    body: 4, tannin: 3, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Red Plum", "Black Cherry", "Spice", "Herbal"],
+    alsoKnownAs: ["Saint George"],
+    note: "Greece's most planted red and the approachable one — soft tannins, deep colour, no hard edges. Nemea sits high enough that the altitude does the work the latitude will not."
+  },
+  {
+    name: "Blaufränkisch",
+    color: "Red", country: "Austria", region: "Burgenland", continent: "Europe",
+    colorInt: 4,
+    body: 4, tannin: 4, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Sour Cherry", "Blackberry", "White Pepper", "Spice"],
+    alsoKnownAs: ["Lemberger", "Kékfrankos"],
+    note: "Austria's serious red, and the peppery counterpart to Grüner Veltliner. High acid and firm tannin make it read as far more northern than it is."
+  },
+  {
+    name: "Saperavi",
+    color: "Red", country: "Georgia", region: "Kakheti", continent: "Asia",
+    colorInt: 5,
+    body: 5, tannin: 4, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Plum", "Liquorice", "Earthy"],
+    alsoKnownAs: [],
+    note: "A teinturier — red flesh as well as red skin, which almost no wine grape has, and why it stains the glass. From the country that has been making wine in clay qvevri for eight thousand years."
+  },
+  {
+    name: "Tannat",
+    color: "Red", country: "Uruguay", region: "Canelones", continent: "South America",
+    colorInt: 5,
+    body: 5, tannin: 5, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Liquorice", "Chocolate"],
+    alsoKnownAs: ["Harriague"],
+    note: "Named for its tannin, and it earns it — the most tannic wine grape in commercial use. French by origin, from Madiran, but Uruguay made it a national identity."
+  },
+  {
+    name: "Cinsault",
+    color: "Red", country: "France", region: "Languedoc", continent: "Europe",
+    colorInt: 2,
+    body: 2, tannin: 2, acidity: 3, climate: 3,
+    oak: "Rare",
+    flavors: ["Strawberry", "Red Plum", "Herbal", "Spice"],
+    alsoKnownAs: ["Cinsaut"],
+    note: "Pale, soft and perfumed — the grape that makes Provence rosé work. Crossed with Pinot Noir in 1925 to produce Pinotage, which turned out nothing like it."
+  },
+  {
+    name: "Carignan",
+    color: "Red", country: "France", region: "Languedoc", continent: "Europe",
+    colorInt: 4,
+    body: 4, tannin: 4, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Red Plum", "Herbal", "Leather"],
+    alsoKnownAs: ["Mazuelo", "Cariñena", "Samsó"],
+    note: "Ripped out across the Midi for decades as the symbol of the wine lake. The old vines that survived the purge now make some of the most interesting reds in the south."
+  },
+  {
+    name: "Mencía",
+    color: "Red", country: "Spain", region: "Bierzo", continent: "Europe",
+    colorInt: 3,
+    body: 3, tannin: 3, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Red Plum", "Violet", "Herbal", "Graphite"],
+    alsoKnownAs: ["Jaen"],
+    note: "Long assumed to be a relative of Cabernet Franc, and it does taste like one — floral, leafy, high-acid. The slate soils of Bierzo show up as a distinctly mineral streak."
   }
 ];
