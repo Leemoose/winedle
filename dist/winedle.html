@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Winedle — the daily wine puzzle</title>
+<meta name="description" content="Guess the grape variety in six tries. A new wine every day, scored across colour, origin and structure.">
+<meta name="theme-color" content="#ece2d0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16100e" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Winedle — the daily wine puzzle">
+<meta property="og:description" content="Guess the grape variety in six tries. A new wine every day.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%B7%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Karla:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Winedle — old-world label: parchment, letterpress, high-contrast didone */
+
+:root {
+  --parchment: #ece2d0;
+  --parchment-deep: #e0d3bd;
+  --ink: #24160f;
+  --ink-soft: #6b5544;
+  --oxblood: #6d1a26;
+  --oxblood-deep: #4a0f1a;
+  --amber: #b1802c;
+  --gold: #a68b4c;
+  --rule: rgba(36, 22, 15, 0.18);
+  --tile-miss-bg: rgba(36, 22, 15, 0.04);
+  --shadow: 0 1px 0 rgba(255,255,255,.5), 0 12px 30px -18px rgba(36,22,15,.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --parchment: #16100e;
+    --parchment-deep: #1d1512;
+    --ink: #e8dcc8;
+    --ink-soft: #a08e78;
+    --oxblood: #8c2432;
+    --oxblood-deep: #5d1520;
+    --amber: #c2913a;
+    --gold: #8a7442;
+    --rule: rgba(232, 220, 200, 0.16);
+    --tile-miss-bg: rgba(232, 220, 200, 0.04);
+    --shadow: 0 12px 30px -18px rgba(0,0,0,.9);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--parchment);
+  /* woven paper tooth + a vignette so the page reads as stock, not screen */
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.14), transparent 60%),
+    radial-gradient(ellipse at 50% 120%, rgba(36,22,15,.10), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+  color: var(--ink);
+  font-family: Karla, 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sheet {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 5rem;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead { text-align: center; }
+
+.masthead__rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  height: 3px;
+  margin: 0;
+}
+
+.masthead__title {
+  font-family: 'Bodoni Moda', 'Didot', 'Playfair Display', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(2.9rem, 11vw, 5.5rem);
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  margin: 0.5rem 0 0.2rem;
+  line-height: 1;
+}
+
+.masthead__sub {
+  font-size: 0.7rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+
+.masthead__vintage {
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0.55rem 0;
+}
+
+.masthead__vintage span:not(:last-child)::after {
+  content: '·';
+  margin-left: 0.9rem;
+  color: var(--gold);
+}
+
+/* ---------- how to play ---------- */
+
+.howto {
+  margin: 1.75rem auto 0;
+  max-width: 620px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.howto summary {
+  cursor: pointer;
+  list-style: none;
+  text-align: center;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.66rem;
+  color: var(--gold);
+}
+
+.howto summary::-webkit-details-marker { display: none; }
+.howto summary::after { content: ' ▾'; }
+.howto[open] summary::after { content: ' ▴'; }
+
+.howto__body { padding: 1rem 0 0; }
+.howto__body p { margin: 0 0 0.7rem; }
+.howto__body strong { color: var(--ink); font-weight: 700; }
+
+.key { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; margin-top: 0.9rem; }
+.key div { display: flex; align-items: center; gap: 0.45rem; font-size: 0.78rem; }
+.key i {
+  width: 14px; height: 14px; display: block; border: 1px solid var(--rule);
+}
+.key .k-hit  { background: var(--oxblood); border-color: var(--oxblood-deep); }
+.key .k-near { background: var(--amber); border-color: var(--amber); }
+.key .k-miss { background: var(--tile-miss-bg); }
+
+/* ---------- guess entry ---------- */
+
+.entry {
+  position: relative;
+  margin: 2rem auto 0;
+  max-width: 520px;
+}
+
+.entry__row { display: flex; align-items: baseline; gap: 0.75rem; }
+
+#guess-input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  padding: 0.55rem 0.2rem;
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.35rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .2s;
+}
+
+#guess-input::placeholder { color: var(--ink-soft); opacity: .65; font-style: italic; }
+#guess-input:focus { border-color: var(--oxblood); }
+#guess-input:disabled { opacity: .5; }
+
+#counter {
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+#suggestions {
+  position: absolute;
+  z-index: 20;
+  left: 0; right: 0;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--parchment-deep);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow);
+  max-height: 17rem;
+  overflow-y: auto;
+}
+
+.suggestion {
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--rule);
+}
+.suggestion:last-child { border-bottom: 0; }
+.suggestion:hover, .suggestion.is-active { background: var(--oxblood); color: var(--parchment); }
+.suggestion em { color: var(--ink-soft); font-size: 0.82rem; font-style: italic; }
+.suggestion:hover em, .suggestion.is-active em { color: rgba(255,255,255,.72); }
+
+/* ---------- board ---------- */
+
+#board { margin-top: 2.25rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+.row {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.85rem;
+}
+
+.row__name {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-weight: 500;
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 0.7rem;
+}
+
+.row__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 4px;
+}
+
+.tile {
+  position: relative;
+  border: 1px solid var(--rule);
+  background: var(--tile-miss-bg);
+  padding: 0.5rem 0.4rem 0.55rem;
+  text-align: center;
+  min-height: 62px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.tile__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: .62;
+}
+
+.tile__value {
+  font-size: 0.8rem;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.tile__arrow {
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+  font-size: 0.8rem;
+  opacity: .8;
+}
+
+.tile--hit  { background: var(--oxblood); border-color: var(--oxblood-deep); color: #f6ece0; }
+.tile--near { background: var(--amber); border-color: var(--amber); color: #1d1206; }
+
+/* letterpress reveal: each tile turns like a card being laid down */
+.row--new .tile {
+  animation: lay .5s cubic-bezier(.2,.7,.3,1) backwards;
+  transform-origin: top center;
+}
+
+@keyframes lay {
+  from { opacity: 0; transform: rotateX(-88deg) translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row--new .tile { animation: fade .3s backwards; }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+}
+
+/* ---------- end panel ---------- */
+
+#end-panel { margin-top: 2.5rem; text-align: center; }
+
+.end__verdict {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.6rem;
+  font-style: italic;
+  margin: 0 0 1.25rem;
+}
+
+.reveal {
+  border: 1px solid var(--rule);
+  border-top: 3px double var(--gold);
+  background: var(--parchment-deep);
+  box-shadow: var(--shadow);
+  padding: 1.75rem 1.5rem;
+  text-align: left;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.reveal__eyebrow {
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0;
+}
+
+.reveal__name {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-weight: 500;
+  font-size: 2rem;
+  margin: 0.3rem 0 0.1rem;
+}
+
+.reveal__origin {
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+
+.reveal__note { margin: 0 0 1.2rem; font-size: 0.95rem; }
+
+.reveal__meta { margin: 0; display: grid; gap: 0.5rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+.reveal__meta div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.6rem; }
+.reveal__meta dt {
+  font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-soft); padding-top: 0.28rem;
+}
+.reveal__meta dd { margin: 0; font-size: 0.9rem; }
+
+.stats {
+  display: flex; justify-content: center; gap: 2.2rem;
+  margin: 2rem 0 1.5rem;
+}
+.stats div { display: flex; flex-direction: column; }
+.stats strong { font-family: 'Bodoni Moda', Georgia, serif; font-size: 1.7rem; font-weight: 500; }
+.stats span { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); }
+
+.share {
+  background: var(--oxblood);
+  color: #f6ece0;
+  border: 0;
+  padding: 0.75rem 2.2rem;
+  font-family: Karla, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+.share:hover { background: var(--oxblood-deep); }
+.share:active { transform: translateY(1px); }
+
+.colophon {
+  margin-top: 4rem;
+  text-align: center;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: .7;
+}
+
+@media (max-width: 480px) {
+  .sheet { padding-top: 1.5rem; }
+  .row__tiles { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); }
+  .stats { gap: 1.4rem; }
+}
+
+</style>
+</head>
+<body>
+<main class="sheet">
+
+  <header class="masthead">
+    <hr class="masthead__rule">
+    <h1 class="masthead__title">Winedle</h1>
+    <p class="masthead__sub">The daily wine puzzle</p>
+    <hr class="masthead__rule">
+    <p class="masthead__vintage">
+      <span id="puzzle-no"></span>
+      <span id="puzzle-date"></span>
+      <span>Six guesses</span>
+    </p>
+  </header>
+
+  <details class="howto">
+    <summary>How to play</summary>
+    <div class="howto__body">
+      <p>Guess the grape variety. Every guess is scored against the answer across nine attributes.</p>
+      <p><strong>Country and region</strong> mean the grape’s classic home — the reference expression, not everywhere it is planted. Chardonnay grows on six continents; its answer is Burgundy, France.</p>
+      <p><strong>Depth</strong> is colour intensity judged within the wine’s own colour category, the way WSET does it. Nebbiolo is pale for a red; Riesling is pale for a white.</p>
+      <p>Arrows on the structural tiles point toward the answer: <strong>↑</strong> means the answer is higher than your guess.</p>
+      <div class="key">
+        <div><i class="k-hit"></i> exact match</div>
+        <div><i class="k-near"></i> close — one step off, same continent, or shared aromas</div>
+        <div><i class="k-miss"></i> no match</div>
+      </div>
+    </div>
+  </details>
+
+  <div class="entry">
+    <div class="entry__row">
+      <input id="guess-input" type="text" autocomplete="off" autocapitalize="off"
+             spellcheck="false" placeholder="Name a grape…" aria-label="Guess a grape variety">
+      <span id="counter"></span>
+    </div>
+    <ul id="suggestions" hidden></ul>
+  </div>
+
+  <section id="board" aria-live="polite"></section>
+
+  <section id="end-panel" hidden></section>
+
+  <p class="colophon">Poured daily · Wintersun</p>
+
+</main>
+
+<script>
+/* Winedle — answer bank
+ *
+ * SCALES (1-5, WSET L3 language)
+ *   colorInt 1 Pale   2 Light      3 Medium  4 Deep      5 Opaque
+ *   body     1 Light  2 Light-Med  3 Medium  4 Med-Full  5 Full
+ *   tannin   1 Low    2 Low-Med    3 Medium  4 Med-High  5 High
+ *   acidity  1 Low    2 Med-Low    3 Medium  4 Med-High  5 High
+ *   climate  1 Cool   2 Moderate   3 Warm    4 Hot
+ *
+ * RULE ON colorInt: assessed WITHIN the wine's own colour category, the way
+ * WSET does it. Riesling at 1 is pale for a white; Nebbiolo at 1 is pale for
+ * a red. It is not a red-vs-white axis - the colour tile already does that.
+ *
+ * RULE ON country/region: this is the grape's CLASSIC HOME — the reference
+ * expression a WSET exam would use — not everywhere it's planted. Chardonnay
+ * is grown on six continents; its answer is Burgundy, France. Stated up front
+ * in the game's How-to-Play so nobody argues with the tile.
+ *
+ * RULE ON structure: where a grape genuinely shifts by place (Syrah in
+ * Hermitage vs Barossa), values describe the classic-home expression. The
+ * post-game reveal card names the variation explicitly.
+ */
+
+const WINES = [
+  {
+    name: "Cabernet Sauvignon",
+    color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
+    colorInt: 5,
+    body: 5, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Blackcurrant", "Green Bell Pepper", "Cedar", "Mint"],
+    alsoKnownAs: [],
+    note: "The Left Bank benchmark. High everything — tannin, acid, body — which is why it takes oak and time so well. Green bell pepper (pyrazine) shows when it ripens short of full."
+  },
+  {
+    name: "Merlot",
+    color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
+    colorInt: 4,
+    body: 4, tannin: 3, acidity: 3, climate: 2,
+    oak: "Common",
+    flavors: ["Plum", "Blackberry", "Chocolate", "Cedar"],
+    alsoKnownAs: [],
+    note: "Right Bank's answer to Cabernet: same address, softer everything. Medium tannin and acid are the whole reason Saint-Emilion drinks earlier than Pauillac."
+  },
+  {
+    name: "Pinot Noir",
+    color: "Red", country: "France", region: "Burgundy", continent: "Europe",
+    colorInt: 2,
+    body: 2, tannin: 2, acidity: 5, climate: 1,
+    oak: "Common",
+    flavors: ["Cherry", "Raspberry", "Strawberry", "Earthy"],
+    alsoKnownAs: ["Spatburgunder", "Pinot Nero"],
+    note: "Thin-skinned and cool-climate: light body, low tannin, high acid. The earthy/mushroom note is classic Burgundy; New World versions push fruit instead."
+  },
+  {
+    name: "Syrah",
+    color: "Red", country: "France", region: "Northern Rhone", continent: "Europe",
+    colorInt: 5,
+    body: 5, tannin: 4, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Blackberry", "Black Pepper", "Smoke", "Violet"],
+    alsoKnownAs: ["Shiraz"],
+    note: "Black pepper (rotundone) is the tell, and it fades as the climate warms — which is the whole Northern Rhone vs Barossa distinction. Same grape, different name, different wine."
+  },
+  {
+    name: "Nebbiolo",
+    color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
+    colorInt: 1,
+    body: 5, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Cherry", "Rose", "Tar", "Herbal"],
+    alsoKnownAs: ["Spanna", "Chiavennasca"],
+    note: "The great trap: pale garnet in the glass, full-bodied and brutally tannic on the palate. Rose and tar together are diagnostic — nothing else does that pairing."
+  },
+  {
+    name: "Sangiovese",
+    color: "Red", country: "Italy", region: "Tuscany", continent: "Europe",
+    colorInt: 3,
+    body: 4, tannin: 5, acidity: 5, climate: 3,
+    oak: "Common",
+    flavors: ["Sour Cherry", "Plum", "Herbal", "Earthy"],
+    alsoKnownAs: ["Brunello", "Prugnolo Gentile", "Morellino", "Nielluccio"],
+    note: "High acid plus high tannin and a sour-cherry core — built for food, which is why Chianti works at the table and struggles alone."
+  },
+  {
+    name: "Malbec",
+    color: "Red", country: "Argentina", region: "Mendoza", continent: "South America",
+    colorInt: 5,
+    body: 5, tannin: 4, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Violet", "Chocolate"],
+    alsoKnownAs: ["Cot", "Auxerrois"],
+    note: "French by birth (Cahors), Argentine by reputation. High-altitude Mendoza keeps enough acid to stop the ripe fruit going flabby."
+  },
+  {
+    name: "Chardonnay",
+    color: "White", country: "France", region: "Burgundy", continent: "Europe",
+    colorInt: 3,
+    body: 4, tannin: 1, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Green Apple", "Citrus", "Butter", "Vanilla"],
+    alsoKnownAs: [],
+    note: "A neutral grape that tastes like wherever it was made and whatever was done to it. Butter is malolactic, vanilla is oak — neither is the grape."
+  },
+  {
+    name: "Riesling",
+    color: "White", country: "Germany", region: "Mosel", continent: "Europe",
+    colorInt: 1,
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lime", "Peach", "Petrol"],
+    alsoKnownAs: [],
+    note: "Screaming acidity is what lets it carry sugar without tasting sweet, and what lets it age for decades. Petrol (TDN) develops with bottle age."
+  },
+  {
+    name: "Sauvignon Blanc",
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    colorInt: 2,
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Gooseberry", "Grass", "Grapefruit", "Elderflower"],
+    alsoKnownAs: ["Fume Blanc"],
+    note: "Pyrazines again, but here they're the point rather than a flaw. Sancerre plays it flinty and restrained; Marlborough turns the volume to eleven."
+  }
+];
+
+/* Winedle - daily wine guessing game */
+'use strict';
+
+const MAX_GUESSES = 6;
+const EPOCH = Date.UTC(2026, 0, 1);
+
+const ORD_LABELS = {
+  colorInt: ['Pale', 'Light', 'Medium', 'Deep', 'Opaque'],
+  body:     ['Light', 'Light-Med', 'Medium', 'Med-Full', 'Full'],
+  tannin:   ['Low', 'Low-Med', 'Medium', 'Med-High', 'High'],
+  acidity:  ['Low', 'Med-Low', 'Medium', 'Med-High', 'High'],
+  climate:  ['Cool', 'Moderate', 'Warm', 'Hot']
+};
+
+const COLUMNS = [
+  { key: 'color',    label: 'Colour',  type: 'exact' },
+  { key: 'country',  label: 'Country', type: 'geo'   },
+  { key: 'region',   label: 'Region',  type: 'exact' },
+  { key: 'colorInt', label: 'Depth',   type: 'ord'   },
+  { key: 'body',     label: 'Body',    type: 'ord'   },
+  { key: 'tannin',   label: 'Tannin',  type: 'ord'   },
+  { key: 'acidity',  label: 'Acidity', type: 'ord'   },
+  { key: 'climate',  label: 'Climate', type: 'ord'   },
+  { key: 'flavors',  label: 'Aromas',  type: 'set'   }
+];
+
+const EMOJI = { hit: '\u{1F7E5}', near: '\u{1F7E8}', miss: '⬜' };
+
+/* ---------- comparison engine ---------- */
+
+function cmpExact(g, a) {
+  return { state: g === a ? 'hit' : 'miss', text: g };
+}
+
+function cmpGeo(g, a, guess, answer) {
+  if (g === a) return { state: 'hit', text: g };
+  if (guess.continent === answer.continent) return { state: 'near', text: g };
+  return { state: 'miss', text: g };
+}
+
+function cmpOrd(g, a, key) {
+  const text = ORD_LABELS[key][g - 1];
+  if (g === a) return { state: 'hit', text };
+  const arrow = g < a ? '↑' : '↓';
+  return { state: Math.abs(g - a) === 1 ? 'near' : 'miss', text, arrow };
+}
+
+function cmpSet(g, a) {
+  const shared = g.filter(f => a.includes(f));
+  if (shared.length === a.length && g.length === a.length) {
+    return { state: 'hit', text: 'all ' + a.length, detail: shared.join(', ') };
+  }
+  if (shared.length === 0) return { state: 'miss', text: 'none', detail: '' };
+  return { state: 'near', text: shared.length + ' of ' + a.length, detail: shared.join(', ') };
+}
+
+function compare(guess, answer) {
+  return COLUMNS.map(col => {
+    const g = guess[col.key], a = answer[col.key];
+    let r;
+    if (col.type === 'exact')      r = cmpExact(g, a);
+    else if (col.type === 'geo')   r = cmpGeo(g, a, guess, answer);
+    else if (col.type === 'ord')   r = cmpOrd(g, a, col.key);
+    else                           r = cmpSet(g, a);
+    return Object.assign({ label: col.label }, r);
+  });
+}
+
+/* ---------- daily puzzle selection ---------- */
+
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function () {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= h >>> 16) >>> 0;
+  };
+}
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(arr, seed) {
+  const rand = mulberry32(xmur3('winedle-' + seed)());
+  const out = arr.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function dayNumber(date) {
+  const d = date || new Date();
+  const utc = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  return Math.floor((utc - EPOCH) / 86400000);
+}
+
+/* Shuffle a fresh deck each cycle so nothing repeats until the bank is spent,
+ * and the order is not guessable from the source order. */
+function puzzleFor(day) {
+  const n = WINES.length;
+  const deck = seededShuffle(WINES, Math.floor(day / n));
+  return deck[((day % n) + n) % n];
+}
+
+/* ---------- name resolution ---------- */
+
+function normalize(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '')
+          .toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+const INDEX = (function () {
+  const map = new Map();
+  WINES.forEach(w => {
+    map.set(normalize(w.name), w);
+    (w.alsoKnownAs || []).forEach(alias => {
+      if (!map.has(normalize(alias))) map.set(normalize(alias), w);
+    });
+  });
+  return map;
+})();
+
+function resolve(input) {
+  return INDEX.get(normalize(input)) || null;
+}
+
+function suggest(query, exclude) {
+  const q = normalize(query);
+  if (!q) return [];
+  const out = [];
+  const seen = new Set(exclude || []);
+  WINES.forEach(w => {
+    if (seen.has(w.name)) return;
+    const hitName = normalize(w.name).includes(q);
+    const alias = (w.alsoKnownAs || []).find(a => normalize(a).includes(q));
+    if (hitName || alias) {
+      out.push({ wine: w, via: hitName ? null : alias });
+      seen.add(w.name);
+    }
+  });
+  return out.slice(0, 8);
+}
+
+/* ---------- persistence ---------- */
+
+const KEY_STATE = 'winedle:state';
+const KEY_STATS = 'winedle:stats';
+
+function readJSON(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+  catch (e) { return fallback; }
+}
+
+function writeJSON(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+}
+
+function blankStats() {
+  return { played: 0, wins: 0, streak: 0, maxStreak: 0, dist: [0,0,0,0,0,0], lastDay: null };
+}
+
+function recordResult(won, guessCount, day) {
+  const s = readJSON(KEY_STATS, blankStats());
+  if (s.lastDay === day) return s;
+  s.played++;
+  if (won) {
+    s.wins++;
+    s.dist[guessCount - 1]++;
+    s.streak = (s.lastDay === day - 1) ? s.streak + 1 : 1;
+    s.maxStreak = Math.max(s.maxStreak, s.streak);
+  } else {
+    s.streak = 0;
+  }
+  s.lastDay = day;
+  writeJSON(KEY_STATS, s);
+  return s;
+}
+
+/* ---------- game state ---------- */
+
+const DAY = dayNumber();
+const ANSWER = puzzleFor(DAY);
+
+let state = readJSON(KEY_STATE, null);
+if (!state || state.day !== DAY) {
+  state = { day: DAY, guesses: [], status: 'playing' };
+  writeJSON(KEY_STATE, state);
+}
+
+/* ---------- rendering ---------- */
+
+const $ = sel => document.querySelector(sel);
+const board = $('#board');
+const input = $('#guess-input');
+const sugBox = $('#suggestions');
+const endPanel = $('#end-panel');
+const counter = $('#counter');
+
+function tileEl(t, delay) {
+  const el = document.createElement('div');
+  el.className = 'tile tile--' + t.state;
+  el.style.animationDelay = delay + 'ms';
+  if (t.detail) el.title = t.detail;
+  const lab = document.createElement('span');
+  lab.className = 'tile__label';
+  lab.textContent = t.label;
+  const val = document.createElement('span');
+  val.className = 'tile__value';
+  val.textContent = t.text;
+  el.appendChild(lab);
+  el.appendChild(val);
+  if (t.arrow) {
+    const ar = document.createElement('span');
+    ar.className = 'tile__arrow';
+    ar.textContent = t.arrow;
+    el.appendChild(ar);
+  }
+  return el;
+}
+
+function rowEl(wine, animate) {
+  const tiles = compare(wine, ANSWER);
+  const row = document.createElement('article');
+  row.className = 'row' + (animate ? ' row--new' : '');
+
+  const name = document.createElement('h2');
+  name.className = 'row__name';
+  name.textContent = wine.name;
+  row.appendChild(name);
+
+  const grid = document.createElement('div');
+  grid.className = 'row__tiles';
+  tiles.forEach((t, i) => grid.appendChild(tileEl(t, animate ? i * 90 : 0)));
+  row.appendChild(grid);
+  return row;
+}
+
+function render(animateLast) {
+  board.innerHTML = '';
+  state.guesses.forEach((n, i) => {
+    const wine = WINES.find(w => w.name === n);
+    board.appendChild(rowEl(wine, animateLast && i === state.guesses.length - 1));
+  });
+  counter.textContent = state.status === 'playing'
+    ? (MAX_GUESSES - state.guesses.length) + ' left'
+    : state.guesses.length + '/' + MAX_GUESSES;
+  if (state.status !== 'playing') showEnd();
+}
+
+function shareText() {
+  const grid = state.guesses.map(n => {
+    const wine = WINES.find(w => w.name === n);
+    return compare(wine, ANSWER).map(t => EMOJI[t.state]).join('');
+  }).join('\n');
+  const score = state.status === 'won' ? state.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
+  return 'Winedle #' + DAY + '  ' + score + '\n\n' + grid;
+}
+
+function showEnd() {
+  const won = state.status === 'won';
+  const stats = recordResult(won, state.guesses.length, DAY);
+  const pct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
+
+  endPanel.innerHTML = '';
+  endPanel.hidden = false;
+
+  const verdict = document.createElement('p');
+  verdict.className = 'end__verdict';
+  verdict.textContent = won
+    ? ['Uncanny.', 'Sharp palate.', 'Well judged.', 'Got there.', 'Close run.', 'By the skin of your teeth.'][state.guesses.length - 1]
+    : 'Not this time.';
+  endPanel.appendChild(verdict);
+
+  const card = document.createElement('div');
+  card.className = 'reveal';
+  card.innerHTML =
+    '<p class="reveal__eyebrow">Today’s wine</p>' +
+    '<h3 class="reveal__name">' + ANSWER.name + '</h3>' +
+    '<p class="reveal__origin">' + ANSWER.region + ', ' + ANSWER.country + '</p>' +
+    '<p class="reveal__note">' + ANSWER.note + '</p>' +
+    '<dl class="reveal__meta">' +
+      '<div><dt>Oak</dt><dd>' + ANSWER.oak + '</dd></div>' +
+      '<div><dt>Aromas</dt><dd>' + ANSWER.flavors.join(', ') + '</dd></div>' +
+      (ANSWER.alsoKnownAs.length
+        ? '<div><dt>Also called</dt><dd>' + ANSWER.alsoKnownAs.join(', ') + '</dd></div>' : '') +
+    '</dl>';
+  endPanel.appendChild(card);
+
+  const bar = document.createElement('div');
+  bar.className = 'stats';
+  bar.innerHTML =
+    '<div><strong>' + stats.played + '</strong><span>Played</span></div>' +
+    '<div><strong>' + pct + '%</strong><span>Won</span></div>' +
+    '<div><strong>' + stats.streak + '</strong><span>Streak</span></div>' +
+    '<div><strong>' + stats.maxStreak + '</strong><span>Best</span></div>';
+  endPanel.appendChild(bar);
+
+  const btn = document.createElement('button');
+  btn.className = 'share';
+  btn.textContent = 'Copy result';
+  btn.addEventListener('click', () => {
+    const text = shareText();
+    const done = () => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy result', 1600); };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, done);
+    else done();
+  });
+  endPanel.appendChild(btn);
+}
+
+/* ---------- input ---------- */
+
+function submitGuess(wine) {
+  if (state.status !== 'playing') return;
+  if (state.guesses.includes(wine.name)) return;
+  state.guesses.push(wine.name);
+  if (wine.name === ANSWER.name) state.status = 'won';
+  else if (state.guesses.length >= MAX_GUESSES) state.status = 'lost';
+  writeJSON(KEY_STATE, state);
+  input.value = '';
+  renderSuggestions([]);
+  render(true);
+  if (state.status !== 'playing') {
+    input.disabled = true;
+    input.placeholder = 'Back tomorrow';
+  }
+}
+
+function renderSuggestions(list) {
+  sugBox.innerHTML = '';
+  sugBox.hidden = list.length === 0;
+  list.forEach((s, i) => {
+    const li = document.createElement('li');
+    li.className = 'suggestion' + (i === 0 ? ' is-active' : '');
+    li.textContent = s.wine.name;
+    if (s.via) {
+      const via = document.createElement('em');
+      via.textContent = ' — ' + s.via;
+      li.appendChild(via);
+    }
+    li.addEventListener('mousedown', e => { e.preventDefault(); submitGuess(s.wine); });
+    sugBox.appendChild(li);
+  });
+}
+
+input.addEventListener('input', () => {
+  renderSuggestions(suggest(input.value, state.guesses));
+});
+
+input.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const list = suggest(input.value, state.guesses);
+  const exact = resolve(input.value);
+  if (exact && !state.guesses.includes(exact.name)) submitGuess(exact);
+  else if (list.length) submitGuess(list[0].wine);
+});
+
+input.addEventListener('blur', () => setTimeout(() => renderSuggestions([]), 120));
+
+$('#puzzle-no').textContent = 'No. ' + DAY;
+$('#puzzle-date').textContent = new Date().toLocaleDateString(undefined,
+  { day: 'numeric', month: 'long', year: 'numeric' });
+
+if (state.status !== 'playing') {
+  input.disabled = true;
+  input.placeholder = 'Back tomorrow';
+}
+render(false);
+
+</script>
+</body>
+</html>

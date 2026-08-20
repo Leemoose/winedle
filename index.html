@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Winedle — the daily wine puzzle</title>
+<meta name="description" content="Guess the grape variety in six tries. A new wine every day, scored across colour, origin and structure.">
+<meta name="theme-color" content="#ece2d0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16100e" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Winedle — the daily wine puzzle">
+<meta property="og:description" content="Guess the grape variety in six tries. A new wine every day.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%B7%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Karla:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<main class="sheet">
+
+  <header class="masthead">
+    <hr class="masthead__rule">
+    <h1 class="masthead__title">Winedle</h1>
+    <p class="masthead__sub">The daily wine puzzle</p>
+    <hr class="masthead__rule">
+    <p class="masthead__vintage">
+      <span id="puzzle-no"></span>
+      <span id="puzzle-date"></span>
+      <span>Six guesses</span>
+    </p>
+  </header>
+
+  <details class="howto">
+    <summary>How to play</summary>
+    <div class="howto__body">
+      <p>Guess the grape variety. Every guess is scored against the answer across nine attributes.</p>
+      <p><strong>Country and region</strong> mean the grape’s classic home — the reference expression, not everywhere it is planted. Chardonnay grows on six continents; its answer is Burgundy, France.</p>
+      <p><strong>Depth</strong> is colour intensity judged within the wine’s own colour category, the way WSET does it. Nebbiolo is pale for a red; Riesling is pale for a white.</p>
+      <p>Arrows on the structural tiles point toward the answer: <strong>↑</strong> means the answer is higher than your guess.</p>
+      <div class="key">
+        <div><i class="k-hit"></i> exact match</div>
+        <div><i class="k-near"></i> close — one step off, same continent, or shared aromas</div>
+        <div><i class="k-miss"></i> no match</div>
+      </div>
+    </div>
+  </details>
+
+  <div class="entry">
+    <div class="entry__row">
+      <input id="guess-input" type="text" autocomplete="off" autocapitalize="off"
+             spellcheck="false" placeholder="Name a grape…" aria-label="Guess a grape variety">
+      <span id="counter"></span>
+    </div>
+    <ul id="suggestions" hidden></ul>
+  </div>
+
+  <section id="board" aria-live="polite"></section>
+
+  <section id="end-panel" hidden></section>
+
+  <p class="colophon">Poured daily · Wintersun</p>
+
+</main>
+
+<script src="data/wines.js"></script>
+<script src="src/game.js"></script>
+</body>
+</html>

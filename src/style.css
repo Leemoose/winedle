@@ -1,0 +1,367 @@
+/* Winedle — old-world label: parchment, letterpress, high-contrast didone */
+
+:root {
+  --parchment: #ece2d0;
+  --parchment-deep: #e0d3bd;
+  --ink: #24160f;
+  --ink-soft: #6b5544;
+  --oxblood: #6d1a26;
+  --oxblood-deep: #4a0f1a;
+  --amber: #b1802c;
+  --gold: #a68b4c;
+  --rule: rgba(36, 22, 15, 0.18);
+  --tile-miss-bg: rgba(36, 22, 15, 0.04);
+  --shadow: 0 1px 0 rgba(255,255,255,.5), 0 12px 30px -18px rgba(36,22,15,.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --parchment: #16100e;
+    --parchment-deep: #1d1512;
+    --ink: #e8dcc8;
+    --ink-soft: #a08e78;
+    --oxblood: #8c2432;
+    --oxblood-deep: #5d1520;
+    --amber: #c2913a;
+    --gold: #8a7442;
+    --rule: rgba(232, 220, 200, 0.16);
+    --tile-miss-bg: rgba(232, 220, 200, 0.04);
+    --shadow: 0 12px 30px -18px rgba(0,0,0,.9);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--parchment);
+  /* woven paper tooth + a vignette so the page reads as stock, not screen */
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.14), transparent 60%),
+    radial-gradient(ellipse at 50% 120%, rgba(36,22,15,.10), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+  color: var(--ink);
+  font-family: Karla, 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sheet {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 5rem;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead { text-align: center; }
+
+.masthead__rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  height: 3px;
+  margin: 0;
+}
+
+.masthead__title {
+  font-family: 'Bodoni Moda', 'Didot', 'Playfair Display', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(2.9rem, 11vw, 5.5rem);
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  margin: 0.5rem 0 0.2rem;
+  line-height: 1;
+}
+
+.masthead__sub {
+  font-size: 0.7rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+
+.masthead__vintage {
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0.55rem 0;
+}
+
+.masthead__vintage span:not(:last-child)::after {
+  content: '·';
+  margin-left: 0.9rem;
+  color: var(--gold);
+}
+
+/* ---------- how to play ---------- */
+
+.howto {
+  margin: 1.75rem auto 0;
+  max-width: 620px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.howto summary {
+  cursor: pointer;
+  list-style: none;
+  text-align: center;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.66rem;
+  color: var(--gold);
+}
+
+.howto summary::-webkit-details-marker { display: none; }
+.howto summary::after { content: ' ▾'; }
+.howto[open] summary::after { content: ' ▴'; }
+
+.howto__body { padding: 1rem 0 0; }
+.howto__body p { margin: 0 0 0.7rem; }
+.howto__body strong { color: var(--ink); font-weight: 700; }
+
+.key { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; margin-top: 0.9rem; }
+.key div { display: flex; align-items: center; gap: 0.45rem; font-size: 0.78rem; }
+.key i {
+  width: 14px; height: 14px; display: block; border: 1px solid var(--rule);
+}
+.key .k-hit  { background: var(--oxblood); border-color: var(--oxblood-deep); }
+.key .k-near { background: var(--amber); border-color: var(--amber); }
+.key .k-miss { background: var(--tile-miss-bg); }
+
+/* ---------- guess entry ---------- */
+
+.entry {
+  position: relative;
+  margin: 2rem auto 0;
+  max-width: 520px;
+}
+
+.entry__row { display: flex; align-items: baseline; gap: 0.75rem; }
+
+#guess-input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  padding: 0.55rem 0.2rem;
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.35rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .2s;
+}
+
+#guess-input::placeholder { color: var(--ink-soft); opacity: .65; font-style: italic; }
+#guess-input:focus { border-color: var(--oxblood); }
+#guess-input:disabled { opacity: .5; }
+
+#counter {
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+#suggestions {
+  position: absolute;
+  z-index: 20;
+  left: 0; right: 0;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--parchment-deep);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow);
+  max-height: 17rem;
+  overflow-y: auto;
+}
+
+.suggestion {
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--rule);
+}
+.suggestion:last-child { border-bottom: 0; }
+.suggestion:hover, .suggestion.is-active { background: var(--oxblood); color: var(--parchment); }
+.suggestion em { color: var(--ink-soft); font-size: 0.82rem; font-style: italic; }
+.suggestion:hover em, .suggestion.is-active em { color: rgba(255,255,255,.72); }
+
+/* ---------- board ---------- */
+
+#board { margin-top: 2.25rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+.row {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.85rem;
+}
+
+.row__name {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-weight: 500;
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 0.7rem;
+}
+
+.row__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 4px;
+}
+
+.tile {
+  position: relative;
+  border: 1px solid var(--rule);
+  background: var(--tile-miss-bg);
+  padding: 0.5rem 0.4rem 0.55rem;
+  text-align: center;
+  min-height: 62px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.tile__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: .62;
+}
+
+.tile__value {
+  font-size: 0.8rem;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.tile__arrow {
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+  font-size: 0.8rem;
+  opacity: .8;
+}
+
+.tile--hit  { background: var(--oxblood); border-color: var(--oxblood-deep); color: #f6ece0; }
+.tile--near { background: var(--amber); border-color: var(--amber); color: #1d1206; }
+
+/* letterpress reveal: each tile turns like a card being laid down */
+.row--new .tile {
+  animation: lay .5s cubic-bezier(.2,.7,.3,1) backwards;
+  transform-origin: top center;
+}
+
+@keyframes lay {
+  from { opacity: 0; transform: rotateX(-88deg) translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row--new .tile { animation: fade .3s backwards; }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+}
+
+/* ---------- end panel ---------- */
+
+#end-panel { margin-top: 2.5rem; text-align: center; }
+
+.end__verdict {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.6rem;
+  font-style: italic;
+  margin: 0 0 1.25rem;
+}
+
+.reveal {
+  border: 1px solid var(--rule);
+  border-top: 3px double var(--gold);
+  background: var(--parchment-deep);
+  box-shadow: var(--shadow);
+  padding: 1.75rem 1.5rem;
+  text-align: left;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.reveal__eyebrow {
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0;
+}
+
+.reveal__name {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-weight: 500;
+  font-size: 2rem;
+  margin: 0.3rem 0 0.1rem;
+}
+
+.reveal__origin {
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+
+.reveal__note { margin: 0 0 1.2rem; font-size: 0.95rem; }
+
+.reveal__meta { margin: 0; display: grid; gap: 0.5rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+.reveal__meta div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.6rem; }
+.reveal__meta dt {
+  font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-soft); padding-top: 0.28rem;
+}
+.reveal__meta dd { margin: 0; font-size: 0.9rem; }
+
+.stats {
+  display: flex; justify-content: center; gap: 2.2rem;
+  margin: 2rem 0 1.5rem;
+}
+.stats div { display: flex; flex-direction: column; }
+.stats strong { font-family: 'Bodoni Moda', Georgia, serif; font-size: 1.7rem; font-weight: 500; }
+.stats span { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); }
+
+.share {
+  background: var(--oxblood);
+  color: #f6ece0;
+  border: 0;
+  padding: 0.75rem 2.2rem;
+  font-family: Karla, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+.share:hover { background: var(--oxblood-deep); }
+.share:active { transform: translateY(1px); }
+
+.colophon {
+  margin-top: 4rem;
+  text-align: center;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: .7;
+}
+
+@media (max-width: 480px) {
+  .sheet { padding-top: 1.5rem; }
+  .row__tiles { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); }
+  .stats { gap: 1.4rem; }
+}
