@@ -54,7 +54,7 @@ const WINES = [
   },
   {
     name: "Syrah",
-    color: "Red", country: "France", region: "Northern Rhone", continent: "Europe",
+    color: "Red", country: "France", region: "Northern Rhône", continent: "Europe",
     colorInt: 5,
     body: 5, tannin: 4, acidity: 4, climate: 2,
     oak: "Common",
@@ -134,13 +134,13 @@ const WINES = [
   },
   {
     name: "Grenache",
-    color: "Red", country: "France", region: "Southern Rhone", continent: "Europe",
+    color: "Red", country: "France", region: "Southern Rhône", continent: "Europe",
     colorInt: 2,
     body: 5, tannin: 2, acidity: 2, climate: 3,
     oak: "Sometimes",
     flavors: ["Strawberry", "Red Plum", "Herbal", "Spice"],
     alsoKnownAs: ["Garnacha", "Cannonau"],
-    note: "The great contradiction: pale in the glass, low in tannin and acid, yet full-bodied and high in alcohol. That combination is why it anchors Chateauneuf blends rather than standing alone."
+    note: "The great contradiction: pale in the glass, low in tannin and acid, yet full-bodied and high in alcohol. That combination is why it anchors Châteauneuf blends rather than standing alone."
   },
   {
     name: "Tempranillo",
@@ -149,7 +149,7 @@ const WINES = [
     body: 4, tannin: 4, acidity: 3, climate: 2,
     oak: "Common",
     flavors: ["Red Plum", "Leather", "Tobacco", "Vanilla"],
-    alsoKnownAs: ["Tinto Fino", "Tinta del Pais", "Tinta Roriz", "Aragonez"],
+    alsoKnownAs: ["Tinto Fino", "Tinta del País", "Tinta Roriz", "Aragonez"],
     note: "Medium acidity is the tell - it ripens early, which is what the name means. The coconut-vanilla lift in traditional Rioja is American oak, not the grape."
   },
   {
@@ -159,7 +159,7 @@ const WINES = [
     body: 5, tannin: 3, acidity: 3, climate: 3,
     oak: "Common",
     flavors: ["Blackberry", "Raisin", "Spice", "Chocolate"],
-    alsoKnownAs: ["Primitivo", "Tribidrag", "Crljenak Kastelanski"],
+    alsoKnownAs: ["Primitivo", "Tribidrag", "Crljenak Kaštelanski"],
     note: "Ripens unevenly, so one bunch carries green berries and raisins at once - hence the jammy fruit and high alcohol. Primitivo is the same grape; Croatia is where it actually came from."
   },
   {
@@ -180,11 +180,11 @@ const WINES = [
     oak: "Sometimes",
     flavors: ["Green Apple", "Quince", "Honey", "Wet Wool"],
     alsoKnownAs: ["Steen", "Pineau de la Loire"],
-    note: "The most versatile white there is - bone dry in Savennieres, sweet in Coteaux du Layon, sparkling in Vouvray. Searing acidity is the constant that makes all of it work."
+    note: "The most versatile white there is - bone dry in Savennières, sweet in Coteaux du Layon, sparkling in Vouvray. Searing acidity is the constant that makes all of it work."
   },
   {
     name: "Viognier",
-    color: "White", country: "France", region: "Northern Rhone", continent: "Europe",
+    color: "White", country: "France", region: "Northern Rhône", continent: "Europe",
     colorInt: 3,
     body: 4, tannin: 1, acidity: 2, climate: 2,
     oak: "Sometimes",
@@ -199,7 +199,7 @@ const WINES = [
     body: 4, tannin: 1, acidity: 3, climate: 2,
     oak: "Rare",
     flavors: ["Pear", "Peach", "Ginger", "Honey"],
-    alsoKnownAs: ["Pinot Grigio", "Grauburgunder", "Rulander"],
+    alsoKnownAs: ["Pinot Grigio", "Grauburgunder", "Ruländer"],
     note: "One grape, two wines. Alsace picks it ripe for a rich, oily, off-dry white; Italy picks it early for something light and neutral. The name on the label tells you which you are getting."
   },
   {
@@ -219,7 +219,7 @@ const WINES = [
     body: 2, tannin: 1, acidity: 4, climate: 2,
     oak: "Rare",
     flavors: ["Orange Blossom", "Peach", "Grape", "Rose"],
-    alsoKnownAs: ["Moscato", "Moscatel", "Muscat Blanc a Petits Grains"],
+    alsoKnownAs: ["Moscato", "Moscatel", "Muscat Blanc à Petits Grains"],
     note: "The only grape that genuinely smells of grapes. Ancient, and spread across half the wine world - Moscato d'Asti is the lightest and most charming expression of it."
   },
   {
@@ -243,17 +243,17 @@ const WINES = [
     note: "Not to be confused with Vino Nobile di Montepulciano, which is Sangiovese from a Tuscan town of the same name. This is the Abruzzo grape - softer, darker, and one of Italy's great everyday reds."
   },
   {
-    name: "Gewurztraminer",
+    name: "Gewürztraminer",
     color: "White", country: "France", region: "Alsace", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 1, acidity: 2, climate: 2,
     oak: "Rare",
     flavors: ["Lychee", "Rose", "Ginger", "Honey"],
-    alsoKnownAs: ["Traminer", "Gewurz"],
+    alsoKnownAs: ["Traminer", "Gewürz"],
     note: "The easiest white to call blind: lychee and rose, deep gold colour, low acid, high alcohol. Pink-skinned, which is where that unusual depth of colour comes from."
   },
   {
-    name: "Semillon",
+    name: "Sémillon",
     color: "White", country: "France", region: "Bordeaux", continent: "Europe",
     colorInt: 3,
     body: 4, tannin: 1, acidity: 3, climate: 2,
@@ -263,8 +263,8 @@ const WINES = [
     note: "Thin skins make it prone to botrytis, which is the whole basis of Sauternes. Dry in the Hunter Valley it starts neutral and turns to toast and honey after a decade with no oak involved."
   },
   {
-    name: "Albarino",
-    color: "White", country: "Spain", region: "Rias Baixas", continent: "Europe",
+    name: "Albariño",
+    color: "White", country: "Spain", region: "Rías Baixas", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 1,
     oak: "Rare",
@@ -273,17 +273,17 @@ const WINES = [
     note: "Thick-skinned, which is how it survives the rain in Galicia. High acid and a saline finish - the reason it gets pushed at anyone eating shellfish."
   },
   {
-    name: "Gruner Veltliner",
+    name: "Grüner Veltliner",
     color: "White", country: "Austria", region: "Wachau", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 1,
     oak: "Rare",
     flavors: ["Citrus", "Green Apple", "White Pepper", "Herbal"],
-    alsoKnownAs: ["Gruner", "Weissgipfler"],
+    alsoKnownAs: ["Grüner", "Weissgipfler"],
     note: "White pepper is the marker, and almost nothing else does it in a white. Austria's signature grape, and it scales from cheap and spritzy to serious and age-worthy."
   },
   {
-    name: "Torrontes",
+    name: "Torrontés",
     color: "White", country: "Argentina", region: "Salta", continent: "South America",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 3, climate: 3,
@@ -300,7 +300,7 @@ const WINES = [
     oak: "Sometimes",
     flavors: ["Green Apple", "Quince", "Honey", "Smoke"],
     alsoKnownAs: [],
-    note: "The backbone of Tokaji Aszu, and increasingly bottled dry. Acidity high enough to carry 150 grams of residual sugar without the wine tasting cloying."
+    note: "The backbone of Tokaji Aszú, and increasingly bottled dry. Acidity high enough to carry 150 grams of residual sugar without the wine tasting cloying."
   },
   {
     name: "Assyrtiko",
@@ -341,5 +341,95 @@ const WINES = [
     flavors: ["Green Apple", "Lemon", "Almond", "Saline"],
     alsoKnownAs: ["Gavi"],
     note: "Gavi is the place, Cortese is the grape. Piedmont's serious white in a region that is otherwise all about red - lean, high-acid, and deliberately understated."
+  },
+  {
+    name: "Carmenère",
+    color: "Red", country: "Chile", region: "Colchagua", continent: "South America",
+    colorInt: 5,
+    body: 4, tannin: 4, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Green Bell Pepper", "Chocolate", "Spice"],
+    alsoKnownAs: ["Grande Vidure"],
+    note: "Lost to phylloxera in Bordeaux and mistaken for Merlot in Chile until DNA testing in 1994. Needs a long season - picked early it is all pyrazine and nothing else."
+  },
+  {
+    name: "Pinotage",
+    color: "Red", country: "South Africa", region: "Stellenbosch", continent: "Africa",
+    colorInt: 5,
+    body: 4, tannin: 4, acidity: 4, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Smoke", "Banana"],
+    alsoKnownAs: [],
+    note: "A 1925 South African crossing of Pinot Noir and Cinsault. Divisive - handled badly it goes to acetone and burnt rubber, handled well it is smoky and dense."
+  },
+  {
+    name: "Mourvèdre",
+    color: "Red", country: "France", region: "Bandol", continent: "Europe",
+    colorInt: 5,
+    body: 5, tannin: 5, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Leather", "Herbal", "Spice"],
+    alsoKnownAs: ["Monastrell", "Mataro"],
+    note: "The last to ripen of the Rhône trio, and the most demanding - it needs real heat. Bandol is the benchmark; in GSM blends it supplies the tannin and the meaty, gamey edge."
+  },
+  {
+    name: "Corvina",
+    color: "Red", country: "Italy", region: "Veneto", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 2, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Sour Cherry", "Red Plum", "Herbal", "Almond"],
+    alsoKnownAs: ["Corvina Veronese"],
+    note: "Light and tart as Valpolicella, transformed into Amarone by drying the grapes for months first. Same grape, same hillside, and a completely different wine."
+  },
+  {
+    name: "Nerello Mascalese",
+    color: "Red", country: "Italy", region: "Etna", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 4, acidity: 5, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Cherry", "Orange Peel", "Smoke", "Earthy"],
+    alsoKnownAs: ["Nerello"],
+    note: "Grown on the slopes of an active volcano, and constantly compared to Nebbiolo and Pinot Noir - pale, high-acid, high-tannin, and marked by the black volcanic soil."
+  },
+  {
+    name: "Aglianico",
+    color: "Red", country: "Italy", region: "Campania", continent: "Europe",
+    colorInt: 5,
+    body: 5, tannin: 5, acidity: 5, climate: 3,
+    oak: "Common",
+    flavors: ["Black Cherry", "Leather", "Earthy", "Spice"],
+    alsoKnownAs: [],
+    note: "Southern Italy's answer to Nebbiolo, and just as unforgiving young. Ripens dangerously late - well into November - which is how it holds that much acid in a hot region."
+  },
+  {
+    name: "Nero d’Avola",
+    color: "Red", country: "Italy", region: "Sicily", continent: "Europe",
+    colorInt: 4,
+    body: 4, tannin: 4, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Black Cherry", "Plum", "Liquorice", "Herbal"],
+    alsoKnownAs: ["Calabrese"],
+    note: "Sicily’s workhorse grape, once shipped north in bulk to beef up thin wines from cooler regions. Bottled on its own it is dark, warm and unfussy."
+  },
+  {
+    name: "Barbera",
+    color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
+    colorInt: 4,
+    body: 3, tannin: 2, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Sour Cherry", "Red Plum", "Liquorice", "Herbal"],
+    alsoKnownAs: [],
+    note: "Piedmont’s everyday red, planted on the sites Nebbiolo does not want. Deep colour but low tannin and searing acidity - the inverse of its famous neighbour."
+  },
+  {
+    name: "Petit Verdot",
+    color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
+    colorInt: 5,
+    body: 5, tannin: 5, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Blackberry", "Violet", "Graphite", "Spice"],
+    alsoKnownAs: [],
+    note: "The Left Bank seasoning grape - a few percent for colour, tannin and violet perfume. Often refuses to ripen in Bordeaux, which is why it does better in Australia and Spain."
   }
 ];
