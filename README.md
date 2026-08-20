@@ -35,9 +35,16 @@ argue with the tiles:
 - **country/region is the grape's classic home**, not everywhere it is planted.
 - **colorInt is judged within the wine's own colour category**, WSET-style.
 
-The bank currently holds 10 grapes, so the puzzle repeats every 10 days. Each
-cycle reshuffles, so the order is never the same twice — but for real daily play
-this wants 60–100 records.
+The bank currently holds 55 grapes — roughly two months before the deck runs
+out. Each cycle reshuffles, so the order is never the same twice.
+
+Before adding, check that the new record is not indistinguishable from an
+existing one. No two wines may match on all nine scored attributes:
+
+    node -e 'const W=new Function(require("fs").readFileSync("data/wines.js","utf8")+";return WINES;")();
+    const K=["color","country","region","colorInt","body","tannin","acidity","climate"];
+    const m={};W.forEach(w=>(m[K.map(k=>w[k]).join("|")+"|"+[...w.flavors].sort()] ||= []).push(w.name));
+    console.log(Object.values(m).filter(v=>v.length>1))'
 
 ## Attributes scored
 
