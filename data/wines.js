@@ -241,5 +241,105 @@ const WINES = [
     flavors: ["Black Cherry", "Plum", "Herbal", "Earthy"],
     alsoKnownAs: [],
     note: "Not to be confused with Vino Nobile di Montepulciano, which is Sangiovese from a Tuscan town of the same name. This is the Abruzzo grape - softer, darker, and one of Italy's great everyday reds."
+  },
+  {
+    name: "Gewurztraminer",
+    color: "White", country: "France", region: "Alsace", continent: "Europe",
+    colorInt: 4,
+    body: 4, tannin: 1, acidity: 2, climate: 2,
+    oak: "Rare",
+    flavors: ["Lychee", "Rose", "Ginger", "Honey"],
+    alsoKnownAs: ["Traminer", "Gewurz"],
+    note: "The easiest white to call blind: lychee and rose, deep gold colour, low acid, high alcohol. Pink-skinned, which is where that unusual depth of colour comes from."
+  },
+  {
+    name: "Semillon",
+    color: "White", country: "France", region: "Bordeaux", continent: "Europe",
+    colorInt: 3,
+    body: 4, tannin: 1, acidity: 3, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Lemon", "Wax", "Honey", "Toast"],
+    alsoKnownAs: ["Hunter River Riesling"],
+    note: "Thin skins make it prone to botrytis, which is the whole basis of Sauternes. Dry in the Hunter Valley it starts neutral and turns to toast and honey after a decade with no oak involved."
+  },
+  {
+    name: "Albarino",
+    color: "White", country: "Spain", region: "Rias Baixas", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Citrus", "Peach", "Saline", "Almond"],
+    alsoKnownAs: ["Alvarinho"],
+    note: "Thick-skinned, which is how it survives the rain in Galicia. High acid and a saline finish - the reason it gets pushed at anyone eating shellfish."
+  },
+  {
+    name: "Gruner Veltliner",
+    color: "White", country: "Austria", region: "Wachau", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Citrus", "Green Apple", "White Pepper", "Herbal"],
+    alsoKnownAs: ["Gruner", "Weissgipfler"],
+    note: "White pepper is the marker, and almost nothing else does it in a white. Austria's signature grape, and it scales from cheap and spritzy to serious and age-worthy."
+  },
+  {
+    name: "Torrontes",
+    color: "White", country: "Argentina", region: "Salta", continent: "South America",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 3, climate: 3,
+    oak: "Rare",
+    flavors: ["Rose", "Orange Blossom", "Peach", "Citrus"],
+    alsoKnownAs: [],
+    note: "Smells sweet and finishes dry, which catches people out. A Muscat cross, grown at extreme altitude in Salta where the cool nights hold onto the acidity."
+  },
+  {
+    name: "Furmint",
+    color: "White", country: "Hungary", region: "Tokaj", continent: "Europe",
+    colorInt: 3,
+    body: 3, tannin: 1, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Green Apple", "Quince", "Honey", "Smoke"],
+    alsoKnownAs: [],
+    note: "The backbone of Tokaji Aszu, and increasingly bottled dry. Acidity high enough to carry 150 grams of residual sugar without the wine tasting cloying."
+  },
+  {
+    name: "Assyrtiko",
+    color: "White", country: "Greece", region: "Santorini", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 5, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Lemon", "Saline", "Smoke", "Citrus"],
+    alsoKnownAs: [],
+    note: "Almost unique in keeping high acidity in a hot climate - most grapes lose it. Grown in basket-trained vines on volcanic ash to survive the Santorini wind."
+  },
+  {
+    name: "Garganega",
+    color: "White", country: "Italy", region: "Veneto", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Pear", "Almond", "Citrus"],
+    alsoKnownAs: ["Grecanico"],
+    note: "The grape behind Soave, and behind Soave's reputation problem - overcropped on the plains it is water, but from the volcanic Classico hills it is genuinely good."
+  },
+  {
+    name: "Verdejo",
+    color: "White", country: "Spain", region: "Rueda", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Grapefruit", "Fennel", "Grass", "Almond"],
+    alsoKnownAs: [],
+    note: "Spain's answer to Sauvignon Blanc, and often blended with it in Rueda. The bitter-almond finish is the giveaway that it is not actually Sauvignon."
+  },
+  {
+    name: "Cortese",
+    color: "White", country: "Italy", region: "Piedmont", continent: "Europe",
+    colorInt: 1,
+    body: 2, tannin: 1, acidity: 5, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lemon", "Almond", "Saline"],
+    alsoKnownAs: ["Gavi"],
+    note: "Gavi is the place, Cortese is the grape. Piedmont's serious white in a region that is otherwise all about red - lean, high-acid, and deliberately understated."
   }
 ];
