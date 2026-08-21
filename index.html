@@ -28,8 +28,9 @@
     <p class="masthead__vintage">
       <span id="puzzle-no"></span>
       <span id="puzzle-date"></span>
-      <span>Six guesses</span>
+      <button id="stats-open" class="linkish" type="button">Cellar book</button>
     </p>
+    <nav id="archive-nav" class="archive-nav" hidden></nav>
   </header>
 
   <details class="howto">
@@ -45,6 +46,14 @@
         <div><i class="k-near"></i> close — one step off, same continent, or shared aromas</div>
         <div><i class="k-miss"></i> no match</div>
       </div>
+    </div>
+  </details>
+
+  <details class="howto archive">
+    <summary>Archive</summary>
+    <div class="howto__body">
+      <p>Every past puzzle, still playable. Replays are kept separate from the daily — they never touch your streak.</p>
+      <ol id="archive-list" class="archive-list"></ol>
     </div>
   </details>
 
@@ -64,6 +73,14 @@
   <p id="announcer" class="sr-only" role="status" aria-live="polite"></p>
 
   <section id="end-panel" hidden></section>
+
+  <dialog id="stats-dialog" class="sheet-dialog">
+    <h2 class="dialog__title">Cellar book</h2>
+    <div id="stats-summary" class="stats"></div>
+    <h3 class="dialog__sub">Guesses to solve</h3>
+    <div id="stats-histogram" class="histogram"></div>
+    <button id="stats-close" class="share" type="button">Close</button>
+  </dialog>
 
   <p class="colophon">Poured daily</p>
 

@@ -174,9 +174,10 @@ function blankStats() {
   return { played: 0, wins: 0, streak: 0, maxStreak: 0, dist: [0,0,0,0,0,0], lastDay: null };
 }
 
-function recordResult(won, guessCount, day) {
+function recordResult(won, guessCount, day, live) {
   const s = readJSON(KEY_STATS, blankStats());
-  if (s.lastDay === day) return s;
+  /* Replaying the archive must not inflate a streak that is about the daily. */
+  if (!live || s.lastDay === day) return s;
   s.played++;
   if (won) {
     s.wins++;
@@ -193,12 +194,26 @@ function recordResult(won, guessCount, day) {
 
 /* ---------- game state ---------- */
 
-const DAY = dayNumber();
+const TODAY = dayNumber();
 
-let state = readJSON(KEY_STATE, null);
+/* ?d=<n> replays an archived puzzle. Clamped to the schedule's own range so a
+ * hand-edited URL cannot land on an undefined day. */
+const asked = parseInt(new URLSearchParams(location.search).get('d'), 10);
+const DAY = Number.isInteger(asked) ? Math.min(Math.max(asked, 0), TODAY) : TODAY;
+const IS_ARCHIVE = DAY !== TODAY;
+
+/* Archived plays get their own slot, so replaying one never overwrites the
+ * live puzzle and never touches the streak. */
+const STATE_KEY = IS_ARCHIVE ? KEY_STATE + ':' + DAY : KEY_STATE;
+
+function dateForDay(d) {
+  return new Date(EPOCH + d * 86400000);
+}
+
+let state = readJSON(STATE_KEY, null);
 if (!state || state.day !== DAY) {
   state = { day: DAY, guesses: [], status: 'playing', answer: puzzleFor(DAY).name };
-  writeJSON(KEY_STATE, state);
+  writeJSON(STATE_KEY, state);
 }
 
 /* Pin the answer to whatever this player started on. The schedule is derived
@@ -208,7 +223,7 @@ if (!state || state.day !== DAY) {
 const ANSWER = (state.answer && WINES.find(w => w.name === state.answer)) || puzzleFor(DAY);
 if (state.answer !== ANSWER.name) {
   state.answer = ANSWER.name;
-  writeJSON(KEY_STATE, state);
+  writeJSON(STATE_KEY, state);
 }
 
 /* ---------- rendering ---------- */
@@ -367,12 +382,13 @@ function shareText() {
     return compare(wine, ANSWER).map(t => EMOJI[t.state]).join('');
   }).join('\n');
   const score = state.status === 'won' ? state.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
-  return 'Winedle #' + DAY + '  ' + score + '\n\n' + grid + '\n\n' + SHARE_URL;
+  const url = IS_ARCHIVE ? SHARE_URL + '?d=' + DAY : SHARE_URL;
+  return 'Winedle #' + DAY + '  ' + score + '\n\n' + grid + '\n\n' + url;
 }
 
 function showEnd() {
   const won = state.status === 'won';
-  const stats = recordResult(won, state.guesses.length, DAY);
+  const stats = recordResult(won, state.guesses.length, DAY, !IS_ARCHIVE);
   const pct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
 
   endPanel.innerHTML = '';
@@ -409,10 +425,17 @@ function showEnd() {
     '<div><strong>' + stats.maxStreak + '</strong><span>Best</span></div>';
   endPanel.appendChild(bar);
 
-  const clock = document.createElement('p');
-  clock.className = 'countdown';
-  endPanel.appendChild(clock);
-  startCountdown(clock);
+  if (IS_ARCHIVE) {
+    const back = document.createElement('p');
+    back.className = 'countdown';
+    back.innerHTML = '<a href="' + dayHref(TODAY) + '">Back to today\u2019s wine</a>';
+    endPanel.appendChild(back);
+  } else {
+    const clock = document.createElement('p');
+    clock.className = 'countdown';
+    endPanel.appendChild(clock);
+    startCountdown(clock);
+  }
 
   const btn = document.createElement('button');
   btn.className = 'share';
@@ -445,6 +468,85 @@ function startCountdown(el) {
   setInterval(tick, 1000);
 }
 
+/* ---------- archive ---------- */
+
+const ARCHIVE_SHOWN = 30;
+
+/* Link relative to the file actually being viewed, not to the directory: the
+ * portable dist/winedle.html copy is not an index, so './' would 404 there. */
+const SELF = location.pathname;
+const dayHref = d => (d === TODAY ? SELF : SELF + '?d=' + d);
+
+function statusOf(day) {
+  const s = readJSON(day === TODAY ? KEY_STATE : KEY_STATE + ':' + day, null);
+  if (!s || s.day !== day || s.status === 'playing') return null;
+  return s.status;
+}
+
+function renderArchive() {
+  const list = $('#archive-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (let d = TODAY; d > Math.max(-1, TODAY - ARCHIVE_SHOWN); d--) {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = dayHref(d);
+    a.textContent = 'No. ' + d;
+    const when = document.createElement('span');
+    when.className = 'archive-list__date';
+    when.textContent = dateForDay(d).toLocaleDateString(undefined,
+      { day: 'numeric', month: 'short', timeZone: 'UTC' });
+    const st = statusOf(d);
+    const mark = document.createElement('span');
+    mark.className = 'archive-list__mark';
+    mark.textContent = st === 'won' ? '\u2713' : st === 'lost' ? '\u2715' : '';
+    if (st) a.classList.add('is-done');
+    if (d === DAY) li.className = 'is-current';
+    li.appendChild(a);
+    li.appendChild(when);
+    li.appendChild(mark);
+    list.appendChild(li);
+  }
+}
+
+function renderArchiveNav() {
+  const nav = $('#archive-nav');
+  if (!nav || !IS_ARCHIVE) return;
+  nav.hidden = false;
+  const bits = [];
+  if (DAY > 0) bits.push('<a href="' + dayHref(DAY - 1) + '">\u2190 No. ' + (DAY - 1) + '</a>');
+  bits.push('<a href="' + dayHref(TODAY) + '">Today</a>');
+  if (DAY < TODAY) bits.push('<a href="' + dayHref(DAY + 1) + '">No. ' + (DAY + 1) + ' \u2192</a>');
+  nav.innerHTML = 'Archive \u00b7 ' + bits.join('<span class="sep">\u00b7</span>');
+}
+
+/* ---------- cellar book ---------- */
+
+function renderStats() {
+  const s = readJSON(KEY_STATS, blankStats());
+  const pct = s.played ? Math.round((s.wins / s.played) * 100) : 0;
+  $('#stats-summary').innerHTML =
+    '<div><strong>' + s.played + '</strong><span>Played</span></div>' +
+    '<div><strong>' + pct + '%</strong><span>Won</span></div>' +
+    '<div><strong>' + s.streak + '</strong><span>Streak</span></div>' +
+    '<div><strong>' + s.maxStreak + '</strong><span>Best</span></div>';
+
+  const peak = Math.max(1, ...s.dist);
+  const solvedToday = !IS_ARCHIVE && state.status === 'won' ? state.guesses.length : 0;
+  $('#stats-histogram').innerHTML = s.dist.map(function (n, i) {
+    const pctW = Math.round((n / peak) * 100);
+    return '<div class="bar' + (i + 1 === solvedToday ? ' is-latest' : '') + '">' +
+      '<span class="bar__n">' + (i + 1) + '</span>' +
+      '<span class="bar__fill" style="width:' + Math.max(pctW, n ? 8 : 2) + '%">' +
+      '<span class="bar__count">' + n + '</span></span></div>';
+  }).join('');
+}
+
+const statsDialog = $('#stats-dialog');
+$('#stats-open').addEventListener('click', () => { renderStats(); statsDialog.showModal(); });
+$('#stats-close').addEventListener('click', () => statsDialog.close());
+statsDialog.addEventListener('click', e => { if (e.target === statsDialog) statsDialog.close(); });
+
 /* ---------- input ---------- */
 
 function submitGuess(wine) {
@@ -453,7 +555,7 @@ function submitGuess(wine) {
   state.guesses.push(wine.name);
   if (wine.name === ANSWER.name) state.status = 'won';
   else if (state.guesses.length >= MAX_GUESSES) state.status = 'lost';
-  writeJSON(KEY_STATE, state);
+  writeJSON(STATE_KEY, state);
   input.value = '';
   activeIdx = 0;
   notice('');
@@ -541,8 +643,11 @@ input.addEventListener('keydown', e => {
 input.addEventListener('blur', () => setTimeout(() => renderSuggestions([]), 120));
 
 $('#puzzle-no').textContent = 'No. ' + DAY;
-$('#puzzle-date').textContent = new Date().toLocaleDateString(undefined,
-  { day: 'numeric', month: 'long', year: 'numeric' });
+$('#puzzle-date').textContent = dateForDay(DAY).toLocaleDateString(undefined,
+  { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+if (IS_ARCHIVE) document.body.classList.add('is-archive');
+renderArchive();
+renderArchiveNav();
 
 if (state.status !== 'playing') {
   input.disabled = true;

@@ -137,6 +137,118 @@ body {
 .key .k-near { background: var(--amber); border-color: var(--amber); }
 .key .k-miss { background: var(--tile-miss-bg); }
 
+.linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--gold);
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.linkish:hover { border-bottom-color: var(--gold); }
+
+.archive-nav {
+  text-align: center;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding-bottom: 0.6rem;
+}
+
+.archive-nav a { color: var(--gold); text-decoration: none; border-bottom: 1px solid transparent; }
+.archive-nav a:hover { border-bottom-color: var(--gold); }
+.archive-nav .sep { margin: 0 0.55rem; opacity: .5; }
+
+.archive-list {
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.15rem 1.2rem;
+}
+
+.archive-list li {
+  display: grid;
+  grid-template-columns: 4.2rem 1fr 1rem;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.18rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.archive-list li.is-current { color: var(--ink); font-weight: 700; }
+.archive-list a { color: var(--gold); text-decoration: none; }
+.archive-list a:hover { text-decoration: underline; }
+.archive-list a.is-done { color: var(--ink-soft); }
+.archive-list__date { font-size: 0.74rem; opacity: .7; }
+.archive-list__mark { font-size: 0.72rem; color: var(--oxblood); text-align: right; }
+
+@media (prefers-color-scheme: dark) { .archive-list__mark { color: var(--amber); } }
+
+/* ---------- cellar book ---------- */
+
+.sheet-dialog {
+  border: 1px solid var(--rule);
+  border-top: 3px double var(--gold);
+  background: var(--parchment-deep);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  padding: 2rem 1.75rem 1.75rem;
+  max-width: 420px;
+  width: calc(100% - 2rem);
+  text-align: center;
+}
+
+.sheet-dialog::backdrop { background: rgba(20, 12, 8, .62); }
+
+.dialog__title {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-weight: 500;
+  font-size: 1.7rem;
+  margin: 0 0 1.2rem;
+}
+
+.dialog__sub {
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 400;
+  margin: 1.6rem 0 0.7rem;
+}
+
+.histogram { display: flex; flex-direction: column; gap: 4px; margin-bottom: 1.6rem; }
+
+.bar { display: grid; grid-template-columns: 1rem 1fr; align-items: center; gap: 0.5rem; }
+
+.bar__n {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.bar__fill {
+  background: var(--tile-miss-bg);
+  border: 1px solid var(--rule);
+  padding: 0.15rem 0.4rem;
+  text-align: right;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  transition: width .4s ease;
+}
+
+.bar.is-latest .bar__fill {
+  background: var(--oxblood);
+  border-color: var(--oxblood-deep);
+  color: #f6ece0;
+}
+
 /* ---------- guess entry ---------- */
 
 .entry {
