@@ -35,7 +35,7 @@ argue with the tiles:
 - **country/region is the grape's classic home**, not everywhere it is planted.
 - **colorInt is judged within the wine's own colour category**, WSET-style.
 
-The bank currently holds 70 grapes — roughly ten weeks before the deck runs
+The bank currently holds 85 grapes — roughly twelve weeks before the deck runs
 out. Each cycle reshuffles, so the order is never the same twice.
 
 Before adding, check that the new record is not indistinguishable from an
