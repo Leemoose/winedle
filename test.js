@@ -14,7 +14,7 @@ const source = fs.readFileSync('src/game.js', 'utf8');
 const pure = source.split('/* ---------- persistence ---------- */')[0];
 const api = new Function('WINES', pure + `; return {
   compare, puzzleFor, dayNumber, seededShuffle, resolve, suggest, normalize,
-  COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT
+  COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK
 };`)(WINES);
 
 let failures = 0;
@@ -51,6 +51,12 @@ ok('climate stays inside its label range', badClimate.length === 0,
 const badText = WINES.filter(w =>
   !w.name || !w.color || !w.country || !w.region || !w.continent || !w.oak || !w.note);
 ok('no empty text fields', badText.length === 0, badText.map(w => w.name).join(', '));
+
+const badTier = WINES.filter(w => ![1, 2, 3].includes(w.tier));
+ok('every wine has a tier of 1, 2 or 3', badTier.length === 0, badTier.map(w => w.name).join(', '));
+
+[1, 2, 3].forEach(tier => ok('tier ' + tier + ' has enough wines to fill a cycle',
+  api.tierPool(tier).length >= 10, 'only ' + api.tierPool(tier).length));
 
 const badFlavors = WINES.filter(w => !Array.isArray(w.flavors) || w.flavors.length !== 4);
 ok('every wine has exactly four aromas', badFlavors.length === 0,
@@ -135,10 +141,32 @@ const run = [];
 for (let d = 0; d < 400; d++) run.push(api.puzzleFor(d).name);
 ok('every scheduled day yields a wine', run.every(Boolean));
 
-/* Within one pass of the pool, nothing should repeat. */
-const window30 = run.slice(0, 30);
-ok('no repeat inside the first 30 days', new Set(window30).size === window30.length,
-   window30.filter((n, i) => window30.indexOf(n) !== i).join(', '));
+/* Each tier walks its own deck, so nothing should repeat until that tier's
+ * pool is spent - check each tier's own run rather than the mixed sequence. */
+[1, 2, 3].forEach(tier => {
+  const days = [];
+  for (let d = 0; d < 400; d++) if (api.tierForDay(d) === tier) days.push(d);
+  const size = api.tierPool(tier).length;
+  const firstPass = days.slice(0, size).map(d => api.puzzleFor(d).name);
+  ok('tier ' + tier + ' does not repeat within one pass',
+     new Set(firstPass).size === firstPass.length,
+     firstPass.filter((n, i) => firstPass.indexOf(n) !== i).join(', '));
+  ok('tier ' + tier + ' days only draw tier ' + tier + ' wines',
+     days.slice(0, 60).every(d => api.puzzleFor(d).tier === tier));
+});
+
+/* Six days in seven must be approachable. */
+const week = api.TIER_WEEK;
+ok('the week is mostly tiers 1 and 2', week.filter(t => t < 3).length === 6);
+ok('the week includes one specialist day', week.filter(t => t === 3).length === 1);
+
+const sample = [];
+for (let d = 0; d < 70; d++) sample.push(api.puzzleFor(d).tier);
+ok('a ten-week sample is 30/30/10 by tier',
+   sample.filter(t => t === 1).length === 30 &&
+   sample.filter(t => t === 2).length === 30 &&
+   sample.filter(t => t === 3).length === 10,
+   JSON.stringify([1,2,3].map(t => sample.filter(x => x === t).length)));
 
 ok('negative and out-of-range days still resolve', !!api.puzzleFor(0) && !!api.puzzleFor(99999));
 

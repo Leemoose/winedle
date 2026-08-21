@@ -109,12 +109,40 @@ function dayNumber(date) {
   return Math.floor((utc - EPOCH) / 86400000);
 }
 
-/* Shuffle a fresh deck each cycle so nothing repeats until the bank is spent,
+/* The week runs easy, medium, easy, medium, easy, medium, specialist. An
+ * 85-grape bank drawn flat would hand a first-time player Rkatsiteli and lose
+ * them; this keeps six days in seven approachable while the deep cuts still
+ * come round. Tier 3 is always reachable in the archive and in practice. */
+const TIER_WEEK = [1, 2, 1, 2, 1, 2, 3];
+
+function tierPool(tier) {
+  return WINES.filter(w => w.tier === tier);
+}
+
+function tierForDay(day) {
+  return TIER_WEEK[((day % 7) + 7) % 7];
+}
+
+/* How many earlier days drew from this same tier - each tier walks its own
+ * deck, so no tier repeats until its pool is spent. */
+function indexWithinTier(day, tier) {
+  const perWeek = TIER_WEEK.filter(t => t === tier).length;
+  const weeks = Math.floor(day / 7);
+  let within = 0;
+  for (let i = 0; i < day % 7; i++) if (TIER_WEEK[i] === tier) within++;
+  return weeks * perWeek + within;
+}
+
+/* Shuffle a fresh deck each cycle so nothing repeats until the pool is spent,
  * and the order is not guessable from the source order. */
 function puzzleFor(day) {
-  const n = WINES.length;
-  const deck = seededShuffle(WINES, Math.floor(day / n));
-  return deck[((day % n) + n) % n];
+  const d = Math.max(0, day);
+  const tier = tierForDay(d);
+  const pool = tierPool(tier);
+  const n = pool.length;
+  const i = indexWithinTier(d, tier);
+  const deck = seededShuffle(pool, tier * 1000 + Math.floor(i / n));
+  return deck[i % n];
 }
 
 /* ---------- name resolution ---------- */

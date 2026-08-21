@@ -11,6 +11,11 @@
  * WSET does it. Riesling at 1 is pale for a white; Nebbiolo at 1 is pale for
  * a red. It is not a red-vs-white axis - the colour tile already does that.
  *
+ * TIERS: 1 classic (a casual drinker could name it), 2 known to enthusiasts,
+ * 3 specialist. The daily schedule runs 1,2,1,2,1,2,3 across the week so most
+ * days stay winnable for someone who is not studying for an exam; tier 3 gets
+ * one slot a week and is always available in the archive and in practice.
+ *
  * RULE ON country/region: this is the grape's CLASSIC HOME — the reference
  * expression a WSET exam would use — not everywhere it's planted. Chardonnay
  * is grown on six continents; its answer is Burgundy, France. Stated up front
@@ -24,6 +29,7 @@
 const WINES = [
   {
     name: "Cabernet Sauvignon",
+    tier: 1,
     color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
     colorInt: 5,
     body: 5, tannin: 5, acidity: 5, climate: 2,
@@ -34,6 +40,7 @@ const WINES = [
   },
   {
     name: "Merlot",
+    tier: 1,
     color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 3, acidity: 3, climate: 2,
@@ -44,6 +51,7 @@ const WINES = [
   },
   {
     name: "Pinot Noir",
+    tier: 1,
     color: "Red", country: "France", region: "Burgundy", continent: "Europe",
     colorInt: 2,
     body: 2, tannin: 2, acidity: 5, climate: 1,
@@ -54,6 +62,7 @@ const WINES = [
   },
   {
     name: "Syrah",
+    tier: 1,
     color: "Red", country: "France", region: "Northern Rhône", continent: "Europe",
     colorInt: 5,
     body: 5, tannin: 4, acidity: 4, climate: 2,
@@ -64,6 +73,7 @@ const WINES = [
   },
   {
     name: "Nebbiolo",
+    tier: 1,
     color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
     colorInt: 1,
     body: 5, tannin: 5, acidity: 5, climate: 2,
@@ -74,6 +84,7 @@ const WINES = [
   },
   {
     name: "Sangiovese",
+    tier: 1,
     color: "Red", country: "Italy", region: "Tuscany", continent: "Europe",
     colorInt: 3,
     body: 4, tannin: 5, acidity: 5, climate: 3,
@@ -84,6 +95,7 @@ const WINES = [
   },
   {
     name: "Malbec",
+    tier: 1,
     color: "Red", country: "Argentina", region: "Mendoza", continent: "South America",
     colorInt: 5,
     body: 5, tannin: 4, acidity: 3, climate: 3,
@@ -94,6 +106,7 @@ const WINES = [
   },
   {
     name: "Chardonnay",
+    tier: 1,
     color: "White", country: "France", region: "Burgundy", continent: "Europe",
     colorInt: 3,
     body: 4, tannin: 1, acidity: 4, climate: 2,
@@ -104,6 +117,7 @@ const WINES = [
   },
   {
     name: "Riesling",
+    tier: 1,
     color: "White", country: "Germany", region: "Mosel", continent: "Europe",
     colorInt: 1,
     body: 2, tannin: 1, acidity: 5, climate: 1,
@@ -114,6 +128,7 @@ const WINES = [
   },
   {
     name: "Sauvignon Blanc",
+    tier: 1,
     color: "White", country: "France", region: "Loire Valley", continent: "Europe",
     colorInt: 2,
     body: 2, tannin: 1, acidity: 5, climate: 1,
@@ -124,6 +139,7 @@ const WINES = [
   },
   {
     name: "Cabernet Franc",
+    tier: 1,
     color: "Red", country: "France", region: "Loire Valley", continent: "Europe",
     colorInt: 3,
     body: 3, tannin: 3, acidity: 5, climate: 1,
@@ -134,6 +150,7 @@ const WINES = [
   },
   {
     name: "Grenache",
+    tier: 1,
     color: "Red", country: "France", region: "Southern Rhône", continent: "Europe",
     colorInt: 2,
     body: 5, tannin: 2, acidity: 2, climate: 3,
@@ -144,6 +161,7 @@ const WINES = [
   },
   {
     name: "Tempranillo",
+    tier: 1,
     color: "Red", country: "Spain", region: "Rioja", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 4, acidity: 3, climate: 2,
@@ -154,6 +172,7 @@ const WINES = [
   },
   {
     name: "Zinfandel",
+    tier: 1,
     color: "Red", country: "United States", region: "California", continent: "North America",
     colorInt: 4,
     body: 5, tannin: 3, acidity: 3, climate: 3,
@@ -164,6 +183,7 @@ const WINES = [
   },
   {
     name: "Gamay",
+    tier: 1,
     color: "Red", country: "France", region: "Beaujolais", continent: "Europe",
     colorInt: 2,
     body: 2, tannin: 2, acidity: 5, climate: 2,
@@ -174,6 +194,7 @@ const WINES = [
   },
   {
     name: "Chenin Blanc",
+    tier: 1,
     color: "White", country: "France", region: "Loire Valley", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 1,
@@ -184,6 +205,7 @@ const WINES = [
   },
   {
     name: "Viognier",
+    tier: 1,
     color: "White", country: "France", region: "Northern Rhône", continent: "Europe",
     colorInt: 3,
     body: 4, tannin: 1, acidity: 2, climate: 2,
@@ -194,6 +216,7 @@ const WINES = [
   },
   {
     name: "Pinot Gris",
+    tier: 1,
     color: "White", country: "France", region: "Alsace", continent: "Europe",
     colorInt: 3,
     body: 4, tannin: 1, acidity: 3, climate: 2,
@@ -204,6 +227,7 @@ const WINES = [
   },
   {
     name: "Pinot Blanc",
+    tier: 2,
     color: "White", country: "France", region: "Alsace", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 3, climate: 2,
@@ -214,6 +238,7 @@ const WINES = [
   },
   {
     name: "Muscat",
+    tier: 1,
     color: "White", country: "Italy", region: "Piedmont", continent: "Europe",
     colorInt: 2,
     body: 2, tannin: 1, acidity: 4, climate: 2,
@@ -224,6 +249,7 @@ const WINES = [
   },
   {
     name: "Touriga Nacional",
+    tier: 2,
     color: "Red", country: "Portugal", region: "Douro", continent: "Europe",
     colorInt: 5,
     body: 5, tannin: 5, acidity: 4, climate: 3,
@@ -234,6 +260,7 @@ const WINES = [
   },
   {
     name: "Montepulciano",
+    tier: 2,
     color: "Red", country: "Italy", region: "Abruzzo", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 3, acidity: 3, climate: 3,
@@ -244,6 +271,7 @@ const WINES = [
   },
   {
     name: "Gewürztraminer",
+    tier: 1,
     color: "White", country: "France", region: "Alsace", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 1, acidity: 2, climate: 2,
@@ -254,6 +282,7 @@ const WINES = [
   },
   {
     name: "Sémillon",
+    tier: 1,
     color: "White", country: "France", region: "Bordeaux", continent: "Europe",
     colorInt: 3,
     body: 4, tannin: 1, acidity: 3, climate: 2,
@@ -264,6 +293,7 @@ const WINES = [
   },
   {
     name: "Albariño",
+    tier: 2,
     color: "White", country: "Spain", region: "Rías Baixas", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 1,
@@ -274,6 +304,7 @@ const WINES = [
   },
   {
     name: "Grüner Veltliner",
+    tier: 2,
     color: "White", country: "Austria", region: "Wachau", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 1,
@@ -284,6 +315,7 @@ const WINES = [
   },
   {
     name: "Torrontés",
+    tier: 2,
     color: "White", country: "Argentina", region: "Salta", continent: "South America",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 3, climate: 3,
@@ -294,6 +326,7 @@ const WINES = [
   },
   {
     name: "Furmint",
+    tier: 2,
     color: "White", country: "Hungary", region: "Tokaj", continent: "Europe",
     colorInt: 3,
     body: 3, tannin: 1, acidity: 5, climate: 2,
@@ -304,6 +337,7 @@ const WINES = [
   },
   {
     name: "Assyrtiko",
+    tier: 2,
     color: "White", country: "Greece", region: "Santorini", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 3,
@@ -314,6 +348,7 @@ const WINES = [
   },
   {
     name: "Garganega",
+    tier: 2,
     color: "White", country: "Italy", region: "Veneto", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 4, climate: 2,
@@ -324,6 +359,7 @@ const WINES = [
   },
   {
     name: "Verdejo",
+    tier: 2,
     color: "White", country: "Spain", region: "Rueda", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 4, climate: 2,
@@ -334,6 +370,7 @@ const WINES = [
   },
   {
     name: "Cortese",
+    tier: 3,
     color: "White", country: "Italy", region: "Piedmont", continent: "Europe",
     colorInt: 1,
     body: 2, tannin: 1, acidity: 5, climate: 2,
@@ -344,6 +381,7 @@ const WINES = [
   },
   {
     name: "Carmenère",
+    tier: 2,
     color: "Red", country: "Chile", region: "Colchagua", continent: "South America",
     colorInt: 5,
     body: 4, tannin: 4, acidity: 3, climate: 3,
@@ -354,6 +392,7 @@ const WINES = [
   },
   {
     name: "Pinotage",
+    tier: 2,
     color: "Red", country: "South Africa", region: "Stellenbosch", continent: "Africa",
     colorInt: 5,
     body: 4, tannin: 4, acidity: 4, climate: 3,
@@ -364,6 +403,7 @@ const WINES = [
   },
   {
     name: "Mourvèdre",
+    tier: 2,
     color: "Red", country: "France", region: "Bandol", continent: "Europe",
     colorInt: 5,
     body: 5, tannin: 5, acidity: 4, climate: 3,
@@ -374,6 +414,7 @@ const WINES = [
   },
   {
     name: "Corvina",
+    tier: 2,
     color: "Red", country: "Italy", region: "Veneto", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 2, acidity: 5, climate: 2,
@@ -384,6 +425,7 @@ const WINES = [
   },
   {
     name: "Nerello Mascalese",
+    tier: 2,
     color: "Red", country: "Italy", region: "Etna", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 4, acidity: 5, climate: 3,
@@ -394,6 +436,7 @@ const WINES = [
   },
   {
     name: "Aglianico",
+    tier: 2,
     color: "Red", country: "Italy", region: "Campania", continent: "Europe",
     colorInt: 5,
     body: 5, tannin: 5, acidity: 5, climate: 3,
@@ -404,6 +447,7 @@ const WINES = [
   },
   {
     name: "Nero d’Avola",
+    tier: 2,
     color: "Red", country: "Italy", region: "Sicily", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 4, acidity: 4, climate: 3,
@@ -414,6 +458,7 @@ const WINES = [
   },
   {
     name: "Barbera",
+    tier: 1,
     color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
     colorInt: 4,
     body: 3, tannin: 2, acidity: 5, climate: 2,
@@ -424,6 +469,7 @@ const WINES = [
   },
   {
     name: "Petit Verdot",
+    tier: 2,
     color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
     colorInt: 5,
     body: 5, tannin: 5, acidity: 4, climate: 2,
@@ -434,6 +480,7 @@ const WINES = [
   },
   {
     name: "Vermentino",
+    tier: 2,
     color: "White", country: "Italy", region: "Sardinia", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 4, climate: 3,
@@ -444,6 +491,7 @@ const WINES = [
   },
   {
     name: "Marsanne",
+    tier: 2,
     color: "White", country: "France", region: "Northern Rhône", continent: "Europe",
     colorInt: 3,
     body: 5, tannin: 1, acidity: 1, climate: 2,
@@ -454,6 +502,7 @@ const WINES = [
   },
   {
     name: "Roussanne",
+    tier: 2,
     color: "White", country: "France", region: "Northern Rhône", continent: "Europe",
     colorInt: 2,
     body: 4, tannin: 1, acidity: 3, climate: 2,
@@ -464,6 +513,7 @@ const WINES = [
   },
   {
     name: "Melon de Bourgogne",
+    tier: 2,
     color: "White", country: "France", region: "Loire Valley", continent: "Europe",
     colorInt: 1,
     body: 2, tannin: 1, acidity: 5, climate: 1,
@@ -474,6 +524,7 @@ const WINES = [
   },
   {
     name: "Godello",
+    tier: 3,
     color: "White", country: "Spain", region: "Valdeorras", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 4, climate: 2,
@@ -484,6 +535,7 @@ const WINES = [
   },
   {
     name: "Trebbiano",
+    tier: 2,
     color: "White", country: "Italy", region: "Abruzzo", continent: "Europe",
     colorInt: 1,
     body: 2, tannin: 1, acidity: 5, climate: 3,
@@ -494,6 +546,7 @@ const WINES = [
   },
   {
     name: "Xinomavro",
+    tier: 3,
     color: "Red", country: "Greece", region: "Naoussa", continent: "Europe",
     colorInt: 2,
     body: 4, tannin: 5, acidity: 5, climate: 2,
@@ -504,6 +557,7 @@ const WINES = [
   },
   {
     name: "Agiorgitiko",
+    tier: 3,
     color: "Red", country: "Greece", region: "Nemea", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 3, acidity: 3, climate: 3,
@@ -514,6 +568,7 @@ const WINES = [
   },
   {
     name: "Blaufränkisch",
+    tier: 2,
     color: "Red", country: "Austria", region: "Burgenland", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 4, acidity: 5, climate: 2,
@@ -524,6 +579,7 @@ const WINES = [
   },
   {
     name: "Saperavi",
+    tier: 3,
     color: "Red", country: "Georgia", region: "Kakheti", continent: "Asia",
     colorInt: 5,
     body: 5, tannin: 4, acidity: 5, climate: 2,
@@ -534,6 +590,7 @@ const WINES = [
   },
   {
     name: "Tannat",
+    tier: 2,
     color: "Red", country: "Uruguay", region: "Canelones", continent: "South America",
     colorInt: 5,
     body: 5, tannin: 5, acidity: 4, climate: 2,
@@ -544,6 +601,7 @@ const WINES = [
   },
   {
     name: "Cinsault",
+    tier: 2,
     color: "Red", country: "France", region: "Languedoc", continent: "Europe",
     colorInt: 2,
     body: 2, tannin: 2, acidity: 3, climate: 3,
@@ -554,6 +612,7 @@ const WINES = [
   },
   {
     name: "Carignan",
+    tier: 2,
     color: "Red", country: "France", region: "Languedoc", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 4, acidity: 4, climate: 3,
@@ -564,6 +623,7 @@ const WINES = [
   },
   {
     name: "Mencía",
+    tier: 3,
     color: "Red", country: "Spain", region: "Bierzo", continent: "Europe",
     colorInt: 3,
     body: 3, tannin: 3, acidity: 5, climate: 2,
@@ -574,6 +634,7 @@ const WINES = [
   },
   {
     name: "Fiano",
+    tier: 2,
     color: "White", country: "Italy", region: "Campania", continent: "Europe",
     colorInt: 3,
     body: 4, tannin: 1, acidity: 4, climate: 3,
@@ -584,6 +645,7 @@ const WINES = [
   },
   {
     name: "Verdicchio",
+    tier: 2,
     color: "White", country: "Italy", region: "Marche", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 2,
@@ -594,6 +656,7 @@ const WINES = [
   },
   {
     name: "Silvaner",
+    tier: 3,
     color: "White", country: "Germany", region: "Franken", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 4, climate: 1,
@@ -604,6 +667,7 @@ const WINES = [
   },
   {
     name: "Aligoté",
+    tier: 3,
     color: "White", country: "France", region: "Burgundy", continent: "Europe",
     colorInt: 2,
     body: 2, tannin: 1, acidity: 5, climate: 1,
@@ -614,6 +678,7 @@ const WINES = [
   },
   {
     name: "Picpoul",
+    tier: 3,
     color: "White", country: "France", region: "Languedoc", continent: "Europe",
     colorInt: 2,
     body: 2, tannin: 1, acidity: 5, climate: 3,
@@ -624,6 +689,7 @@ const WINES = [
   },
   {
     name: "Macabeo",
+    tier: 2,
     color: "White", country: "Spain", region: "Penedès", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 3, climate: 2,
@@ -634,6 +700,7 @@ const WINES = [
   },
   {
     name: "Pedro Ximénez",
+    tier: 2,
     color: "White", country: "Spain", region: "Jerez", continent: "Europe",
     colorInt: 3,
     body: 5, tannin: 1, acidity: 2, climate: 4,
@@ -644,6 +711,7 @@ const WINES = [
   },
   {
     name: "Dolcetto",
+    tier: 2,
     color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
     colorInt: 4,
     body: 3, tannin: 4, acidity: 2, climate: 2,
@@ -654,6 +722,7 @@ const WINES = [
   },
   {
     name: "Lagrein",
+    tier: 3,
     color: "Red", country: "Italy", region: "Alto Adige", continent: "Europe",
     colorInt: 5,
     body: 4, tannin: 4, acidity: 4, climate: 1,
@@ -664,6 +733,7 @@ const WINES = [
   },
   {
     name: "Sagrantino",
+    tier: 3,
     color: "Red", country: "Italy", region: "Umbria", continent: "Europe",
     colorInt: 5,
     body: 5, tannin: 5, acidity: 4, climate: 3,
@@ -674,6 +744,7 @@ const WINES = [
   },
   {
     name: "Negroamaro",
+    tier: 3,
     color: "Red", country: "Italy", region: "Puglia", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 3, acidity: 3, climate: 3,
@@ -684,6 +755,7 @@ const WINES = [
   },
   {
     name: "Bobal",
+    tier: 3,
     color: "Red", country: "Spain", region: "Utiel-Requena", continent: "Europe",
     colorInt: 5,
     body: 4, tannin: 4, acidity: 5, climate: 3,
@@ -694,6 +766,7 @@ const WINES = [
   },
   {
     name: "Zweigelt",
+    tier: 2,
     color: "Red", country: "Austria", region: "Niederösterreich", continent: "Europe",
     colorInt: 3,
     body: 3, tannin: 2, acidity: 4, climate: 2,
@@ -704,6 +777,7 @@ const WINES = [
   },
   {
     name: "Pinot Meunier",
+    tier: 2,
     color: "Red", country: "France", region: "Champagne", continent: "Europe",
     colorInt: 2,
     body: 2, tannin: 2, acidity: 5, climate: 1,
@@ -714,6 +788,7 @@ const WINES = [
   },
   {
     name: "Petite Sirah",
+    tier: 2,
     color: "Red", country: "United States", region: "California", continent: "North America",
     colorInt: 5,
     body: 5, tannin: 5, acidity: 3, climate: 3,
@@ -724,6 +799,7 @@ const WINES = [
   },
   {
     name: "Grillo",
+    tier: 3,
     color: "White", country: "Italy", region: "Sicily", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 4, climate: 3,
@@ -734,6 +810,7 @@ const WINES = [
   },
   {
     name: "Falanghina",
+    tier: 3,
     color: "White", country: "Italy", region: "Campania", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 3,
@@ -744,6 +821,7 @@ const WINES = [
   },
   {
     name: "Arneis",
+    tier: 3,
     color: "White", country: "Italy", region: "Piedmont", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 3, climate: 2,
@@ -754,6 +832,7 @@ const WINES = [
   },
   {
     name: "Encruzado",
+    tier: 3,
     color: "White", country: "Portugal", region: "Dão", continent: "Europe",
     colorInt: 2,
     body: 4, tannin: 1, acidity: 4, climate: 2,
@@ -764,6 +843,7 @@ const WINES = [
   },
   {
     name: "Petit Manseng",
+    tier: 3,
     color: "White", country: "France", region: "Jurançon", continent: "Europe",
     colorInt: 3,
     body: 4, tannin: 1, acidity: 5, climate: 2,
@@ -774,6 +854,7 @@ const WINES = [
   },
   {
     name: "Rkatsiteli",
+    tier: 3,
     color: "White", country: "Georgia", region: "Kakheti", continent: "Asia",
     colorInt: 3,
     body: 3, tannin: 1, acidity: 5, climate: 2,
@@ -784,6 +865,7 @@ const WINES = [
   },
   {
     name: "Chasselas",
+    tier: 3,
     color: "White", country: "Switzerland", region: "Lavaux", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 1, acidity: 2, climate: 2,
@@ -794,6 +876,7 @@ const WINES = [
   },
   {
     name: "Teroldego",
+    tier: 3,
     color: "Red", country: "Italy", region: "Trentino", continent: "Europe",
     colorInt: 5,
     body: 4, tannin: 3, acidity: 5, climate: 2,
@@ -804,6 +887,7 @@ const WINES = [
   },
   {
     name: "Frappato",
+    tier: 3,
     color: "Red", country: "Italy", region: "Sicily", continent: "Europe",
     colorInt: 2,
     body: 2, tannin: 2, acidity: 5, climate: 3,
@@ -814,6 +898,7 @@ const WINES = [
   },
   {
     name: "Baga",
+    tier: 3,
     color: "Red", country: "Portugal", region: "Bairrada", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 5, acidity: 5, climate: 2,
@@ -824,6 +909,7 @@ const WINES = [
   },
   {
     name: "Graciano",
+    tier: 3,
     color: "Red", country: "Spain", region: "Rioja", continent: "Europe",
     colorInt: 4,
     body: 4, tannin: 4, acidity: 5, climate: 2,
@@ -834,6 +920,7 @@ const WINES = [
   },
   {
     name: "Listán Negro",
+    tier: 3,
     color: "Red", country: "Spain", region: "Canary Islands", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 2, acidity: 4, climate: 3,
@@ -844,6 +931,7 @@ const WINES = [
   },
   {
     name: "Trousseau",
+    tier: 3,
     color: "Red", country: "France", region: "Jura", continent: "Europe",
     colorInt: 2,
     body: 3, tannin: 3, acidity: 4, climate: 1,
@@ -854,6 +942,7 @@ const WINES = [
   },
   {
     name: "Dornfelder",
+    tier: 3,
     color: "Red", country: "Germany", region: "Pfalz", continent: "Europe",
     colorInt: 5,
     body: 3, tannin: 3, acidity: 4, climate: 1,
@@ -864,6 +953,7 @@ const WINES = [
   },
   {
     name: "Bonarda",
+    tier: 3,
     color: "Red", country: "Argentina", region: "Mendoza", continent: "South America",
     colorInt: 4,
     body: 4, tannin: 3, acidity: 3, climate: 3,
