@@ -54,13 +54,36 @@ function cmpOrd(g, a, key) {
   return { state: Math.abs(g - a) === 1 ? 'near' : 'miss', text, arrow };
 }
 
+/* Aromas score in two steps: an exact term, or the right family with the wrong
+ * term. Placing the family is real progress in tasting, and treating Lemon
+ * against Citrus as a total miss threw that information away. */
 function cmpSet(g, a) {
   const shared = g.filter(f => a.includes(f));
   if (shared.length === a.length && g.length === a.length) {
-    return { state: 'hit', text: 'all ' + a.length, detail: shared.join(', ') };
+    return { state: 'hit', text: 'all ' + a.length, shared: shared, kin: [],
+             detail: shared.join(', ') };
   }
-  if (shared.length === 0) return { state: 'miss', text: 'none', detail: '' };
-  return { state: 'near', text: shared.length + ' of ' + a.length, detail: shared.join(', ') };
+
+  const missedByAnswer = a.filter(f => !shared.includes(f));
+  const kin = [];
+  const claimed = [];
+  g.filter(f => !shared.includes(f)).forEach(f => {
+    const fam = AROMA_FAMILY[f];
+    const match = missedByAnswer.find(x => AROMA_FAMILY[x] === fam && !claimed.includes(x));
+    if (match) { claimed.push(match); kin.push({ term: f, family: fam }); }
+  });
+
+  const detail = [
+    shared.length ? shared.join(', ') : '',
+    kin.length ? kin.map(k => k.term + ' \u2192 ' + k.family.toLowerCase()).join(', ') : ''
+  ].filter(Boolean).join('; ');
+
+  if (!shared.length && !kin.length) return { state: 'miss', text: 'none', shared: [], kin: [], detail: '' };
+  if (!shared.length) {
+    return { state: 'near', text: kin.length + ' related', shared: [], kin: kin, detail: detail };
+  }
+  return { state: 'near', text: shared.length + ' of ' + a.length,
+           shared: shared, kin: kin, detail: detail };
 }
 
 function compare(guess, answer) {
@@ -418,10 +441,19 @@ function hintEl(hint) {
  * without this a phone is simply told less about the same guess. */
 function aromaLine(tiles) {
   const t = tiles.find(x => x.label === 'Aromas');
-  if (!t || t.state === 'miss' || !t.detail) return null;
+  if (!t || t.state === 'miss') return null;
+  const parts = [];
+  if (t.shared && t.shared.length) {
+    parts.push('Shared: ' + t.shared.join(', ').toLowerCase() + '.');
+  }
+  if (t.kin && t.kin.length) {
+    parts.push('Right family, wrong note: ' +
+      t.kin.map(k => k.term.toLowerCase() + ' (' + k.family.toLowerCase() + ')').join(', ') + '.');
+  }
+  if (!parts.length) return null;
   const el = document.createElement('p');
   el.className = 'row__shared';
-  el.textContent = 'Shared aromas: ' + t.detail.toLowerCase() + '.';
+  el.textContent = parts.join(' ');
   return el;
 }
 

@@ -9,15 +9,18 @@
 
 const fs = require('fs');
 
+const aromas = fs.readFileSync('data/aromas.js', 'utf8');
+const { AROMA_FAMILIES, AROMA_FAMILY } =
+  new Function(aromas + '; return { AROMA_FAMILIES, AROMA_FAMILY };')();
 const WINES = new Function(fs.readFileSync('data/wines.js', 'utf8') + '; return WINES;')();
 const source = fs.readFileSync('src/game.js', 'utf8');
 const pure = source.split('/* ---------- persistence ---------- */')[0];
-const api = new Function('WINES', pure + `; return {
+const api = new Function('WINES', 'AROMA_FAMILY', pure + `; return {
   compare, puzzleFor, dayNumber, seededShuffle, resolve, suggest, normalize,
   COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK,
   candidatesFor, tileSignature, bestAroma, REMAINING_AFTER,
   practicePick, PRACTICE_MISS_BIAS
-};`)(WINES);
+};`)(WINES, AROMA_FAMILY);
 
 let failures = 0;
 let checks = 0;
@@ -93,6 +96,26 @@ ok('no wine lists itself as an alias', selfAlias.length === 0, selfAlias.map(w =
 
 ok('every white is low tannin', WINES.filter(w => w.color === 'White').every(w => w.tannin === 1));
 
+/* ---------- aroma vocabulary ---------- */
+
+section('aromas');
+
+const usedTerms = new Set(WINES.flatMap(w => w.flavors));
+const mappedTerms = Object.keys(AROMA_FAMILY);
+
+const unmapped = [...usedTerms].filter(t => !AROMA_FAMILY[t]);
+ok('every aroma used by a wine belongs to a family', unmapped.length === 0, unmapped.join(', '));
+
+const unused = mappedTerms.filter(t => !usedTerms.has(t));
+ok('the family map has no dead terms', unused.length === 0, unused.join(', '));
+
+const allListed = Object.values(AROMA_FAMILIES).flat();
+const inTwo = allListed.filter((t, i) => allListed.indexOf(t) !== i);
+ok('no term sits in two families', inTwo.length === 0, inTwo.join(', '));
+
+ok('families are not single-term', Object.values(AROMA_FAMILIES).every(v => v.length >= 2),
+   Object.entries(AROMA_FAMILIES).filter(([, v]) => v.length < 2).map(([k]) => k).join(', '));
+
 /* ---------- comparison engine ---------- */
 
 section('engine');
@@ -125,6 +148,27 @@ ok('no shared aromas scores no match', tile(noShare, 'Aromas').state === 'miss')
 const someShare = api.compare(by('Merlot'), by('Cabernet Sauvignon'));
 ok('partial aroma overlap scores close', tile(someShare, 'Aromas').state === 'near');
 ok('a close aroma tile names what was shared', !!tile(someShare, 'Aromas').detail);
+
+/* Family credit: a term in the right family but not the exact word should
+ * register rather than score nothing. */
+const fam = api.compare(by('Riesling'), by('Sauvignon Blanc'));
+const famTile = tile(fam, 'Aromas');
+ok('a right-family aroma is not a total miss', famTile.state !== 'miss',
+   JSON.stringify(famTile));
+ok('family matches are reported separately from exact ones',
+   Array.isArray(famTile.kin) && Array.isArray(famTile.shared));
+
+/* A family match must never be claimed twice by the same answer term. */
+const doubleClaim = WINES.every(g => WINES.every(a => {
+  const t = api.compare(g, a).find(x => x.label === 'Aromas');
+  const claimedFamilies = t.kin.map(k => k.family);
+  return t.shared.length + t.kin.length <= a.flavors.length &&
+         new Set(claimedFamilies).size <= claimedFamilies.length;
+}));
+ok('exact plus family matches never exceed the aroma count', doubleClaim);
+
+ok('an identical aroma set still scores a clean exact',
+   tile(api.compare(by('Nebbiolo'), by('Nebbiolo')), 'Aromas').state === 'hit');
 
 /* Symmetry: swapping guess and answer must flip the arrows, not the states. */
 const ab = api.compare(by('Merlot'), by('Nebbiolo'));

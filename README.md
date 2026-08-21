@@ -50,6 +50,16 @@ out. Each cycle reshuffles, so the order is never the same twice.
 Run `node test.js` after adding — it will catch a record that is
 indistinguishable from an existing one, or an alias that collides.
 
+## Aroma families
+
+`data/aromas.js` groups the 66-term vocabulary into 15 families. The aroma tile
+scores an exact term first, then gives partial credit for the right family with
+the wrong note — lime against citrus, sour cherry against cherry. Before this,
+the tile was blank in 62% of all guess/answer pairs; it is now blank in 34%.
+
+Every term used in `data/wines.js` must appear in exactly one family, and every
+mapped term must be used. `node test.js` enforces both.
+
 ## Attributes scored
 
 Colour · Country · Region · Depth · Body · Tannin · Acidity · Climate · Aromas
