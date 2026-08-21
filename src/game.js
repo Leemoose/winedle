@@ -296,6 +296,7 @@ function practicePick(rand, misses) {
 const KEY_STATE = 'winedle:state';
 const KEY_STATS = 'winedle:stats';
 const KEY_MISSES = 'winedle:misses';
+const KEY_MET = 'winedle:met';
 
 function readJSON(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) || fallback; }
@@ -559,12 +560,21 @@ function shareText() {
   return 'Winedle #' + DAY + '  ' + score + '\n\n' + grid + '\n\n' + url;
 }
 
-/* What you missed comes back sooner in practice; what you got, stops nagging. */
+/* What you missed comes back sooner in practice; what you got, stops nagging.
+ * Solves are also tallied permanently - a streak says how consistent you have
+ * been, but the tally says which of the bank you can actually name, which is
+ * the part worth knowing if you are revising. */
 function recordOutcome(won) {
   const misses = readJSON(KEY_MISSES, {});
   if (won) delete misses[ANSWER.name];
   else misses[ANSWER.name] = (misses[ANSWER.name] || 0) + 1;
   writeJSON(KEY_MISSES, misses);
+
+  if (won) {
+    const met = readJSON(KEY_MET, {});
+    met[ANSWER.name] = (met[ANSWER.name] || 0) + 1;
+    writeJSON(KEY_MET, met);
+  }
 }
 
 function showEnd() {
@@ -759,8 +769,36 @@ function renderStats() {
   }).join('');
 }
 
+/* The bank, alphabetically, marked with what you have solved. Every name is
+ * already reachable through the typeahead, so listing the unmet ones gives
+ * nothing away - it just makes the gap visible. */
+function renderMet() {
+  const met = readJSON(KEY_MET, {});
+  const solved = WINES.filter(w => met[w.name]);
+  $('#met-count').textContent = solved.length + ' of ' + WINES.length +
+    ' (' + Math.round((solved.length / WINES.length) * 100) + '%)';
+
+  const list = $('#met-list');
+  list.innerHTML = '';
+  WINES.slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach(w => {
+      const times = met[w.name] || 0;
+      const li = document.createElement('li');
+      li.className = 'met' + (times ? ' is-met' : '');
+      const name = document.createElement('span');
+      name.textContent = w.name;
+      const tally = document.createElement('span');
+      tally.className = 'met__tally';
+      tally.textContent = times > 1 ? '\u00d7' + times : times ? '\u2713' : '';
+      li.appendChild(name);
+      li.appendChild(tally);
+      list.appendChild(li);
+    });
+}
+
 const statsDialog = $('#stats-dialog');
-$('#stats-open').addEventListener('click', () => { renderStats(); statsDialog.showModal(); });
+$('#stats-open').addEventListener('click', () => { renderStats(); renderMet(); statsDialog.showModal(); });
 $('#stats-close').addEventListener('click', () => statsDialog.close());
 statsDialog.addEventListener('click', e => { if (e.target === statsDialog) statsDialog.close(); });
 

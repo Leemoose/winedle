@@ -93,6 +93,22 @@ split 22/35/28. The daily week runs `1,2,1,2,1,2,3` — six approachable days
 and one deep cut — so an 85-grape bank does not hand a first-time player
 Rkatsiteli. Each tier walks its own deck and does not repeat until spent.
 
+## Stored state
+
+| Key | What it holds |
+|---|---|
+| `winedle:state` | today's board |
+| `winedle:state:<n>` | an archived day |
+| `winedle:state:practice` | the current practice wine |
+| `winedle:state:w:<token>` | a challenge |
+| `winedle:stats` | played, wins, streak, guess distribution |
+| `winedle:misses` | wines failed, used to weight practice |
+| `winedle:met` | wines solved and how often — the study record |
+
+`winedle:met` is what the Cellar book's "Wines met" list reads. A streak says
+how consistent you have been; the tally says which of the bank you can
+actually name.
+
 ## Archive
 
 `?d=<n>` replays any past puzzle, clamped to the schedule's range. Archived
