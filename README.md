@@ -35,7 +35,7 @@ argue with the tiles:
 - **country/region is the grape's classic home**, not everywhere it is planted.
 - **colorInt is judged within the wine's own colour category**, WSET-style.
 
-The bank currently holds 55 grapes — roughly two months before the deck runs
+The bank currently holds 70 grapes — roughly ten weeks before the deck runs
 out. Each cycle reshuffles, so the order is never the same twice.
 
 Before adding, check that the new record is not indistinguishable from an
@@ -52,3 +52,14 @@ Colour · Country · Region · Depth · Body · Tannin · Acidity · Climate · 
 
 Oxblood = exact. Amber = one step off, same continent, or shared aromas.
 Blank = no match. Arrows on structural tiles point toward the answer.
+
+## Hints
+
+A guess scoring `HINT_AT` (6) or more exact tiles is close enough that the grid
+stops being informative. Those rows reveal one aroma the answer carries and the
+guess did not — never the same one twice, falling back to oak treatment once the
+aromas are spent. Hints are derived at render time from the guess list, so they
+survive a reload and cost nothing to store.
+
+Raising `HINT_AT` in `src/game.js` makes them rarer; at 7 the hint can only
+fire on 20% of answers, at 6 on 69%.
