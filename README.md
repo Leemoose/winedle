@@ -74,6 +74,12 @@ Blank = no match. Arrows on structural tiles point toward the answer.
 | `/` | the daily puzzle |
 | `/?d=<n>` | an archived day |
 | `/?mode=practice` | unlimited random wines |
+| `/?w=<token>` | a challenge link for one specific wine |
+
+Challenge tokens are URL-safe base64 of the grape name — enough that the answer
+is not sitting in plain text in the address bar, not a security measure. The
+"Challenge a friend" button on the end panel copies one for the wine just
+played, from any mode.
 
 Practice draws from the whole bank regardless of tier, leans toward wines you
 have previously failed (`PRACTICE_MISS_BIAS`), and touches neither the streak
@@ -93,6 +99,19 @@ Rkatsiteli. Each tier walks its own deck and does not repeat until spent.
 plays are stored under their own key (`winedle:state:<n>`), so a replay never
 overwrites the live puzzle and never moves the streak. The index in the page
 lists the last 30 days.
+
+## Installing
+
+`manifest.webmanifest` plus `sw.js` make it installable and playable offline.
+The service worker is deliberately **network-first**: cache-first would be
+faster but would pin players to a stale answer bank, and a wrong wine is a
+worse failure than a slow load. Bump `CACHE` in `sw.js` when you want old
+caches cleared.
+
+Icons are captured from `assets/icon-card.html` the same way as the social
+card, then
+
+    magick <capture> -crop 840x840+0+0 +repage -resize 512x512 assets/icon-512.png
 
 ## Social card
 

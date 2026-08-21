@@ -248,6 +248,33 @@ function bestAroma(guess, answer, revealed, pool) {
   return best;
 }
 
+/* A challenge link carries the wine in the URL. Base64 rather than the plain
+ * name so the answer is not sitting in the address bar, URL-safe so it
+ * survives being pasted into a chat window, and UTF-8 aware because btoa alone
+ * throws on Nero d'Avola's typographic apostrophe. */
+function encodeName(name) {
+  const bytes = new TextEncoder().encode(name);
+  let binary = '';
+  bytes.forEach(b => { binary += String.fromCharCode(b); });
+  return btoa(binary).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function decodeName(token) {
+  try {
+    const padded = token.replace(/-/g, '+').replace(/_/g, '/');
+    const binary = atob(padded + '='.repeat((4 - padded.length % 4) % 4));
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  } catch (e) {
+    return null;
+  }
+}
+
+function wineFromToken(token) {
+  const name = token && decodeName(token);
+  return (name && WINES.find(w => w.name === name)) || null;
+}
+
 /* Practice draws at random from the whole bank, but leans toward wines you
  * have already failed - a daily puzzle is a habit, revision needs volume and
  * repetition of the things you got wrong. Takes its randomness as an argument
@@ -308,14 +335,17 @@ const TODAY = dayNumber();
 /* ?d=<n> replays an archived puzzle. Clamped to the schedule's own range so a
  * hand-edited URL cannot land on an undefined day. */
 const query = new URLSearchParams(location.search);
-const IS_PRACTICE = query.get('mode') === 'practice';
+const CHALLENGE = wineFromToken(query.get('w'));
+const IS_CHALLENGE = !!CHALLENGE;
+const IS_PRACTICE = !IS_CHALLENGE && query.get('mode') === 'practice';
 const asked = parseInt(query.get('d'), 10);
 const DAY = Number.isInteger(asked) ? Math.min(Math.max(asked, 0), TODAY) : TODAY;
 const IS_ARCHIVE = DAY !== TODAY;
 
 /* Archived plays get their own slot, so replaying one never overwrites the
  * live puzzle and never touches the streak. */
-const STATE_KEY = IS_PRACTICE ? KEY_STATE + ':practice'
+const STATE_KEY = IS_CHALLENGE ? KEY_STATE + ':w:' + query.get('w')
+  : IS_PRACTICE ? KEY_STATE + ':practice'
   : IS_ARCHIVE ? KEY_STATE + ':' + DAY
   : KEY_STATE;
 
@@ -324,9 +354,15 @@ function dateForDay(d) {
 }
 
 let state = readJSON(STATE_KEY, null);
-const stateFits = state && (IS_PRACTICE ? state.mode === 'practice' : state.day === DAY);
+const stateFits = state && (
+  IS_CHALLENGE ? state.answer === CHALLENGE.name
+  : IS_PRACTICE ? state.mode === 'practice'
+  : state.day === DAY);
+
 if (!stateFits) {
-  state = IS_PRACTICE
+  state = IS_CHALLENGE
+    ? { mode: 'challenge', guesses: [], status: 'playing', answer: CHALLENGE.name }
+    : IS_PRACTICE
     ? { mode: 'practice', guesses: [], status: 'playing',
         answer: practicePick(Math.random, readJSON(KEY_MISSES, {})).name }
     : { day: DAY, guesses: [], status: 'playing', answer: puzzleFor(DAY).name };
@@ -534,7 +570,7 @@ function recordOutcome(won) {
 function showEnd() {
   const won = state.status === 'won';
   recordOutcome(won);
-  const stats = recordResult(won, state.guesses.length, DAY, !IS_ARCHIVE && !IS_PRACTICE);
+  const stats = recordResult(won, state.guesses.length, DAY, !IS_ARCHIVE && !IS_PRACTICE && !IS_CHALLENGE);
   const pct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
 
   endPanel.innerHTML = '';
@@ -564,7 +600,7 @@ function showEnd() {
 
   const bar = document.createElement('div');
   bar.className = 'stats';
-  if (IS_PRACTICE) bar.hidden = true;
+  if (IS_PRACTICE || IS_CHALLENGE) bar.hidden = true;
   bar.innerHTML =
     '<div><strong>' + stats.played + '</strong><span>Played</span></div>' +
     '<div><strong>' + pct + '%</strong><span>Won</span></div>' +
@@ -572,7 +608,12 @@ function showEnd() {
     '<div><strong>' + stats.maxStreak + '</strong><span>Best</span></div>';
   endPanel.appendChild(bar);
 
-  if (IS_PRACTICE) {
+  if (IS_CHALLENGE) {
+    const back = document.createElement('p');
+    back.className = 'countdown';
+    back.innerHTML = '<a href="' + SELF + '">Play today\u2019s wine</a>';
+    endPanel.appendChild(back);
+  } else if (IS_PRACTICE) {
     const again = document.createElement('button');
     again.className = 'share';
     again.textContent = 'Another wine';
@@ -593,9 +634,25 @@ function showEnd() {
     startCountdown(clock);
   }
 
-  /* Nothing to share from practice: the grid would be stamped with a daily
-   * puzzle number it does not belong to. */
-  if (IS_PRACTICE) return;
+  /* Pass this exact wine on to someone else. Works from any mode, because the
+   * wine travels in the link rather than depending on the date. */
+  const challenge = document.createElement('button');
+  challenge.className = 'share share--ghost';
+  challenge.textContent = 'Challenge a friend';
+  challenge.addEventListener('click', () => {
+    const link = SHARE_URL + '?w=' + encodeName(ANSWER.name);
+    const done = () => {
+      challenge.textContent = 'Link copied';
+      setTimeout(() => { challenge.textContent = 'Challenge a friend'; }, 1600);
+    };
+    if (navigator.clipboard) navigator.clipboard.writeText(link).then(done, done);
+    else done();
+  });
+  endPanel.appendChild(challenge);
+
+  /* Nothing to share from practice or a challenge: the grid would be stamped
+   * with a daily puzzle number it does not belong to. */
+  if (IS_PRACTICE || IS_CHALLENGE) return;
 
   const btn = document.createElement('button');
   btn.className = 'share';
@@ -802,7 +859,10 @@ input.addEventListener('keydown', e => {
 
 input.addEventListener('blur', () => setTimeout(() => renderSuggestions([]), 120));
 
-if (IS_PRACTICE) {
+if (IS_CHALLENGE) {
+  $('#puzzle-no').textContent = 'Challenge';
+  $('#puzzle-date').textContent = 'Sent by a friend';
+} else if (IS_PRACTICE) {
   $('#puzzle-no').textContent = 'Practice';
   $('#puzzle-date').textContent = 'No streak, no limit';
 } else {
@@ -815,6 +875,20 @@ $('#mode-link').href = IS_PRACTICE ? SELF : SELF + '?mode=practice';
 if (IS_ARCHIVE) document.body.classList.add('is-archive');
 renderArchive();
 renderArchiveNav();
+
+/* A newcomer otherwise lands on a bare input with no idea what is wanted. */
+if (!readJSON(KEY_STATS, null) && !state.guesses.length) {
+  const howto = document.querySelector('.howto:not(.archive)');
+  if (howto) howto.open = true;
+}
+
+/* Offline play and a home-screen icon. Registration is best-effort: it fails
+ * harmlessly from file:// and from the portable single-file copy. */
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 
 if (state.status !== 'playing') {
   input.disabled = true;

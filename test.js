@@ -19,7 +19,7 @@ const api = new Function('WINES', 'AROMA_FAMILY', pure + `; return {
   compare, puzzleFor, dayNumber, seededShuffle, resolve, suggest, normalize,
   COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK,
   candidatesFor, tileSignature, bestAroma, REMAINING_AFTER,
-  practicePick, PRACTICE_MISS_BIAS
+  practicePick, PRACTICE_MISS_BIAS, encodeName, decodeName, wineFromToken
 };`)(WINES, AROMA_FAMILY);
 
 let failures = 0;
@@ -319,6 +319,32 @@ ok('the practice draw always returns a real wine',
 
 ok('the miss bias leaves room for new wines',
    api.PRACTICE_MISS_BIAS > 0 && api.PRACTICE_MISS_BIAS < 1);
+
+/* ---------- challenge links ---------- */
+
+section('challenge');
+
+const roundTrips = WINES.filter(w => api.decodeName(api.encodeName(w.name)) !== w.name);
+ok('every name survives a link round trip', roundTrips.length === 0,
+   roundTrips.map(w => w.name).join(', '));
+
+/* btoa alone throws on anything above Latin-1, which the bank contains. */
+ok('a typographic apostrophe survives', api.decodeName(api.encodeName('Nero d\u2019Avola')) === 'Nero d\u2019Avola');
+ok('an umlaut survives', api.decodeName(api.encodeName('Gewürztraminer')) === 'Gewürztraminer');
+
+const tokens = WINES.map(w => api.encodeName(w.name));
+ok('tokens are URL-safe', tokens.every(t => /^[A-Za-z0-9\-_]+$/.test(t)),
+   tokens.filter(t => !/^[A-Za-z0-9\-_]+$/.test(t)).join(', '));
+ok('the answer is not readable in the token',
+   !tokens.some((t, i) => t.toLowerCase().includes(WINES[i].name.slice(0, 5).toLowerCase())));
+ok('tokens are unique', new Set(tokens).size === tokens.length);
+
+ok('a token resolves back to its wine',
+   api.wineFromToken(api.encodeName('Nebbiolo')) === by('Nebbiolo'));
+ok('a malformed token resolves to nothing', api.wineFromToken('!!!not-base64!!!') === null);
+ok('a valid token for an unknown grape resolves to nothing',
+   api.wineFromToken(api.encodeName('Not A Grape')) === null);
+ok('a missing token resolves to nothing', api.wineFromToken(null) === null);
 
 /* ---------- summary ---------- */
 
