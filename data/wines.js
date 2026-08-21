@@ -571,5 +571,155 @@ const WINES = [
     flavors: ["Red Plum", "Violet", "Herbal", "Graphite"],
     alsoKnownAs: ["Jaen"],
     note: "Long assumed to be a relative of Cabernet Franc, and it does taste like one — floral, leafy, high-acid. The slate soils of Bierzo show up as a distinctly mineral streak."
+  },
+  {
+    name: "Fiano",
+    color: "White", country: "Italy", region: "Campania", continent: "Europe",
+    colorInt: 3,
+    body: 4, tannin: 1, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Hazelnut", "Pear", "Honey", "Herbal"],
+    alsoKnownAs: [],
+    note: "One of the few southern Italian whites built to age — waxy and nutty after a few years. Nearly extinct by the 1940s; Avellino is where it came back."
+  },
+  {
+    name: "Verdicchio",
+    color: "White", country: "Italy", region: "Marche", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 5, climate: 2,
+    oak: "Rare",
+    flavors: ["Lemon", "Green Apple", "Almond", "Fennel"],
+    alsoKnownAs: ["Trebbiano di Soave"],
+    note: "The bitter-almond finish is the signature, and it is a feature rather than a fault. Long sold in a novelty amphora bottle that did the wine no favours."
+  },
+  {
+    name: "Silvaner",
+    color: "White", country: "Germany", region: "Franken", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 4, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Pear", "Herbal", "Earthy"],
+    alsoKnownAs: ["Sylvaner", "Grüner Silvaner"],
+    note: "Germany's quiet alternative to Riesling — earthier, lower in acid, and far more about the site than the fruit. Franken bottles it in the flat green Bocksbeutel."
+  },
+  {
+    name: "Aligoté",
+    color: "White", country: "France", region: "Burgundy", continent: "Europe",
+    colorInt: 2,
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lemon", "Herbal", "Almond"],
+    alsoKnownAs: [],
+    note: "Burgundy's other white, planted where Chardonnay would not ripen well. Sharp enough that the traditional use was to soften it with crème de cassis — a Kir."
+  },
+  {
+    name: "Picpoul",
+    color: "White", country: "France", region: "Languedoc", continent: "Europe",
+    colorInt: 2,
+    body: 2, tannin: 1, acidity: 5, climate: 3,
+    oak: "Rare",
+    flavors: ["Lemon", "Grapefruit", "Saline", "Green Apple"],
+    alsoKnownAs: ["Piquepoul", "Picpoul de Pinet"],
+    note: "The name means lip-stinger. Grown on the étangs near Sète and sold almost exclusively as an oyster wine, which is the correct use for it."
+  },
+  {
+    name: "Macabeo",
+    color: "White", country: "Spain", region: "Penedès", continent: "Europe",
+    colorInt: 2,
+    body: 3, tannin: 1, acidity: 3, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Green Apple", "Citrus", "Almond", "Honey"],
+    alsoKnownAs: ["Viura", "Macabeu"],
+    note: "Two jobs under two names: Viura is the white grape of Rioja, Macabeo the backbone of Cava. Late-budding, which is what keeps it out of trouble with spring frost."
+  },
+  {
+    name: "Pedro Ximénez",
+    color: "White", country: "Spain", region: "Jerez", continent: "Europe",
+    colorInt: 3,
+    body: 5, tannin: 1, acidity: 2, climate: 4,
+    oak: "Common",
+    flavors: ["Raisin", "Fig", "Chocolate", "Coffee"],
+    alsoKnownAs: ["PX"],
+    note: "Laid out on mats to raisin in the Andalusian sun before pressing, which is how a dry white grape ends up as black, syrupy dessert wine. Andalusia is the hottest corner of the wine map represented here."
+  },
+  {
+    name: "Dolcetto",
+    color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
+    colorInt: 4,
+    body: 3, tannin: 4, acidity: 2, climate: 2,
+    oak: "Rare",
+    flavors: ["Black Cherry", "Plum", "Liquorice", "Almond"],
+    alsoKnownAs: [],
+    note: "The name means little sweet one, though the wine is dry and firmly tannic. Low acid is what sets it apart from every other Piedmont red — the everyday bottle while the Barolo waits."
+  },
+  {
+    name: "Lagrein",
+    color: "Red", country: "Italy", region: "Alto Adige", continent: "Europe",
+    colorInt: 5,
+    body: 4, tannin: 4, acidity: 4, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Violet", "Chocolate", "Earthy"],
+    alsoKnownAs: [],
+    note: "Startlingly dark for a grape grown in the Alps. A relative of Syrah, and the tannins can turn bitter on the finish if the winemaking is careless."
+  },
+  {
+    name: "Sagrantino",
+    color: "Red", country: "Italy", region: "Umbria", continent: "Europe",
+    colorInt: 5,
+    body: 5, tannin: 5, acidity: 4, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Earthy", "Spice"],
+    alsoKnownAs: [],
+    note: "Among the most tannic grapes in existence — the polyphenol counts run higher than Tannat. Montefalco law requires nearly three years of ageing before release, and it needs every month."
+  },
+  {
+    name: "Negroamaro",
+    color: "Red", country: "Italy", region: "Puglia", continent: "Europe",
+    colorInt: 4,
+    body: 4, tannin: 3, acidity: 3, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Black Cherry", "Raisin", "Herbal", "Earthy"],
+    alsoKnownAs: [],
+    note: "Black and bitter, by both name and taste — the roasted, slightly bitter finish is the marker. Salento heat gives it the raisined edge."
+  },
+  {
+    name: "Bobal",
+    color: "Red", country: "Spain", region: "Utiel-Requena", continent: "Europe",
+    colorInt: 5,
+    body: 4, tannin: 4, acidity: 5, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Red Plum", "Herbal", "Graphite"],
+    alsoKnownAs: [],
+    note: "Spain's second most planted red and almost unknown outside it, long sent away for bulk blending. Old bush vines at altitude hold acidity that has no business surviving that heat."
+  },
+  {
+    name: "Zweigelt",
+    color: "Red", country: "Austria", region: "Niederösterreich", continent: "Europe",
+    colorInt: 3,
+    body: 3, tannin: 2, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Sour Cherry", "Raspberry", "Spice", "Violet"],
+    alsoKnownAs: [],
+    note: "Austria's most planted red, a 1922 crossing of Blaufränkisch and St. Laurent. Juicy and low-tannin — the one they chill slightly and drink young."
+  },
+  {
+    name: "Pinot Meunier",
+    color: "Red", country: "France", region: "Champagne", continent: "Europe",
+    colorInt: 2,
+    body: 2, tannin: 2, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Red Plum", "Raspberry", "Bread", "Earthy"],
+    alsoKnownAs: ["Meunier"],
+    note: "The third Champagne grape and the least discussed, though it is planted more widely than Pinot Noir there. Buds late and ripens early, which is how it survives frost in the Marne Valley."
+  },
+  {
+    name: "Petite Sirah",
+    color: "Red", country: "United States", region: "California", continent: "North America",
+    colorInt: 5,
+    body: 5, tannin: 5, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Chocolate", "Black Pepper"],
+    alsoKnownAs: ["Durif"],
+    note: "Not Syrah and not petite — a Syrah-Peloursin crossing with tiny berries and enormous tannin. Long used to give backbone to Zinfandel before it was bottled on its own."
   }
 ];

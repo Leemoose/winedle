@@ -4,7 +4,7 @@
 const MAX_GUESSES = 6;
 /* A guess scoring this many exact tiles is close enough that the grid alone
  * stops being informative — surface something it does not already show. */
-const HINT_AT = 7;
+const HINT_AT = 6;
 const EPOCH = Date.UTC(2026, 0, 1);
 
 const ORD_LABELS = {
