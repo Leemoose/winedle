@@ -284,6 +284,15 @@ body {
   white-space: nowrap;
 }
 
+.remaining {
+  margin: 0.5rem 0 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: right;
+}
+
 .notice {
   margin: 0.5rem 0 0;
   font-size: 0.8rem;
@@ -291,7 +300,16 @@ body {
   color: var(--oxblood);
 }
 
-@media (prefers-color-scheme: dark) { .notice { color: var(--amber); } }
+@media (prefers-color-scheme: dark) { .remaining {
+  margin: 0.5rem 0 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: right;
+}
+
+.notice { color: var(--amber); } }
 
 #guess-input.is-wrong {
   animation: nudge .32s ease;

@@ -14,7 +14,8 @@ const source = fs.readFileSync('src/game.js', 'utf8');
 const pure = source.split('/* ---------- persistence ---------- */')[0];
 const api = new Function('WINES', pure + `; return {
   compare, puzzleFor, dayNumber, seededShuffle, resolve, suggest, normalize,
-  COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK
+  COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK,
+  candidatesFor, tileSignature, bestAroma, REMAINING_AFTER
 };`)(WINES);
 
 let failures = 0;
@@ -191,6 +192,59 @@ ok('suggestions match on substring', sug.length >= 3);
 ok('suggestions are capped', api.suggest('a', []).length <= 8);
 ok('already-guessed wines are excluded from suggestions',
    api.suggest('nebbiolo', ['Nebbiolo']).length === 0);
+
+/* ---------- deduction ---------- */
+
+section('deduction');
+
+const answer = by('Nebbiolo');
+
+ok('with no guesses the whole bank is possible',
+   api.candidatesFor([], answer).length === WINES.length);
+
+ok('the answer survives every filter',
+   api.candidatesFor(['Riesling', 'Merlot', 'Sangiovese'], answer).some(c => c.name === answer.name));
+
+ok('guessing the answer narrows the field to one',
+   api.candidatesFor([answer.name], answer).length === 1);
+
+/* A wrong guess must remove itself: it cannot be the answer, because it did
+ * not score all-exact. */
+ok('a wrong guess rules itself out',
+   !api.candidatesFor(['Merlot'], answer).some(c => c.name === 'Merlot'));
+
+/* More information can never widen the field. */
+let previous = WINES.length;
+let monotonic = true;
+['Riesling', 'Merlot', 'Barbera', 'Sangiovese'].forEach((n, i, arr) => {
+  const size = api.candidatesFor(arr.slice(0, i + 1), answer).length;
+  if (size > previous) monotonic = false;
+  previous = size;
+});
+ok('each further guess never widens the field', monotonic);
+
+/* Every candidate must be genuinely consistent - it would have produced the
+ * same board. */
+const guesses = ['Merlot', 'Barbera'];
+const consistent = api.candidatesFor(guesses, answer).every(c =>
+  guesses.every(n => api.tileSignature(by(n), c) === api.tileSignature(by(n), answer)));
+ok('every surviving candidate reproduces the board exactly', consistent);
+
+/* The hint should pick the aroma that rules out the most, not the first. */
+const pool = api.candidatesFor(['Sangiovese'], answer);
+const picked = api.bestAroma(by('Sangiovese'), answer, new Set(), pool);
+const options = answer.flavors.filter(f => !by('Sangiovese').flavors.includes(f));
+const counts = options.map(f => ({ f, n: pool.filter(c => c.flavors.includes(f)).length }));
+const fewest = counts.reduce((a, b) => (b.n < a.n ? b : a));
+ok('the hint reveals the most eliminating aroma', picked === fewest.f,
+   'picked ' + picked + ', best was ' + fewest.f + ' (' + JSON.stringify(counts) + ')');
+
+ok('the remaining-field count is withheld until the player is stuck',
+   api.REMAINING_AFTER >= 3 && api.REMAINING_AFTER < api.MAX_GUESSES,
+   'REMAINING_AFTER is ' + api.REMAINING_AFTER);
+
+ok('the hint never repeats a revealed aroma',
+   api.bestAroma(by('Sangiovese'), answer, new Set(answer.flavors), pool) === null);
 
 /* ---------- summary ---------- */
 

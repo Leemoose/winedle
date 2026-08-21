@@ -5,6 +5,12 @@ const MAX_GUESSES = 6;
 /* A guess scoring this many exact tiles is close enough that the grid alone
  * stops being informative — surface something it does not already show. */
 const HINT_AT = 6;
+/* The nine tiles are far more informative than they look: a perfect solver
+ * averages 2.26 guesses over the bank and never needs more than three, and one
+ * opening guess pins the answer outright in most cases. So the remaining-field
+ * count is help for someone stuck, not a running readout - showing it from the
+ * first guess would announce that the puzzle was already logically over. */
+const REMAINING_AFTER = 3;
 const EPOCH = Date.UTC(2026, 0, 1);
 
 const ORD_LABELS = {
@@ -184,6 +190,41 @@ function suggest(query, exclude) {
   return out.slice(0, 8);
 }
 
+/* ---------- deduction ---------- */
+
+/* Two wines are indistinguishable from a given guess when that guess would
+ * score identically against both. Comparing signatures is what lets the board
+ * say how much of the field is still standing. */
+function tileSignature(guess, candidate) {
+  return compare(guess, candidate)
+    .map(t => t.state + (t.arrow || '') + (t.detail || ''))
+    .join('|');
+}
+
+/* Every wine that would have produced exactly the feedback already on screen.
+ * Pure in its arguments so it can be tested without a browser. */
+function candidatesFor(guessNames, answer) {
+  if (!guessNames.length) return WINES.slice();
+  const played = guessNames.map(n => WINES.find(w => w.name === n));
+  const target = played.map(g => tileSignature(g, answer));
+  return WINES.filter(c => played.every((g, i) => tileSignature(g, c) === target[i]));
+}
+
+/* Of the aromas the answer has and the guess lacks, reveal whichever rules out
+ * the most of the remaining field - a hint that halves the candidates beats one
+ * that confirms something nearly everything shares. */
+function bestAroma(guess, answer, revealed, pool) {
+  const fresh = answer.flavors.filter(f => !guess.flavors.includes(f) && !revealed.has(f));
+  if (!fresh.length) return null;
+  let best = fresh[0];
+  let bestLeft = Infinity;
+  fresh.forEach(f => {
+    const left = pool.filter(c => c.flavors.includes(f)).length;
+    if (left < bestLeft) { bestLeft = left; best = f; }
+  });
+  return best;
+}
+
 /* ---------- persistence ---------- */
 
 const KEY_STATE = 'winedle:state';
@@ -261,13 +302,13 @@ if (state.answer !== ANSWER.name) {
 /* Near-misses reveal an aroma the answer carries and the guess did not, one at
  * a time and never the same one twice. Once the aromas are spent, fall back to
  * oak — the one recorded attribute the grid never scores. */
-function hintFor(guess, tiles, revealed) {
+function hintFor(guess, tiles, revealed, pool) {
   const hits = tiles.filter(t => t.state === 'hit').length;
   if (hits < HINT_AT) return null;
-  const fresh = ANSWER.flavors.filter(f => !guess.flavors.includes(f) && !revealed.has(f));
-  if (fresh.length) {
-    revealed.add(fresh[0]);
-    return { kind: 'aroma', value: fresh[0] };
+  const aroma = bestAroma(guess, ANSWER, revealed, pool);
+  if (aroma) {
+    revealed.add(aroma);
+    return { kind: 'aroma', value: aroma };
   }
   if (!revealed.has('\u0000oak')) {
     revealed.add('\u0000oak');
@@ -283,6 +324,7 @@ const sugBox = $('#suggestions');
 const endPanel = $('#end-panel');
 const counter = $('#counter');
 const noticeEl = $('#notice');
+const remaining = $('#remaining');
 const announcer = $('#announcer');
 
 /* The board re-renders in full on every guess, so it must not be a live region -
@@ -386,7 +428,7 @@ function render(animateLast) {
     const tiles = compare(wine, ANSWER);
     const row = rowEl(wine, tiles, animateLast && i === state.guesses.length - 1);
     if (wine.name !== ANSWER.name) {
-      const hint = hintFor(wine, tiles, revealed);
+      const hint = hintFor(wine, tiles, revealed, candidatesFor(state.guesses, ANSWER));
       if (hint) row.appendChild(hintEl(hint));
     }
     board.appendChild(row);
@@ -394,6 +436,16 @@ function render(animateLast) {
   counter.textContent = state.status === 'playing'
     ? (MAX_GUESSES - state.guesses.length) + ' left'
     : state.guesses.length + '/' + MAX_GUESSES;
+
+  /* How much of the field is still standing. Held back until the player has
+   * spent half their guesses - see REMAINING_AFTER. */
+  if (state.status === 'playing' && state.guesses.length >= REMAINING_AFTER) {
+    const n = candidatesFor(state.guesses, ANSWER).length;
+    remaining.textContent = n === 1 ? '1 grape still fits' : n + ' grapes still fit';
+    remaining.hidden = false;
+  } else {
+    remaining.hidden = true;
+  }
   if (state.status !== 'playing') showEnd();
 }
 
