@@ -57,6 +57,26 @@ Colour · Country · Region · Depth · Body · Tannin · Acidity · Climate · 
 Oxblood = exact. Amber = one step off, same continent, or shared aromas.
 Blank = no match. Arrows on structural tiles point toward the answer.
 
+## Modes
+
+| URL | What it is |
+|---|---|
+| `/` | the daily puzzle |
+| `/?d=<n>` | an archived day |
+| `/?mode=practice` | unlimited random wines |
+
+Practice draws from the whole bank regardless of tier, leans toward wines you
+have previously failed (`PRACTICE_MISS_BIAS`), and touches neither the streak
+nor the shared result. Wines you miss are recorded in `winedle:misses` and
+cleared when you next get them right.
+
+## Tiers
+
+Each wine carries `tier`: 1 classic, 2 known to enthusiasts, 3 specialist,
+split 22/35/28. The daily week runs `1,2,1,2,1,2,3` — six approachable days
+and one deep cut — so an 85-grape bank does not hand a first-time player
+Rkatsiteli. Each tier walks its own deck and does not repeat until spent.
+
 ## Archive
 
 `?d=<n>` replays any past puzzle, clamped to the schedule's range. Archived

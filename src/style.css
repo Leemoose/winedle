@@ -95,7 +95,7 @@ body {
   padding: 0.55rem 0;
 }
 
-.masthead__vintage span:not(:last-child)::after {
+.masthead__vintage > *:not(:last-child)::after {
   content: '·';
   margin-left: 0.9rem;
   color: var(--gold);
@@ -150,6 +150,7 @@ body {
 }
 
 .linkish:hover { border-bottom-color: var(--gold); }
+a.linkish { text-decoration: none; }
 
 .archive-nav {
   text-align: center;

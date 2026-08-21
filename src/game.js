@@ -225,10 +225,27 @@ function bestAroma(guess, answer, revealed, pool) {
   return best;
 }
 
+/* Practice draws at random from the whole bank, but leans toward wines you
+ * have already failed - a daily puzzle is a habit, revision needs volume and
+ * repetition of the things you got wrong. Takes its randomness as an argument
+ * so it can be tested. */
+const PRACTICE_MISS_BIAS = 0.4;
+
+function practicePick(rand, misses) {
+  const missed = Object.keys(misses || {})
+    .map(n => WINES.find(w => w.name === n))
+    .filter(Boolean);
+  if (missed.length && rand() < PRACTICE_MISS_BIAS) {
+    return missed[Math.floor(rand() * missed.length)];
+  }
+  return WINES[Math.floor(rand() * WINES.length)];
+}
+
 /* ---------- persistence ---------- */
 
 const KEY_STATE = 'winedle:state';
 const KEY_STATS = 'winedle:stats';
+const KEY_MISSES = 'winedle:misses';
 
 function readJSON(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) || fallback; }
@@ -267,21 +284,29 @@ const TODAY = dayNumber();
 
 /* ?d=<n> replays an archived puzzle. Clamped to the schedule's own range so a
  * hand-edited URL cannot land on an undefined day. */
-const asked = parseInt(new URLSearchParams(location.search).get('d'), 10);
+const query = new URLSearchParams(location.search);
+const IS_PRACTICE = query.get('mode') === 'practice';
+const asked = parseInt(query.get('d'), 10);
 const DAY = Number.isInteger(asked) ? Math.min(Math.max(asked, 0), TODAY) : TODAY;
 const IS_ARCHIVE = DAY !== TODAY;
 
 /* Archived plays get their own slot, so replaying one never overwrites the
  * live puzzle and never touches the streak. */
-const STATE_KEY = IS_ARCHIVE ? KEY_STATE + ':' + DAY : KEY_STATE;
+const STATE_KEY = IS_PRACTICE ? KEY_STATE + ':practice'
+  : IS_ARCHIVE ? KEY_STATE + ':' + DAY
+  : KEY_STATE;
 
 function dateForDay(d) {
   return new Date(EPOCH + d * 86400000);
 }
 
 let state = readJSON(STATE_KEY, null);
-if (!state || state.day !== DAY) {
-  state = { day: DAY, guesses: [], status: 'playing', answer: puzzleFor(DAY).name };
+const stateFits = state && (IS_PRACTICE ? state.mode === 'practice' : state.day === DAY);
+if (!stateFits) {
+  state = IS_PRACTICE
+    ? { mode: 'practice', guesses: [], status: 'playing',
+        answer: practicePick(Math.random, readJSON(KEY_MISSES, {})).name }
+    : { day: DAY, guesses: [], status: 'playing', answer: puzzleFor(DAY).name };
   writeJSON(STATE_KEY, state);
 }
 
@@ -466,9 +491,18 @@ function shareText() {
   return 'Winedle #' + DAY + '  ' + score + '\n\n' + grid + '\n\n' + url;
 }
 
+/* What you missed comes back sooner in practice; what you got, stops nagging. */
+function recordOutcome(won) {
+  const misses = readJSON(KEY_MISSES, {});
+  if (won) delete misses[ANSWER.name];
+  else misses[ANSWER.name] = (misses[ANSWER.name] || 0) + 1;
+  writeJSON(KEY_MISSES, misses);
+}
+
 function showEnd() {
   const won = state.status === 'won';
-  const stats = recordResult(won, state.guesses.length, DAY, !IS_ARCHIVE);
+  recordOutcome(won);
+  const stats = recordResult(won, state.guesses.length, DAY, !IS_ARCHIVE && !IS_PRACTICE);
   const pct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
 
   endPanel.innerHTML = '';
@@ -498,6 +532,7 @@ function showEnd() {
 
   const bar = document.createElement('div');
   bar.className = 'stats';
+  if (IS_PRACTICE) bar.hidden = true;
   bar.innerHTML =
     '<div><strong>' + stats.played + '</strong><span>Played</span></div>' +
     '<div><strong>' + pct + '%</strong><span>Won</span></div>' +
@@ -505,7 +540,16 @@ function showEnd() {
     '<div><strong>' + stats.maxStreak + '</strong><span>Best</span></div>';
   endPanel.appendChild(bar);
 
-  if (IS_ARCHIVE) {
+  if (IS_PRACTICE) {
+    const again = document.createElement('button');
+    again.className = 'share';
+    again.textContent = 'Another wine';
+    again.addEventListener('click', () => {
+      try { localStorage.removeItem(STATE_KEY); } catch (e) {}
+      location.reload();
+    });
+    endPanel.appendChild(again);
+  } else if (IS_ARCHIVE) {
     const back = document.createElement('p');
     back.className = 'countdown';
     back.innerHTML = '<a href="' + dayHref(TODAY) + '">Back to today\u2019s wine</a>';
@@ -516,6 +560,10 @@ function showEnd() {
     endPanel.appendChild(clock);
     startCountdown(clock);
   }
+
+  /* Nothing to share from practice: the grid would be stamped with a daily
+   * puzzle number it does not belong to. */
+  if (IS_PRACTICE) return;
 
   const btn = document.createElement('button');
   btn.className = 'share';
@@ -722,9 +770,16 @@ input.addEventListener('keydown', e => {
 
 input.addEventListener('blur', () => setTimeout(() => renderSuggestions([]), 120));
 
-$('#puzzle-no').textContent = 'No. ' + DAY;
-$('#puzzle-date').textContent = dateForDay(DAY).toLocaleDateString(undefined,
-  { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+if (IS_PRACTICE) {
+  $('#puzzle-no').textContent = 'Practice';
+  $('#puzzle-date').textContent = 'No streak, no limit';
+} else {
+  $('#puzzle-no').textContent = 'No. ' + DAY;
+  $('#puzzle-date').textContent = dateForDay(DAY).toLocaleDateString(undefined,
+    { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+$('#mode-link').textContent = IS_PRACTICE ? 'Back to the daily' : 'Practice';
+$('#mode-link').href = IS_PRACTICE ? SELF : SELF + '?mode=practice';
 if (IS_ARCHIVE) document.body.classList.add('is-archive');
 renderArchive();
 renderArchiveNav();

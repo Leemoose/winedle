@@ -15,7 +15,8 @@ const pure = source.split('/* ---------- persistence ---------- */')[0];
 const api = new Function('WINES', pure + `; return {
   compare, puzzleFor, dayNumber, seededShuffle, resolve, suggest, normalize,
   COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK,
-  candidatesFor, tileSignature, bestAroma, REMAINING_AFTER
+  candidatesFor, tileSignature, bestAroma, REMAINING_AFTER,
+  practicePick, PRACTICE_MISS_BIAS
 };`)(WINES);
 
 let failures = 0;
@@ -245,6 +246,35 @@ ok('the remaining-field count is withheld until the player is stuck',
 
 ok('the hint never repeats a revealed aroma',
    api.bestAroma(by('Sangiovese'), answer, new Set(answer.flavors), pool) === null);
+
+/* ---------- practice ---------- */
+
+section('practice');
+
+/* Seeded so the draw is reproducible. */
+function seq(values) {
+  let i = 0;
+  return () => values[i++ % values.length];
+}
+
+ok('with no history it draws from the whole bank',
+   api.practicePick(seq([0.5]), {}) === WINES[Math.floor(0.5 * WINES.length)]);
+
+ok('a low roll redraws something previously missed',
+   api.practicePick(seq([0.1, 0]), { 'Nebbiolo': 2 }).name === 'Nebbiolo');
+
+ok('a high roll ignores the miss list',
+   api.practicePick(seq([0.9, 0.5]), { 'Nebbiolo': 2 }).name !== 'Nebbiolo' ||
+   WINES[Math.floor(0.5 * WINES.length)].name === 'Nebbiolo');
+
+ok('a stale miss for a grape no longer in the bank is skipped',
+   !!api.practicePick(seq([0.1, 0]), { 'Deleted Grape': 1 }));
+
+ok('the practice draw always returns a real wine',
+   [0, 0.25, 0.5, 0.75, 0.99].every(r => WINES.includes(api.practicePick(seq([r]), {}))));
+
+ok('the miss bias leaves room for new wines',
+   api.PRACTICE_MISS_BIAS > 0 && api.PRACTICE_MISS_BIAS < 1);
 
 /* ---------- summary ---------- */
 
