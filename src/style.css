@@ -172,6 +172,30 @@ body {
   white-space: nowrap;
 }
 
+.notice {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--oxblood);
+}
+
+@media (prefers-color-scheme: dark) { .notice { color: var(--amber); } }
+
+#guess-input.is-wrong {
+  animation: nudge .32s ease;
+  border-color: var(--oxblood);
+}
+
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-4px); }
+  75%      { transform: translateX(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #guess-input.is-wrong { animation: none; }
+}
+
 #suggestions {
   position: absolute;
   z-index: 20;
@@ -245,6 +269,26 @@ body {
   font-size: 0.8rem;
   line-height: 1.15;
   font-weight: 700;
+}
+
+/* Colour is not the only signal - deuteranopes read oxblood and amber as two
+ * similar mid-tones, so each scored state carries a mark as well. */
+.tile__mark {
+  position: absolute;
+  left: 5px;
+  top: 3px;
+  font-size: 0.6rem;
+  opacity: .55;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .tile__arrow {

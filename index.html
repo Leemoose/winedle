@@ -51,13 +51,17 @@
   <div class="entry">
     <div class="entry__row">
       <input id="guess-input" type="text" autocomplete="off" autocapitalize="off"
-             spellcheck="false" placeholder="Name a grape…" aria-label="Guess a grape variety">
+             spellcheck="false" placeholder="Name a grape…" aria-label="Guess a grape variety"
+             role="combobox" aria-controls="suggestions" aria-autocomplete="list"
+             aria-expanded="false">
       <span id="counter"></span>
     </div>
-    <ul id="suggestions" hidden></ul>
+    <ul id="suggestions" role="listbox" aria-label="Matching grapes" hidden></ul>
+    <p id="notice" class="notice" role="status" hidden></p>
   </div>
 
-  <section id="board" aria-live="polite"></section>
+  <section id="board"></section>
+  <p id="announcer" class="sr-only" role="status" aria-live="polite"></p>
 
   <section id="end-panel" hidden></section>
 

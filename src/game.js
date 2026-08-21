@@ -230,12 +230,41 @@ const input = $('#guess-input');
 const sugBox = $('#suggestions');
 const endPanel = $('#end-panel');
 const counter = $('#counter');
+const noticeEl = $('#notice');
+const announcer = $('#announcer');
+
+/* The board re-renders in full on every guess, so it must not be a live region -
+ * that would re-read every previous row. Announce just what changed. */
+function announce(wine, tiles) {
+  const exact = tiles.filter(t => t.state === 'hit').map(t => t.label.toLowerCase());
+  announcer.textContent = wine.name + ', ' + exact.length + ' of ' + tiles.length +
+    ' exact' + (exact.length ? ': ' + exact.join(', ') : '') + '.';
+}
+
+const STATE_WORD = { hit: 'exact match', near: 'close', miss: 'no match' };
+const STATE_MARK = { hit: '\u2713', near: '\u2248', miss: '' };
+
+function tileLabel(t) {
+  let s = t.label + ': ' + t.text + ', ' + STATE_WORD[t.state];
+  if (t.arrow) s += ', answer is ' + (t.arrow === '\u2191' ? 'higher' : 'lower');
+  if (t.detail) s += ' (' + t.detail + ')';
+  return s;
+}
 
 function tileEl(t, delay) {
   const el = document.createElement('div');
   el.className = 'tile tile--' + t.state;
   el.style.animationDelay = delay + 'ms';
+  el.setAttribute('role', 'listitem');
+  el.setAttribute('aria-label', tileLabel(t));
   if (t.detail) el.title = t.detail;
+  if (STATE_MARK[t.state]) {
+    const mark = document.createElement('span');
+    mark.className = 'tile__mark';
+    mark.setAttribute('aria-hidden', 'true');
+    mark.textContent = STATE_MARK[t.state];
+    el.appendChild(mark);
+  }
   const lab = document.createElement('span');
   lab.className = 'tile__label';
   lab.textContent = t.label;
@@ -277,6 +306,8 @@ function rowEl(wine, tiles, animate) {
 
   const grid = document.createElement('div');
   grid.className = 'row__tiles';
+  grid.setAttribute('role', 'list');
+  grid.setAttribute('aria-label', 'How ' + wine.name + ' scored');
   tiles.forEach((t, i) => grid.appendChild(tileEl(t, animate ? i * 90 : 0)));
   row.appendChild(grid);
   return row;
@@ -371,42 +402,87 @@ function submitGuess(wine) {
   else if (state.guesses.length >= MAX_GUESSES) state.status = 'lost';
   writeJSON(KEY_STATE, state);
   input.value = '';
+  activeIdx = 0;
+  notice('');
   renderSuggestions([]);
   render(true);
+  announce(wine, compare(wine, ANSWER));
   if (state.status !== 'playing') {
     input.disabled = true;
     input.placeholder = 'Back tomorrow';
   }
 }
 
+/* The suggestion list is a combobox: arrow keys move the selection, Enter takes
+ * it, Escape dismisses. activeIdx is the only piece of state that matters. */
+let currentList = [];
+let activeIdx = 0;
+
 function renderSuggestions(list) {
+  currentList = list;
+  if (activeIdx >= list.length) activeIdx = 0;
   sugBox.innerHTML = '';
   sugBox.hidden = list.length === 0;
+  input.setAttribute('aria-expanded', String(list.length > 0));
   list.forEach((s, i) => {
     const li = document.createElement('li');
-    li.className = 'suggestion' + (i === 0 ? ' is-active' : '');
+    li.className = 'suggestion' + (i === activeIdx ? ' is-active' : '');
+    li.id = 'suggestion-' + i;
+    li.setAttribute('role', 'option');
+    li.setAttribute('aria-selected', String(i === activeIdx));
     li.textContent = s.wine.name;
     if (s.via) {
       const via = document.createElement('em');
-      via.textContent = ' — ' + s.via;
+      via.textContent = ' \u2014 ' + s.via;
       li.appendChild(via);
     }
     li.addEventListener('mousedown', e => { e.preventDefault(); submitGuess(s.wine); });
     sugBox.appendChild(li);
   });
+  input.setAttribute('aria-activedescendant', list.length ? 'suggestion-' + activeIdx : '');
+}
+
+function moveActive(delta) {
+  if (!currentList.length) return;
+  activeIdx = (activeIdx + delta + currentList.length) % currentList.length;
+  renderSuggestions(currentList);
+  const el = sugBox.children[activeIdx];
+  if (el) el.scrollIntoView({ block: 'nearest' });
+}
+
+/* Silent failure is the worst outcome for a typed guess - say what went wrong. */
+function notice(msg) {
+  noticeEl.textContent = msg || '';
+  noticeEl.hidden = !msg;
+  if (!msg) return;
+  input.classList.remove('is-wrong');
+  void input.offsetWidth;
+  input.classList.add('is-wrong');
 }
 
 input.addEventListener('input', () => {
+  notice('');
+  activeIdx = 0;
   renderSuggestions(suggest(input.value, state.guesses));
 });
 
 input.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); return moveActive(1); }
+  if (e.key === 'ArrowUp')   { e.preventDefault(); return moveActive(-1); }
+  if (e.key === 'Escape')    { renderSuggestions([]); return notice(''); }
   if (e.key !== 'Enter') return;
   e.preventDefault();
-  const list = suggest(input.value, state.guesses);
-  const exact = resolve(input.value);
-  if (exact && !state.guesses.includes(exact.name)) submitGuess(exact);
-  else if (list.length) submitGuess(list[0].wine);
+
+  const typed = input.value.trim();
+  if (!typed) return;
+
+  const exact = resolve(typed);
+  if (exact) {
+    if (state.guesses.includes(exact.name)) return notice('Already guessed ' + exact.name + '.');
+    return submitGuess(exact);
+  }
+  if (currentList.length) return submitGuess(currentList[activeIdx].wine);
+  notice('No grape by that name \u2014 keep typing, or pick from the list.');
 });
 
 input.addEventListener('blur', () => setTimeout(() => renderSuggestions([]), 120));
