@@ -194,11 +194,20 @@ function recordResult(won, guessCount, day) {
 /* ---------- game state ---------- */
 
 const DAY = dayNumber();
-const ANSWER = puzzleFor(DAY);
 
 let state = readJSON(KEY_STATE, null);
 if (!state || state.day !== DAY) {
-  state = { day: DAY, guesses: [], status: 'playing' };
+  state = { day: DAY, guesses: [], status: 'playing', answer: puzzleFor(DAY).name };
+  writeJSON(KEY_STATE, state);
+}
+
+/* Pin the answer to whatever this player started on. The schedule is derived
+ * from the bank, so adding a grape mid-day reshuffles it - and a player halfway
+ * through would otherwise have the answer swapped underneath them. Falls back
+ * to the schedule for states saved before this field existed. */
+const ANSWER = (state.answer && WINES.find(w => w.name === state.answer)) || puzzleFor(DAY);
+if (state.answer !== ANSWER.name) {
+  state.answer = ANSWER.name;
   writeJSON(KEY_STATE, state);
 }
 
@@ -295,6 +304,17 @@ function hintEl(hint) {
   return el;
 }
 
+/* The aroma tile can only fit a count. Desktop gets the names on hover, so
+ * without this a phone is simply told less about the same guess. */
+function aromaLine(tiles) {
+  const t = tiles.find(x => x.label === 'Aromas');
+  if (!t || t.state === 'miss' || !t.detail) return null;
+  const el = document.createElement('p');
+  el.className = 'row__shared';
+  el.textContent = 'Shared aromas: ' + t.detail.toLowerCase() + '.';
+  return el;
+}
+
 function rowEl(wine, tiles, animate) {
   const row = document.createElement('article');
   row.className = 'row' + (animate ? ' row--new' : '');
@@ -310,6 +330,8 @@ function rowEl(wine, tiles, animate) {
   grid.setAttribute('aria-label', 'How ' + wine.name + ' scored');
   tiles.forEach((t, i) => grid.appendChild(tileEl(t, animate ? i * 90 : 0)));
   row.appendChild(grid);
+  const shared = aromaLine(tiles);
+  if (shared) row.appendChild(shared);
   return row;
 }
 
@@ -527,3 +549,5 @@ if (state.status !== 'playing') {
   input.placeholder = 'Back tomorrow';
 }
 render(false);
+
+if (state.status === 'playing' && !matchMedia('(hover: none)').matches) input.focus();
