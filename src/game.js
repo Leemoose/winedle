@@ -332,13 +332,20 @@ function render(animateLast) {
   if (state.status !== 'playing') showEnd();
 }
 
+/* A shared result is useless if the recipient cannot find the game. Prefer the
+ * address it is actually being played at, so a fork or a custom domain shares
+ * itself rather than the original. */
+const SHARE_URL = /^https?:$/.test(location.protocol)
+  ? location.origin + location.pathname.replace(/index\.html$/, '')
+  : 'https://leemoose.github.io/winedle/';
+
 function shareText() {
   const grid = state.guesses.map(n => {
     const wine = WINES.find(w => w.name === n);
     return compare(wine, ANSWER).map(t => EMOJI[t.state]).join('');
   }).join('\n');
   const score = state.status === 'won' ? state.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
-  return 'Winedle #' + DAY + '  ' + score + '\n\n' + grid;
+  return 'Winedle #' + DAY + '  ' + score + '\n\n' + grid + '\n\n' + SHARE_URL;
 }
 
 function showEnd() {
@@ -380,6 +387,11 @@ function showEnd() {
     '<div><strong>' + stats.maxStreak + '</strong><span>Best</span></div>';
   endPanel.appendChild(bar);
 
+  const clock = document.createElement('p');
+  clock.className = 'countdown';
+  endPanel.appendChild(clock);
+  startCountdown(clock);
+
   const btn = document.createElement('button');
   btn.className = 'share';
   btn.textContent = 'Copy result';
@@ -390,6 +402,25 @@ function showEnd() {
     else done();
   });
   endPanel.appendChild(btn);
+}
+
+/* Puzzles roll over at local midnight, matching how DAY is derived. */
+function startCountdown(el) {
+  function tick() {
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const left = next - now;
+    const pad = n => String(n).padStart(2, '0');
+    const h = Math.floor(left / 3600000);
+    const m = Math.floor((left % 3600000) / 60000);
+    const s = Math.floor((left % 60000) / 1000);
+    el.textContent = 'Next wine in ' + pad(h) + ':' + pad(m) + ':' + pad(s);
+    /* `next` is recomputed every tick, so `left` never reaches zero - compare
+     * the day instead, or the page sits on a stale puzzle past midnight. */
+    if (dayNumber() !== DAY) location.reload();
+  }
+  tick();
+  setInterval(tick, 1000);
 }
 
 /* ---------- input ---------- */

@@ -397,6 +397,15 @@ body {
 .stats strong { font-family: 'Bodoni Moda', Georgia, serif; font-size: 1.7rem; font-weight: 500; }
 .stats span { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); }
 
+.countdown {
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .share {
   background: var(--oxblood);
   color: #f6ece0;
