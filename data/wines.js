@@ -56,7 +56,7 @@ const WINES = [
     colorInt: 2,
     body: 2, tannin: 2, acidity: 5, climate: 1,
     oak: "Common",
-    flavors: ["Cherry", "Raspberry", "Strawberry", "Earthy"],
+    flavors: ["Cherry", "Raspberry", "Strawberry", "Forest Floor"],
     alsoKnownAs: ["Spatburgunder", "Pinot Nero"],
     note: "Thin-skinned and cool-climate: light body, low tannin, high acid. The earthy/mushroom note is classic Burgundy; New World versions push fruit instead."
   },
@@ -78,7 +78,7 @@ const WINES = [
     colorInt: 1,
     body: 5, tannin: 5, acidity: 5, climate: 2,
     oak: "Common",
-    flavors: ["Cherry", "Rose", "Tar", "Herbal"],
+    flavors: ["Cherry", "Rose", "Tar", "Dried Herbs"],
     alsoKnownAs: ["Spanna", "Chiavennasca"],
     note: "The great trap: pale garnet in the glass, full-bodied and brutally tannic on the palate. Rose and tar together are diagnostic — nothing else does that pairing."
   },
@@ -89,7 +89,7 @@ const WINES = [
     colorInt: 3,
     body: 4, tannin: 5, acidity: 5, climate: 3,
     oak: "Common",
-    flavors: ["Sour Cherry", "Plum", "Herbal", "Earthy"],
+    flavors: ["Sour Cherry", "Plum", "Tomato Leaf", "Leather"],
     alsoKnownAs: ["Brunello", "Prugnolo Gentile", "Morellino", "Nielluccio"],
     note: "High acid plus high tannin and a sour-cherry core — built for food, which is why Chianti works at the table and struggles alone."
   },
@@ -155,7 +155,7 @@ const WINES = [
     colorInt: 2,
     body: 5, tannin: 2, acidity: 2, climate: 3,
     oak: "Sometimes",
-    flavors: ["Strawberry", "Red Plum", "Herbal", "Spice"],
+    flavors: ["Strawberry", "Red Plum", "Garrigue", "White Pepper"],
     alsoKnownAs: ["Garnacha", "Cannonau"],
     note: "The great contradiction: pale in the glass, low in tannin and acid, yet full-bodied and high in alcohol. That combination is why it anchors Châteauneuf blends rather than standing alone."
   },
@@ -177,7 +177,7 @@ const WINES = [
     colorInt: 4,
     body: 5, tannin: 3, acidity: 3, climate: 3,
     oak: "Common",
-    flavors: ["Blackberry", "Raisin", "Spice", "Chocolate"],
+    flavors: ["Blackberry", "Raisin", "Cinnamon", "Chocolate"],
     alsoKnownAs: ["Primitivo", "Tribidrag", "Crljenak Kaštelanski"],
     note: "Ripens unevenly, so one bunch carries green berries and raisins at once - hence the jammy fruit and high alcohol. Primitivo is the same grape; Croatia is where it actually came from."
   },
@@ -265,7 +265,7 @@ const WINES = [
     colorInt: 4,
     body: 4, tannin: 3, acidity: 3, climate: 3,
     oak: "Sometimes",
-    flavors: ["Black Cherry", "Plum", "Herbal", "Earthy"],
+    flavors: ["Black Cherry", "Plum", "Dried Herbs", "Clay"],
     alsoKnownAs: [],
     note: "Not to be confused with Vino Nobile di Montepulciano, which is Sangiovese from a Tuscan town of the same name. This is the Abruzzo grape - softer, darker, and one of Italy's great everyday reds."
   },
@@ -309,7 +309,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 1,
     oak: "Rare",
-    flavors: ["Citrus", "Green Apple", "White Pepper", "Herbal"],
+    flavors: ["Citrus", "Green Apple", "White Pepper", "Nettle"],
     alsoKnownAs: ["Grüner", "Weissgipfler"],
     note: "White pepper is the marker, and almost nothing else does it in a white. Austria's signature grape, and it scales from cheap and spritzy to serious and age-worthy."
   },
@@ -386,7 +386,7 @@ const WINES = [
     colorInt: 5,
     body: 4, tannin: 4, acidity: 3, climate: 3,
     oak: "Common",
-    flavors: ["Blackberry", "Green Bell Pepper", "Chocolate", "Spice"],
+    flavors: ["Blackberry", "Green Bell Pepper", "Chocolate", "Clove"],
     alsoKnownAs: ["Grande Vidure"],
     note: "Lost to phylloxera in Bordeaux and mistaken for Merlot in Chile until DNA testing in 1994. Needs a long season - picked early it is all pyrazine and nothing else."
   },
@@ -408,7 +408,7 @@ const WINES = [
     colorInt: 5,
     body: 5, tannin: 5, acidity: 4, climate: 3,
     oak: "Sometimes",
-    flavors: ["Blackberry", "Leather", "Herbal", "Spice"],
+    flavors: ["Blackberry", "Leather", "Garrigue", "Black Pepper"],
     alsoKnownAs: ["Monastrell", "Mataro"],
     note: "The last to ripen of the Rhône trio, and the most demanding - it needs real heat. Bandol is the benchmark; in GSM blends it supplies the tannin and the meaty, gamey edge."
   },
@@ -419,7 +419,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 2, acidity: 5, climate: 2,
     oak: "Sometimes",
-    flavors: ["Sour Cherry", "Red Plum", "Herbal", "Almond"],
+    flavors: ["Sour Cherry", "Red Plum", "Bay Leaf", "Almond"],
     alsoKnownAs: ["Corvina Veronese"],
     note: "Light and tart as Valpolicella, transformed into Amarone by drying the grapes for months first. Same grape, same hillside, and a completely different wine."
   },
@@ -430,7 +430,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 4, acidity: 5, climate: 3,
     oak: "Sometimes",
-    flavors: ["Cherry", "Orange Peel", "Smoke", "Earthy"],
+    flavors: ["Cherry", "Orange Peel", "Smoke", "Volcanic Ash"],
     alsoKnownAs: ["Nerello"],
     note: "Grown on the slopes of an active volcano, and constantly compared to Nebbiolo and Pinot Noir - pale, high-acid, high-tannin, and marked by the black volcanic soil."
   },
@@ -441,7 +441,7 @@ const WINES = [
     colorInt: 5,
     body: 5, tannin: 5, acidity: 5, climate: 3,
     oak: "Common",
-    flavors: ["Black Cherry", "Leather", "Earthy", "Spice"],
+    flavors: ["Black Cherry", "Leather", "Iron", "Clove"],
     alsoKnownAs: [],
     note: "Southern Italy's answer to Nebbiolo, and just as unforgiving young. Ripens dangerously late - well into November - which is how it holds that much acid in a hot region."
   },
@@ -452,7 +452,7 @@ const WINES = [
     colorInt: 4,
     body: 4, tannin: 4, acidity: 4, climate: 3,
     oak: "Sometimes",
-    flavors: ["Black Cherry", "Plum", "Liquorice", "Herbal"],
+    flavors: ["Black Cherry", "Plum", "Liquorice", "Oregano"],
     alsoKnownAs: ["Calabrese"],
     note: "Sicily’s workhorse grape, once shipped north in bulk to beef up thin wines from cooler regions. Bottled on its own it is dark, warm and unfussy."
   },
@@ -463,7 +463,7 @@ const WINES = [
     colorInt: 4,
     body: 3, tannin: 2, acidity: 5, climate: 2,
     oak: "Sometimes",
-    flavors: ["Sour Cherry", "Red Plum", "Liquorice", "Herbal"],
+    flavors: ["Sour Cherry", "Red Plum", "Liquorice", "Dried Herbs"],
     alsoKnownAs: [],
     note: "Piedmont’s everyday red, planted on the sites Nebbiolo does not want. Deep colour but low tannin and searing acidity - the inverse of its famous neighbour."
   },
@@ -474,7 +474,7 @@ const WINES = [
     colorInt: 5,
     body: 5, tannin: 5, acidity: 4, climate: 2,
     oak: "Common",
-    flavors: ["Blackberry", "Violet", "Graphite", "Spice"],
+    flavors: ["Blackberry", "Violet", "Graphite", "Allspice"],
     alsoKnownAs: [],
     note: "The Left Bank seasoning grape - a few percent for colour, tannin and violet perfume. Often refuses to ripen in Bordeaux, which is why it does better in Australia and Spain."
   },
@@ -529,7 +529,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 1, acidity: 4, climate: 2,
     oak: "Sometimes",
-    flavors: ["Pear", "Citrus", "Herbal", "Almond"],
+    flavors: ["Pear", "Citrus", "Fennel", "Almond"],
     alsoKnownAs: [],
     note: "Down to a few hundred vines by the 1970s and rescued deliberately. Fuller and more textural than Albariño, and it takes oak in a way Albariño does not."
   },
@@ -540,7 +540,7 @@ const WINES = [
     colorInt: 1,
     body: 2, tannin: 1, acidity: 5, climate: 3,
     oak: "Rare",
-    flavors: ["Lemon", "Green Apple", "Almond", "Herbal"],
+    flavors: ["Lemon", "Green Apple", "Almond", "Nettle"],
     alsoKnownAs: ["Ugni Blanc", "Trebbiano Toscano"],
     note: "One of the most planted white grapes on earth and one of the least remarked upon. As Ugni Blanc in France it is grown thin and acidic on purpose, then distilled into Cognac."
   },
@@ -551,7 +551,7 @@ const WINES = [
     colorInt: 2,
     body: 4, tannin: 5, acidity: 5, climate: 2,
     oak: "Common",
-    flavors: ["Sour Cherry", "Tomato", "Olive", "Earthy"],
+    flavors: ["Sour Cherry", "Tomato", "Olive", "Forest Floor"],
     alsoKnownAs: [],
     note: "The name means sour-black, which is fair warning. Pale, tannic and savoury enough that it gets called the Greek Nebbiolo — sun-dried tomato is the note nothing else gives you."
   },
@@ -562,7 +562,7 @@ const WINES = [
     colorInt: 4,
     body: 4, tannin: 3, acidity: 3, climate: 3,
     oak: "Common",
-    flavors: ["Red Plum", "Black Cherry", "Spice", "Herbal"],
+    flavors: ["Red Plum", "Black Cherry", "Clove", "Dried Herbs"],
     alsoKnownAs: ["Saint George"],
     note: "Greece's most planted red and the approachable one — soft tannins, deep colour, no hard edges. Nemea sits high enough that the altitude does the work the latitude will not."
   },
@@ -573,7 +573,7 @@ const WINES = [
     colorInt: 4,
     body: 4, tannin: 4, acidity: 5, climate: 2,
     oak: "Sometimes",
-    flavors: ["Sour Cherry", "Blackberry", "White Pepper", "Spice"],
+    flavors: ["Sour Cherry", "Blackberry", "White Pepper", "Cinnamon"],
     alsoKnownAs: ["Lemberger", "Kékfrankos"],
     note: "Austria's serious red, and the peppery counterpart to Grüner Veltliner. High acid and firm tannin make it read as far more northern than it is."
   },
@@ -584,7 +584,7 @@ const WINES = [
     colorInt: 5,
     body: 5, tannin: 4, acidity: 5, climate: 2,
     oak: "Sometimes",
-    flavors: ["Blackberry", "Plum", "Liquorice", "Earthy"],
+    flavors: ["Blackberry", "Plum", "Liquorice", "Iron"],
     alsoKnownAs: [],
     note: "A teinturier — red flesh as well as red skin, which almost no wine grape has, and why it stains the glass. From the country that has been making wine in clay qvevri for eight thousand years."
   },
@@ -606,7 +606,7 @@ const WINES = [
     colorInt: 2,
     body: 2, tannin: 2, acidity: 3, climate: 3,
     oak: "Rare",
-    flavors: ["Strawberry", "Red Plum", "Herbal", "Spice"],
+    flavors: ["Strawberry", "Red Plum", "Garrigue", "White Pepper"],
     alsoKnownAs: ["Cinsaut"],
     note: "Pale, soft and perfumed — the grape that makes Provence rosé work. Crossed with Pinot Noir in 1925 to produce Pinotage, which turned out nothing like it."
   },
@@ -617,7 +617,7 @@ const WINES = [
     colorInt: 4,
     body: 4, tannin: 4, acidity: 4, climate: 3,
     oak: "Sometimes",
-    flavors: ["Blackberry", "Red Plum", "Herbal", "Leather"],
+    flavors: ["Blackberry", "Red Plum", "Garrigue", "Leather"],
     alsoKnownAs: ["Mazuelo", "Cariñena", "Samsó"],
     note: "Ripped out across the Midi for decades as the symbol of the wine lake. The old vines that survived the purge now make some of the most interesting reds in the south."
   },
@@ -628,7 +628,7 @@ const WINES = [
     colorInt: 3,
     body: 3, tannin: 3, acidity: 5, climate: 2,
     oak: "Sometimes",
-    flavors: ["Red Plum", "Violet", "Herbal", "Graphite"],
+    flavors: ["Red Plum", "Violet", "Bay Leaf", "Graphite"],
     alsoKnownAs: ["Jaen"],
     note: "Long assumed to be a relative of Cabernet Franc, and it does taste like one — floral, leafy, high-acid. The slate soils of Bierzo show up as a distinctly mineral streak."
   },
@@ -639,7 +639,7 @@ const WINES = [
     colorInt: 3,
     body: 4, tannin: 1, acidity: 4, climate: 3,
     oak: "Sometimes",
-    flavors: ["Hazelnut", "Pear", "Honey", "Herbal"],
+    flavors: ["Hazelnut", "Pear", "Honey", "Chamomile"],
     alsoKnownAs: [],
     note: "One of the few southern Italian whites built to age — waxy and nutty after a few years. Nearly extinct by the 1940s; Avellino is where it came back."
   },
@@ -661,7 +661,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 1, acidity: 4, climate: 1,
     oak: "Rare",
-    flavors: ["Green Apple", "Pear", "Herbal", "Earthy"],
+    flavors: ["Green Apple", "Pear", "Nettle", "Wet Stone"],
     alsoKnownAs: ["Sylvaner", "Grüner Silvaner"],
     note: "Germany's quiet alternative to Riesling — earthier, lower in acid, and far more about the site than the fruit. Franken bottles it in the flat green Bocksbeutel."
   },
@@ -672,7 +672,7 @@ const WINES = [
     colorInt: 2,
     body: 2, tannin: 1, acidity: 5, climate: 1,
     oak: "Rare",
-    flavors: ["Green Apple", "Lemon", "Herbal", "Almond"],
+    flavors: ["Green Apple", "Lemon", "Chalk", "Almond"],
     alsoKnownAs: [],
     note: "Burgundy's other white, planted where Chardonnay would not ripen well. Sharp enough that the traditional use was to soften it with crème de cassis — a Kir."
   },
@@ -727,7 +727,7 @@ const WINES = [
     colorInt: 5,
     body: 4, tannin: 4, acidity: 4, climate: 1,
     oak: "Sometimes",
-    flavors: ["Blackberry", "Violet", "Chocolate", "Earthy"],
+    flavors: ["Blackberry", "Violet", "Chocolate", "Forest Floor"],
     alsoKnownAs: [],
     note: "Startlingly dark for a grape grown in the Alps. A relative of Syrah, and the tannins can turn bitter on the finish if the winemaking is careless."
   },
@@ -738,7 +738,7 @@ const WINES = [
     colorInt: 5,
     body: 5, tannin: 5, acidity: 4, climate: 3,
     oak: "Common",
-    flavors: ["Blackberry", "Plum", "Earthy", "Spice"],
+    flavors: ["Blackberry", "Plum", "Forest Floor", "Cinnamon"],
     alsoKnownAs: [],
     note: "Among the most tannic grapes in existence — the polyphenol counts run higher than Tannat. Montefalco law requires nearly three years of ageing before release, and it needs every month."
   },
@@ -749,7 +749,7 @@ const WINES = [
     colorInt: 4,
     body: 4, tannin: 3, acidity: 3, climate: 3,
     oak: "Sometimes",
-    flavors: ["Black Cherry", "Raisin", "Herbal", "Earthy"],
+    flavors: ["Black Cherry", "Raisin", "Oregano", "Clay"],
     alsoKnownAs: [],
     note: "Black and bitter, by both name and taste — the roasted, slightly bitter finish is the marker. Salento heat gives it the raisined edge."
   },
@@ -760,7 +760,7 @@ const WINES = [
     colorInt: 5,
     body: 4, tannin: 4, acidity: 5, climate: 3,
     oak: "Sometimes",
-    flavors: ["Blackberry", "Red Plum", "Herbal", "Graphite"],
+    flavors: ["Blackberry", "Red Plum", "Rosemary", "Graphite"],
     alsoKnownAs: [],
     note: "Spain's second most planted red and almost unknown outside it, long sent away for bulk blending. Old bush vines at altitude hold acidity that has no business surviving that heat."
   },
@@ -771,7 +771,7 @@ const WINES = [
     colorInt: 3,
     body: 3, tannin: 2, acidity: 4, climate: 2,
     oak: "Rare",
-    flavors: ["Sour Cherry", "Raspberry", "Spice", "Violet"],
+    flavors: ["Sour Cherry", "Raspberry", "Clove", "Violet"],
     alsoKnownAs: [],
     note: "Austria's most planted red, a 1922 crossing of Blaufränkisch and St. Laurent. Juicy and low-tannin — the one they chill slightly and drink young."
   },
@@ -782,7 +782,7 @@ const WINES = [
     colorInt: 2,
     body: 2, tannin: 2, acidity: 5, climate: 1,
     oak: "Rare",
-    flavors: ["Red Plum", "Raspberry", "Bread", "Earthy"],
+    flavors: ["Red Plum", "Raspberry", "Bread", "Mushroom"],
     alsoKnownAs: ["Meunier"],
     note: "The third Champagne grape and the least discussed, though it is planted more widely than Pinot Noir there. Buds late and ripens early, which is how it survives frost in the Marne Valley."
   },
@@ -804,7 +804,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 1, acidity: 4, climate: 3,
     oak: "Rare",
-    flavors: ["Citrus", "Peach", "Saline", "Herbal"],
+    flavors: ["Citrus", "Peach", "Saline", "Fennel"],
     alsoKnownAs: [],
     note: "Bred for Marsala and left there for a century. Picked early it now makes a taut, saline dry white — one of the clearest signs of how far Sicily has moved."
   },
@@ -815,7 +815,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 1, acidity: 5, climate: 3,
     oak: "Rare",
-    flavors: ["Citrus", "Pear", "Herbal", "Almond"],
+    flavors: ["Citrus", "Pear", "Nettle", "Almond"],
     alsoKnownAs: [],
     note: "Possibly the grape behind Falernian, the most prized wine of ancient Rome. Keeps a sharp citrus edge in a region where most whites turn flabby."
   },
@@ -837,7 +837,7 @@ const WINES = [
     colorInt: 2,
     body: 4, tannin: 1, acidity: 4, climate: 2,
     oak: "Sometimes",
-    flavors: ["Citrus", "Pear", "Herbal", "Wax"],
+    flavors: ["Citrus", "Pear", "Wet Stone", "Wax"],
     alsoKnownAs: [],
     note: "Portugal's most serious white, and almost entirely confined to the Dão. Structured enough to take oak and years in bottle without ever getting heavy."
   },
@@ -859,7 +859,7 @@ const WINES = [
     colorInt: 3,
     body: 3, tannin: 1, acidity: 5, climate: 2,
     oak: "Sometimes",
-    flavors: ["Green Apple", "Quince", "Herbal", "Honey"],
+    flavors: ["Green Apple", "Quince", "Walnut", "Honey"],
     alsoKnownAs: [],
     note: "Georgia's workhorse white, and the classic amber wine when fermented on its skins in buried qvevri. That method gives it grip no other white has."
   },
@@ -870,7 +870,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 1, acidity: 2, climate: 2,
     oak: "Rare",
-    flavors: ["Green Apple", "Almond", "Bread", "Herbal"],
+    flavors: ["Green Apple", "Almond", "Bread", "Flint"],
     alsoKnownAs: ["Fendant", "Gutedel"],
     note: "So neutral it is treated as a transmitter rather than a flavour — the Swiss judge it entirely on site. Low acid means it has nowhere to hide."
   },
@@ -881,7 +881,7 @@ const WINES = [
     colorInt: 5,
     body: 4, tannin: 3, acidity: 5, climate: 2,
     oak: "Sometimes",
-    flavors: ["Blackberry", "Plum", "Violet", "Earthy"],
+    flavors: ["Blackberry", "Plum", "Violet", "Iron"],
     alsoKnownAs: [],
     note: "A parent of Lagrein and a relative of Syrah, grown on the gravel flats of the Campo Rotaliano. Dark and high-acid, with far softer tannins than the colour suggests."
   },
@@ -892,7 +892,7 @@ const WINES = [
     colorInt: 2,
     body: 2, tannin: 2, acidity: 5, climate: 3,
     oak: "Rare",
-    flavors: ["Strawberry", "Cherry", "Violet", "Herbal"],
+    flavors: ["Strawberry", "Cherry", "Violet", "Oregano"],
     alsoKnownAs: [],
     note: "Pale, floral and best served cool — not what most people expect from Sicily. Blended with Nero d'Avola it makes Cerasuolo di Vittoria, the island's only DOCG."
   },
@@ -903,7 +903,7 @@ const WINES = [
     colorInt: 4,
     body: 4, tannin: 5, acidity: 5, climate: 2,
     oak: "Common",
-    flavors: ["Sour Cherry", "Blackberry", "Earthy", "Leather"],
+    flavors: ["Sour Cherry", "Blackberry", "Clay", "Leather"],
     alsoKnownAs: [],
     note: "Thick-skinned, late-ripening and severe — high acid on top of high tannin, in a damp maritime climate that does it no favours. Rewards patience and little else."
   },
@@ -914,7 +914,7 @@ const WINES = [
     colorInt: 4,
     body: 4, tannin: 4, acidity: 5, climate: 2,
     oak: "Common",
-    flavors: ["Blackberry", "Violet", "Herbal", "Spice"],
+    flavors: ["Blackberry", "Violet", "Dried Herbs", "Black Pepper"],
     alsoKnownAs: ["Morrastel"],
     note: "The seasoning in a Rioja blend — a few percent for acidity and floral lift. Yields so miserly that growers nearly abandoned it before the quality argument won."
   },
@@ -925,7 +925,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 2, acidity: 4, climate: 3,
     oak: "Rare",
-    flavors: ["Red Plum", "Smoke", "Herbal", "Earthy"],
+    flavors: ["Red Plum", "Smoke", "Bay Leaf", "Volcanic Ash"],
     alsoKnownAs: [],
     note: "Phylloxera never reached the Canaries, so these are ungrafted vines on volcanic ash, some of them centuries old. The smoky, ashy note comes with the ground."
   },
@@ -936,7 +936,7 @@ const WINES = [
     colorInt: 2,
     body: 3, tannin: 3, acidity: 4, climate: 1,
     oak: "Sometimes",
-    flavors: ["Red Plum", "Cherry", "Spice", "Earthy"],
+    flavors: ["Red Plum", "Cherry", "Cinnamon", "Mushroom"],
     alsoKnownAs: ["Bastardo"],
     note: "The sturdier of the Jura's two pale reds, needing the warmest sites to ripen at all. Travels to Portugal as Bastardo, where it goes into Port."
   },
@@ -947,7 +947,7 @@ const WINES = [
     colorInt: 5,
     body: 3, tannin: 3, acidity: 4, climate: 1,
     oak: "Sometimes",
-    flavors: ["Sour Cherry", "Blackberry", "Violet", "Herbal"],
+    flavors: ["Sour Cherry", "Blackberry", "Violet", "Liquorice"],
     alsoKnownAs: [],
     note: "A 1955 crossing bred to solve a specific German problem: red wines too pale to convince anyone. Deeply coloured, moderate in everything else."
   },
@@ -958,7 +958,7 @@ const WINES = [
     colorInt: 4,
     body: 4, tannin: 3, acidity: 3, climate: 3,
     oak: "Sometimes",
-    flavors: ["Plum", "Black Cherry", "Violet", "Spice"],
+    flavors: ["Plum", "Black Cherry", "Violet", "Star Anise"],
     alsoKnownAs: ["Douce Noire", "Charbono"],
     note: "Argentina's second most planted red, and not Italian Bonarda at all — it is Savoie's Douce Noire, misnamed on arrival. Soft, dark and permanently in Malbec's shadow."
   }
