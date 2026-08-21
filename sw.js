@@ -5,15 +5,14 @@
  * wrong answer bank is a worse failure than a slow load. Offline still works
  * because every successful response is copied into the cache on the way past.
  */
-const CACHE = 'winedle-v1';
+const CACHE = 'winedle-v2';
 
+/* index.html is now fully inlined, so there are no sub-resources to keep in
+ * step with it. */
 const CORE = [
   './',
   './index.html',
-  './src/style.css',
-  './src/game.js',
-  './data/wines.js',
-  './data/aromas.js'
+  './manifest.webmanifest'
 ];
 
 self.addEventListener('install', event => {

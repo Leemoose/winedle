@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Winedle — the daily wine puzzle</title>
+<meta name="description" content="Guess the wine or grape in six tries. A new one every day, scored across type, origin, structure and aroma.">
+<meta name="theme-color" content="#ece2d0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16100e" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Winedle — the daily wine puzzle">
+<meta property="og:description" content="Guess the wine or grape in six tries. A new one every day.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://leemoose.github.io/winedle/">
+<meta property="og:image" content="https://leemoose.github.io/winedle/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Winedle — the daily wine puzzle. A row of scored attribute tiles.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://leemoose.github.io/winedle/assets/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%B7%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Karla:wght@400;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<main class="sheet">
+
+  <header class="masthead">
+    <hr class="masthead__rule">
+    <h1 class="masthead__title">Winedle</h1>
+    <p class="masthead__sub">The daily wine puzzle</p>
+    <hr class="masthead__rule">
+    <p class="masthead__vintage">
+      <span id="puzzle-no"></span>
+      <span id="puzzle-date"></span>
+      <button id="stats-open" class="linkish" type="button">Cellar book</button>
+      <a id="mode-link" class="linkish" href="?mode=practice">Practice</a>
+    </p>
+    <nav id="archive-nav" class="archive-nav" hidden></nav>
+  </header>
+
+  <details class="howto">
+    <summary>How to play</summary>
+    <div class="howto__body">
+      <p>Guess the wine or grape in six. Answers are both — Chardonnay and Chablis, Syrah and Barolo — so the <strong>Grape</strong> tile turns green when your guess and the answer share a variety.</p>
+      <div class="key">
+        <div><i class="k-hit"></i> exact</div>
+        <div><i class="k-near"></i> close</div>
+        <div><i class="k-miss"></i> no match</div>
+      </div>
+      <p class="howto__fine">Arrows point toward the answer — <strong>↑</strong> means higher. Country and region mean the classic home, not everywhere it is grown. Aromas score for the exact note or the right family.</p>
+    </div>
+  </details>
+
+  <details class="howto archive">
+    <summary>Archive</summary>
+    <div class="howto__body">
+      <p>Every past puzzle, still playable. Replays are kept separate from the daily — they never touch your streak.</p>
+      <ol id="archive-list" class="archive-list"></ol>
+    </div>
+  </details>
+
+  <div class="entry">
+    <div class="entry__row">
+      <input id="guess-input" type="text" autocomplete="off" autocapitalize="off"
+             spellcheck="false" placeholder="Name a wine or grape…" aria-label="Guess a wine or grape"
+             role="combobox" aria-controls="suggestions" aria-autocomplete="list"
+             aria-expanded="false">
+      <span id="counter"></span>
+    </div>
+    <ul id="suggestions" role="listbox" aria-label="Matching wines and grapes" hidden></ul>
+    <p id="notice" class="notice" role="status" hidden></p>
+    <p id="remaining" class="remaining" role="status" hidden></p>
+  </div>
+
+  <section id="board"></section>
+  <p id="announcer" class="sr-only" role="status" aria-live="polite"></p>
+
+  <section id="end-panel" hidden></section>
+
+  <dialog id="stats-dialog" class="sheet-dialog">
+    <h2 class="dialog__title">Cellar book</h2>
+    <div id="stats-summary" class="stats"></div>
+    <h3 class="dialog__sub">Guesses to solve</h3>
+    <div id="stats-histogram" class="histogram"></div>
+    <h3 class="dialog__sub">Bottles met</h3>
+    <p id="met-count" class="met-count"></p>
+    <ol id="met-list" class="met-list"></ol>
+    <button id="stats-close" class="share" type="button">Close</button>
+  </dialog>
+
+  <p class="colophon">Poured daily</p>
+
+</main>
+
+<script src="data/aromas.js"></script>
+<script src="data/wines.js"></script>
+<script src="src/game.js"></script>
+</body>
+</html>

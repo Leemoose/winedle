@@ -126,6 +126,7 @@ body {
 
 .howto__body { padding: 1rem 0 0; }
 .howto__body p { margin: 0 0 0.7rem; }
+.howto__fine { font-size: 0.78rem; opacity: .8; margin: 1rem 0 0; }
 .howto__body strong { color: var(--ink); font-weight: 700; }
 
 .key { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; margin-top: 0.9rem; }
@@ -482,32 +483,71 @@ a.linkish { text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   .row--new .tile { animation: fade .3s backwards; }
   @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+
+/* Captions sit under the tiles on the same left edge, labelled in the tiles'
+ * own micro-caps so they read as part of the row. */
+.row__notes { margin-top: 0.55rem; }
+
+.note {
+  display: grid;
+  grid-template-columns: 4.2rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  animation: fade .45s .55s backwards;
 }
 
-.row__shared {
-  margin: 0.55rem 0 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
+.note__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--ink-soft);
+  opacity: .75;
 }
 
-.hint {
-  margin: 0.65rem 0 0;
-  padding: 0.4rem 0 0.4rem 0.85rem;
-  border-left: 2px solid var(--gold);
-  font-size: 0.85rem;
-  font-style: italic;
-  color: var(--ink-soft);
-  animation: fade .45s .6s backwards;
-}
+.note__body { color: var(--ink-soft); }
 
-.hint strong {
-  font-style: normal;
-  font-weight: 700;
-  color: var(--ink);
+.note--hint .note__label { color: var(--gold); opacity: 1; }
+.note--hint .note__body { color: var(--ink); }
+
+@media (max-width: 480px) {
+  .note { grid-template-columns: 3.4rem 1fr; gap: 0.45rem; font-size: 0.74rem; }
+}
 }
 
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+
+/* Captions sit under the tiles on the same left edge, labelled in the tiles'
+ * own micro-caps so they read as part of the row. */
+.row__notes { margin-top: 0.55rem; }
+
+.note {
+  display: grid;
+  grid-template-columns: 4.2rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  animation: fade .45s .55s backwards;
+}
+
+.note__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: .75;
+}
+
+.note__body { color: var(--ink-soft); }
+
+.note--hint .note__label { color: var(--gold); opacity: 1; }
+.note--hint .note__body { color: var(--ink); }
+
+@media (max-width: 480px) {
+  .note { grid-template-columns: 3.4rem 1fr; gap: 0.45rem; font-size: 0.74rem; }
+}
 
 /* ---------- end panel ---------- */
 

@@ -14,7 +14,6 @@ const REMAINING_AFTER = 3;
 const EPOCH = Date.UTC(2026, 0, 1);
 
 const ORD_LABELS = {
-  colorInt: ['Pale', 'Light', 'Medium', 'Deep', 'Opaque'],
   body:     ['Light', 'Light-Med', 'Medium', 'Med-Full', 'Full'],
   tannin:   ['Low', 'Low-Med', 'Medium', 'Med-High', 'High'],
   acidity:  ['Low', 'Med-Low', 'Medium', 'Med-High', 'High'],
@@ -22,20 +21,31 @@ const ORD_LABELS = {
 };
 
 const COLUMNS = [
-  { key: 'color',    label: 'Colour',  type: 'exact' },
-  { key: 'country',  label: 'Country', type: 'geo'   },
-  { key: 'region',   label: 'Region',  type: 'exact' },
-  { key: 'colorInt', label: 'Depth',   type: 'ord'   },
-  { key: 'body',     label: 'Body',    type: 'ord'   },
-  { key: 'tannin',   label: 'Tannin',  type: 'ord'   },
-  { key: 'acidity',  label: 'Acidity', type: 'ord'   },
-  { key: 'climate',  label: 'Climate', type: 'ord'   },
-  { key: 'flavors',  label: 'Aromas',  type: 'set'   }
+  { key: 'kind',    label: 'Type',    type: 'kind'  },
+  { key: 'color',   label: 'Colour',  type: 'exact' },
+  { key: 'grape',   label: 'Grape',   type: 'exact' },
+  { key: 'country', label: 'Country', type: 'geo'   },
+  { key: 'region',  label: 'Region',  type: 'exact' },
+  { key: 'body',    label: 'Body',    type: 'ord'   },
+  { key: 'tannin',  label: 'Tannin',  type: 'ord'   },
+  { key: 'acidity', label: 'Acidity', type: 'ord'   },
+  { key: 'climate', label: 'Climate', type: 'ord'   },
+  { key: 'flavors', label: 'Aromas',  type: 'set'   }
 ];
 
 const EMOJI = { hit: '\u{1F7E5}', near: '\u{1F7E8}', miss: '⬜' };
 
 /* ---------- comparison engine ---------- */
+
+/* Type separates a grape variety from a wine, and among wines separates still
+ * from sparkling, fortified and sweet. Two different wine styles score close:
+ * knowing you are hunting a wine rather than a grape is real progress even
+ * when the style is wrong. */
+function cmpKind(g, a) {
+  if (g === a) return { state: 'hit', text: g };
+  const bothWines = g !== 'Grape' && a !== 'Grape';
+  return { state: bothWines ? 'near' : 'miss', text: g };
+}
 
 function cmpExact(g, a) {
   return { state: g === a ? 'hit' : 'miss', text: g };
@@ -90,7 +100,8 @@ function compare(guess, answer) {
   return COLUMNS.map(col => {
     const g = guess[col.key], a = answer[col.key];
     let r;
-    if (col.type === 'exact')      r = cmpExact(g, a);
+    if (col.type === 'kind')       r = cmpKind(g, a);
+    else if (col.type === 'exact') r = cmpExact(g, a);
     else if (col.type === 'geo')   r = cmpGeo(g, a, guess, answer);
     else if (col.type === 'ord')   r = cmpOrd(g, a, col.key);
     else                           r = cmpSet(g, a);
@@ -461,17 +472,27 @@ function tileEl(t, delay) {
   return el;
 }
 
+/* One caption block under the tiles rather than two floating callouts: a
+ * tiny-caps label in the tile's own type, then the detail. Reads as part of
+ * the row instead of something stuck to it. */
+function noteLine(label, body, kind) {
+  const line = document.createElement('p');
+  line.className = 'note' + (kind ? ' note--' + kind : '');
+  const tag = document.createElement('span');
+  tag.className = 'note__label';
+  tag.textContent = label;
+  const text = document.createElement('span');
+  text.className = 'note__body';
+  text.textContent = body;
+  line.appendChild(tag);
+  line.appendChild(text);
+  return line;
+}
+
 function hintEl(hint) {
-  const el = document.createElement('p');
-  el.className = 'hint';
-  if (hint.kind === 'aroma') {
-    el.innerHTML = 'Close. The answer shows <strong>' +
-      hint.value.toLowerCase() + '</strong> — your guess does not.';
-  } else {
-    el.innerHTML = 'Close. Oak on the answer: <strong>' +
-      hint.value.toLowerCase() + '</strong>.';
-  }
-  return el;
+  return hint.kind === 'aroma'
+    ? noteLine('Hint', 'the answer shows ' + hint.value.toLowerCase(), 'hint')
+    : noteLine('Hint', 'oak on the answer is ' + hint.value.toLowerCase(), 'hint');
 }
 
 /* The aroma tile can only fit a count. Desktop gets the names on hover, so
@@ -480,18 +501,12 @@ function aromaLine(tiles) {
   const t = tiles.find(x => x.label === 'Aromas');
   if (!t || t.state === 'miss') return null;
   const parts = [];
-  if (t.shared && t.shared.length) {
-    parts.push('Shared: ' + t.shared.join(', ').toLowerCase() + '.');
-  }
+  if (t.shared && t.shared.length) parts.push(t.shared.join(', ').toLowerCase());
   if (t.kin && t.kin.length) {
-    parts.push('Right family, wrong note: ' +
-      t.kin.map(k => k.term.toLowerCase() + ' (' + k.family.toLowerCase() + ')').join(', ') + '.');
+    parts.push(t.kin.map(k => k.term.toLowerCase() + ' \u2192 ' + k.family.toLowerCase()).join(', '));
   }
   if (!parts.length) return null;
-  const el = document.createElement('p');
-  el.className = 'row__shared';
-  el.textContent = parts.join(' ');
-  return el;
+  return noteLine('Aromas', parts.join(' \u00b7 '));
 }
 
 function rowEl(wine, tiles, animate) {
@@ -509,8 +524,11 @@ function rowEl(wine, tiles, animate) {
   grid.setAttribute('aria-label', 'How ' + wine.name + ' scored');
   tiles.forEach((t, i) => grid.appendChild(tileEl(t, animate ? i * 90 : 0)));
   row.appendChild(grid);
+  const notes = document.createElement('div');
+  notes.className = 'row__notes';
   const shared = aromaLine(tiles);
-  if (shared) row.appendChild(shared);
+  if (shared) notes.appendChild(shared);
+  row.appendChild(notes);
   return row;
 }
 
@@ -523,7 +541,7 @@ function render(animateLast) {
     const row = rowEl(wine, tiles, animateLast && i === state.guesses.length - 1);
     if (wine.name !== ANSWER.name) {
       const hint = hintFor(wine, tiles, revealed, candidatesFor(state.guesses, ANSWER));
-      if (hint) row.appendChild(hintEl(hint));
+      if (hint) row.querySelector('.row__notes').appendChild(hintEl(hint));
     }
     board.appendChild(row);
   });
@@ -535,7 +553,7 @@ function render(animateLast) {
    * spent half their guesses - see REMAINING_AFTER. */
   if (state.status === 'playing' && state.guesses.length >= REMAINING_AFTER) {
     const n = candidatesFor(state.guesses, ANSWER).length;
-    remaining.textContent = n === 1 ? '1 grape still fits' : n + ' grapes still fit';
+    remaining.textContent = n === 1 ? '1 answer still fits' : n + ' answers still fit';
     remaining.hidden = false;
   } else {
     remaining.hidden = true;
@@ -596,7 +614,9 @@ function showEnd() {
   const card = document.createElement('div');
   card.className = 'reveal';
   card.innerHTML =
-    '<p class="reveal__eyebrow">Today’s wine</p>' +
+    '<p class="reveal__eyebrow">' +
+      (IS_ARCHIVE || IS_PRACTICE || IS_CHALLENGE ? 'The ' : 'Today’s ') +
+      (ANSWER.kind === 'Grape' ? 'grape' : 'wine') + '</p>' +
     '<h3 class="reveal__name">' + ANSWER.name + '</h3>' +
     '<p class="reveal__origin">' + ANSWER.region + ', ' + ANSWER.country + '</p>' +
     '<p class="reveal__note">' + ANSWER.note + '</p>' +
@@ -892,7 +912,7 @@ input.addEventListener('keydown', e => {
     return submitGuess(exact);
   }
   if (currentList.length) return submitGuess(currentList[activeIdx].wine);
-  notice('No grape by that name \u2014 keep typing, or pick from the list.');
+  notice('Nothing by that name \u2014 keep typing, or pick from the list.');
 });
 
 input.addEventListener('blur', () => setTimeout(() => renderSuggestions([]), 120));

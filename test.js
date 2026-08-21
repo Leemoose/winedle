@@ -35,7 +35,7 @@ function ok(name, cond, detail) {
 function section(name) { console.log('\n' + name); }
 
 const by = n => WINES.find(w => w.name === n);
-const ORD = ['colorInt', 'body', 'tannin', 'acidity', 'climate'];
+const ORD = ['body', 'tannin', 'acidity', 'climate'];
 
 /* ---------- data integrity ---------- */
 
@@ -64,6 +64,20 @@ ok('every wine has a tier of 1, 2 or 3', badTier.length === 0, badTier.map(w => 
   api.tierPool(tier).length >= 10, 'only ' + api.tierPool(tier).length));
 
 const badFlavors = WINES.filter(w => !Array.isArray(w.flavors) || w.flavors.length !== 4);
+const KINDS = ['Grape', 'Still', 'Sparkling', 'Fortified', 'Sweet'];
+const badKind = WINES.filter(w => !KINDS.includes(w.kind));
+ok('every entry has a valid kind', badKind.length === 0, badKind.map(w => w.name).join(', '));
+
+/* A wine's principal grape must itself be an entry in the bank, or the Grape
+ * tile compares against something that cannot be guessed. */
+const grapeNames = new Set(WINES.filter(w => w.kind === 'Grape').map(w => w.name));
+const orphan = WINES.filter(w => !grapeNames.has(w.grape));
+ok('every principal grape exists in the bank as a grape', orphan.length === 0,
+   orphan.map(w => w.name + ' -> ' + w.grape).join(', '));
+
+ok('a grape is its own principal grape',
+   WINES.filter(w => w.kind === 'Grape').every(w => w.grape === w.name));
+
 ok('every wine has exactly four aromas', badFlavors.length === 0,
    badFlavors.map(w => w.name).join(', '));
 
@@ -72,12 +86,12 @@ ok('no wine repeats an aroma', dupFlavors.length === 0, dupFlavors.map(w => w.na
 
 /* The invariant that keeps every puzzle solvable: no two wines may be
  * indistinguishable across all nine scored tiles. */
-const FULL = ['color', 'country', 'region', 'colorInt', 'body', 'tannin', 'acidity', 'climate'];
+const FULL = ['kind', 'color', 'grape', 'country', 'region', 'body', 'tannin', 'acidity', 'climate'];
 const fullSig = w => FULL.map(k => w[k]).join('|') + '|' + [...w.flavors].sort().join(',');
 const bySig = {};
 WINES.forEach(w => (bySig[fullSig(w)] = bySig[fullSig(w)] || []).push(w.name));
 const twins = Object.values(bySig).filter(v => v.length > 1);
-ok('no two wines are identical across all nine tiles', twins.length === 0,
+ok('no two entries are identical across all ten tiles', twins.length === 0,
    JSON.stringify(twins));
 
 /* Names and aliases share one lookup table, so a collision silently steals a
@@ -121,8 +135,8 @@ ok('families are not single-term', Object.values(AROMA_FAMILIES).every(v => v.le
 section('engine');
 
 const self = api.compare(by('Nebbiolo'), by('Nebbiolo'));
-ok('a wine against itself scores every tile exact', self.every(t => t.state === 'hit'));
-ok('the grid is nine tiles wide', self.length === 9 && api.COLUMNS.length === 9);
+ok('an entry against itself scores every tile exact', self.every(t => t.state === 'hit'));
+ok('the grid is ten tiles wide', self.length === 10 && api.COLUMNS.length === 10);
 
 const nebSang = api.compare(by('Sangiovese'), by('Nebbiolo'));
 const tile = (tiles, label) => tiles.find(t => t.label === label);

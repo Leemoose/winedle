@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Winedle — the daily wine puzzle</title>
-<meta name="description" content="Guess the grape variety in six tries. A new wine every day, scored across colour, origin and structure.">
+<meta name="description" content="Guess the wine or grape in six tries. A new one every day, scored across type, origin, structure and aroma.">
 <meta name="theme-color" content="#ece2d0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#16100e" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="Winedle — the daily wine puzzle">
-<meta property="og:description" content="Guess the grape variety in six tries. A new wine every day.">
+<meta property="og:description" content="Guess the wine or grape in six tries. A new one every day.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://leemoose.github.io/winedle/">
 <meta property="og:image" content="https://leemoose.github.io/winedle/assets/og.png">
@@ -23,7 +23,669 @@
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Karla:wght@400;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
-<link rel="stylesheet" href="src/style.css">
+<style>
+/* Winedle — old-world label: parchment, letterpress, high-contrast didone */
+
+:root {
+  --parchment: #ece2d0;
+  --parchment-deep: #e0d3bd;
+  --ink: #24160f;
+  --ink-soft: #6b5544;
+  --oxblood: #6d1a26;
+  --oxblood-deep: #4a0f1a;
+  --amber: #b1802c;
+  --gold: #a68b4c;
+  --rule: rgba(36, 22, 15, 0.18);
+  --tile-miss-bg: rgba(36, 22, 15, 0.04);
+  --shadow: 0 1px 0 rgba(255,255,255,.5), 0 12px 30px -18px rgba(36,22,15,.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --parchment: #16100e;
+    --parchment-deep: #1d1512;
+    --ink: #e8dcc8;
+    --ink-soft: #a08e78;
+    --oxblood: #8c2432;
+    --oxblood-deep: #5d1520;
+    --amber: #c2913a;
+    --gold: #8a7442;
+    --rule: rgba(232, 220, 200, 0.16);
+    --tile-miss-bg: rgba(232, 220, 200, 0.04);
+    --shadow: 0 12px 30px -18px rgba(0,0,0,.9);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--parchment);
+  /* woven paper tooth + a vignette so the page reads as stock, not screen */
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.14), transparent 60%),
+    radial-gradient(ellipse at 50% 120%, rgba(36,22,15,.10), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+  color: var(--ink);
+  font-family: Karla, 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sheet {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 5rem;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead { text-align: center; }
+
+.masthead__rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  height: 3px;
+  margin: 0;
+}
+
+.masthead__title {
+  font-family: 'Bodoni Moda', 'Didot', 'Playfair Display', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(2.9rem, 11vw, 5.5rem);
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  margin: 0.5rem 0 0.2rem;
+  line-height: 1;
+}
+
+.masthead__sub {
+  font-size: 0.7rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+
+.masthead__vintage {
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0.55rem 0;
+}
+
+.masthead__vintage > *:not(:last-child)::after {
+  content: '·';
+  margin-left: 0.9rem;
+  color: var(--gold);
+}
+
+/* ---------- how to play ---------- */
+
+.howto {
+  margin: 1.75rem auto 0;
+  max-width: 620px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.howto summary {
+  cursor: pointer;
+  list-style: none;
+  text-align: center;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.66rem;
+  color: var(--gold);
+}
+
+.howto summary::-webkit-details-marker { display: none; }
+.howto summary::after { content: ' ▾'; }
+.howto[open] summary::after { content: ' ▴'; }
+
+.howto__body { padding: 1rem 0 0; }
+.howto__body p { margin: 0 0 0.7rem; }
+.howto__fine { font-size: 0.78rem; opacity: .8; margin: 1rem 0 0; }
+.howto__body strong { color: var(--ink); font-weight: 700; }
+
+.key { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; margin-top: 0.9rem; }
+.key div { display: flex; align-items: center; gap: 0.45rem; font-size: 0.78rem; }
+.key i {
+  width: 14px; height: 14px; display: block; border: 1px solid var(--rule);
+}
+.key .k-hit  { background: var(--oxblood); border-color: var(--oxblood-deep); }
+.key .k-near { background: var(--amber); border-color: var(--amber); }
+.key .k-miss { background: var(--tile-miss-bg); }
+
+.linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--gold);
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.linkish:hover { border-bottom-color: var(--gold); }
+a.linkish { text-decoration: none; }
+
+.archive-nav {
+  text-align: center;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding-bottom: 0.6rem;
+}
+
+.archive-nav a { color: var(--gold); text-decoration: none; border-bottom: 1px solid transparent; }
+.archive-nav a:hover { border-bottom-color: var(--gold); }
+.archive-nav .sep { margin: 0 0.55rem; opacity: .5; }
+
+.archive-list {
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.15rem 1.2rem;
+}
+
+.archive-list li {
+  display: grid;
+  grid-template-columns: 4.2rem 1fr 1rem;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.18rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.archive-list li.is-current { color: var(--ink); font-weight: 700; }
+.archive-list a { color: var(--gold); text-decoration: none; }
+.archive-list a:hover { text-decoration: underline; }
+.archive-list a.is-done { color: var(--ink-soft); }
+.archive-list__date { font-size: 0.74rem; opacity: .7; }
+.archive-list__mark { font-size: 0.72rem; color: var(--oxblood); text-align: right; }
+
+@media (prefers-color-scheme: dark) { .archive-list__mark { color: var(--amber); } }
+
+/* ---------- cellar book ---------- */
+
+.sheet-dialog {
+  border: 1px solid var(--rule);
+  border-top: 3px double var(--gold);
+  background: var(--parchment-deep);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  padding: 2rem 1.75rem 1.75rem;
+  max-width: 420px;
+  width: calc(100% - 2rem);
+  /* The wines-met list made this taller than a short viewport. */
+  max-height: min(90vh, 46rem);
+  overflow-y: auto;
+  text-align: center;
+}
+
+.sheet-dialog::backdrop { background: rgba(20, 12, 8, .62); }
+
+.dialog__title {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-weight: 500;
+  font-size: 1.7rem;
+  margin: 0 0 1.2rem;
+}
+
+.dialog__sub {
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 400;
+  margin: 1.6rem 0 0.7rem;
+}
+
+.histogram { display: flex; flex-direction: column; gap: 4px; margin-bottom: 1.6rem; }
+
+.bar { display: grid; grid-template-columns: 1rem 1fr; align-items: center; gap: 0.5rem; }
+
+.bar__n {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.bar__fill {
+  background: var(--tile-miss-bg);
+  border: 1px solid var(--rule);
+  padding: 0.15rem 0.4rem;
+  text-align: right;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  transition: width .4s ease;
+}
+
+.bar.is-latest .bar__fill {
+  background: var(--oxblood);
+  border-color: var(--oxblood-deep);
+  color: #f6ece0;
+}
+
+.met-count {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.5rem;
+  margin: 0 0 0.9rem;
+}
+
+.met-list {
+  list-style: none;
+  margin: 0 0 1.6rem;
+  padding: 0 0.3rem 0 0;
+  max-height: 13rem;
+  overflow-y: auto;
+  text-align: left;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.met {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.2rem 0.1rem;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  opacity: .55;
+  border-bottom: 1px solid var(--rule);
+}
+
+.met:last-child { border-bottom: 0; }
+.met.is-met { color: var(--ink); opacity: 1; font-weight: 700; }
+.met__tally { color: var(--gold); font-variant-numeric: tabular-nums; }
+
+/* ---------- guess entry ---------- */
+
+.entry {
+  position: relative;
+  margin: 2rem auto 0;
+  max-width: 520px;
+}
+
+.entry__row { display: flex; align-items: baseline; gap: 0.75rem; }
+
+#guess-input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  padding: 0.55rem 0.2rem;
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.35rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .2s;
+}
+
+#guess-input::placeholder { color: var(--ink-soft); opacity: .65; font-style: italic; }
+#guess-input:focus { border-color: var(--oxblood); }
+#guess-input:disabled { opacity: .5; }
+
+#counter {
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.remaining {
+  margin: 0.5rem 0 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: right;
+}
+
+.notice {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--oxblood);
+}
+
+@media (prefers-color-scheme: dark) { .remaining {
+  margin: 0.5rem 0 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: right;
+}
+
+.notice { color: var(--amber); } }
+
+#guess-input.is-wrong {
+  animation: nudge .32s ease;
+  border-color: var(--oxblood);
+}
+
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-4px); }
+  75%      { transform: translateX(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #guess-input.is-wrong { animation: none; }
+}
+
+#suggestions {
+  position: absolute;
+  z-index: 20;
+  left: 0; right: 0;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--parchment-deep);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow);
+  max-height: 17rem;
+  overflow-y: auto;
+}
+
+.suggestion {
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--rule);
+}
+.suggestion:last-child { border-bottom: 0; }
+.suggestion:hover, .suggestion.is-active { background: var(--oxblood); color: var(--parchment); }
+.suggestion em { color: var(--ink-soft); font-size: 0.82rem; font-style: italic; }
+.suggestion:hover em, .suggestion.is-active em { color: rgba(255,255,255,.72); }
+
+/* ---------- board ---------- */
+
+#board { margin-top: 2.25rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+.row {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.85rem;
+}
+
+.row__name {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-weight: 500;
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 0.7rem;
+}
+
+.row__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 4px;
+}
+
+.tile {
+  position: relative;
+  border: 1px solid var(--rule);
+  background: var(--tile-miss-bg);
+  padding: 0.5rem 0.4rem 0.55rem;
+  text-align: center;
+  min-height: 62px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.tile__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: .62;
+}
+
+.tile__value {
+  font-size: 0.8rem;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+/* Colour is not the only signal - deuteranopes read oxblood and amber as two
+ * similar mid-tones, so each scored state carries a mark as well. */
+.tile__mark {
+  position: absolute;
+  left: 5px;
+  top: 3px;
+  font-size: 0.6rem;
+  opacity: .55;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tile__arrow {
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+  font-size: 0.8rem;
+  opacity: .8;
+}
+
+.tile--hit  { background: var(--oxblood); border-color: var(--oxblood-deep); color: #f6ece0; }
+.tile--near { background: var(--amber); border-color: var(--amber); color: #1d1206; }
+
+/* letterpress reveal: each tile turns like a card being laid down */
+.row--new .tile {
+  animation: lay .5s cubic-bezier(.2,.7,.3,1) backwards;
+  transform-origin: top center;
+}
+
+@keyframes lay {
+  from { opacity: 0; transform: rotateX(-88deg) translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row--new .tile { animation: fade .3s backwards; }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+
+/* Captions sit under the tiles on the same left edge, labelled in the tiles'
+ * own micro-caps so they read as part of the row. */
+.row__notes { margin-top: 0.55rem; }
+
+.note {
+  display: grid;
+  grid-template-columns: 4.2rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  animation: fade .45s .55s backwards;
+}
+
+.note__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: .75;
+}
+
+.note__body { color: var(--ink-soft); }
+
+.note--hint .note__label { color: var(--gold); opacity: 1; }
+.note--hint .note__body { color: var(--ink); }
+
+@media (max-width: 480px) {
+  .note { grid-template-columns: 3.4rem 1fr; gap: 0.45rem; font-size: 0.74rem; }
+}
+}
+
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+
+/* Captions sit under the tiles on the same left edge, labelled in the tiles'
+ * own micro-caps so they read as part of the row. */
+.row__notes { margin-top: 0.55rem; }
+
+.note {
+  display: grid;
+  grid-template-columns: 4.2rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  animation: fade .45s .55s backwards;
+}
+
+.note__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: .75;
+}
+
+.note__body { color: var(--ink-soft); }
+
+.note--hint .note__label { color: var(--gold); opacity: 1; }
+.note--hint .note__body { color: var(--ink); }
+
+@media (max-width: 480px) {
+  .note { grid-template-columns: 3.4rem 1fr; gap: 0.45rem; font-size: 0.74rem; }
+}
+
+/* ---------- end panel ---------- */
+
+#end-panel { margin-top: 2.5rem; text-align: center; }
+
+.end__verdict {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.6rem;
+  font-style: italic;
+  margin: 0 0 1.25rem;
+}
+
+.reveal {
+  border: 1px solid var(--rule);
+  border-top: 3px double var(--gold);
+  background: var(--parchment-deep);
+  box-shadow: var(--shadow);
+  padding: 1.75rem 1.5rem;
+  text-align: left;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.reveal__eyebrow {
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0;
+}
+
+.reveal__name {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-weight: 500;
+  font-size: 2rem;
+  margin: 0.3rem 0 0.1rem;
+}
+
+.reveal__origin {
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+
+.reveal__note { margin: 0 0 1.2rem; font-size: 0.95rem; }
+
+.reveal__meta { margin: 0; display: grid; gap: 0.5rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+.reveal__meta div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.6rem; }
+.reveal__meta dt {
+  font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-soft); padding-top: 0.28rem;
+}
+.reveal__meta dd { margin: 0; font-size: 0.9rem; }
+
+.stats {
+  display: flex; justify-content: center; gap: 2.2rem;
+  margin: 2rem 0 1.5rem;
+}
+.stats div { display: flex; flex-direction: column; }
+.stats strong { font-family: 'Bodoni Moda', Georgia, serif; font-size: 1.7rem; font-weight: 500; }
+.stats span { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); }
+
+.countdown {
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.share {
+  background: var(--oxblood);
+  color: #f6ece0;
+  border: 0;
+  padding: 0.75rem 2.2rem;
+  font-family: Karla, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+.share:hover { background: var(--oxblood-deep); }
+.share:active { transform: translateY(1px); }
+
+.share--ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+  margin-left: 0.5rem;
+}
+
+.share--ghost:hover { background: var(--tile-miss-bg); color: var(--ink); }
+
+.colophon {
+  margin-top: 4rem;
+  text-align: center;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: .7;
+}
+
+@media (max-width: 480px) {
+  .sheet { padding-top: 1.5rem; }
+  .row__tiles { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); }
+  .stats { gap: 1.4rem; }
+}
+
+</style>
 </head>
 <body>
 <main class="sheet">
@@ -45,18 +707,13 @@
   <details class="howto">
     <summary>How to play</summary>
     <div class="howto__body">
-      <p>Guess the grape variety. Every guess is scored against the answer across nine attributes.</p>
-      <p><strong>Country and region</strong> mean the grape’s classic home — the reference expression, not everywhere it is planted. Chardonnay grows on six continents; its answer is Burgundy, France.</p>
-      <p><strong>Depth</strong> is colour intensity judged within the wine’s own colour category, the way WSET does it. Nebbiolo is pale for a red; Riesling is pale for a white.</p>
-      <p>Arrows on the structural tiles point toward the answer: <strong>↑</strong> means the answer is higher than your guess.</p>
-      <p>Guess something very close but wrong and the board offers a <strong>hint</strong> — whichever aroma the answer carries that rules out the most of the field. Each one is given only once.</p>
-      <p>From the fourth guess on, the board also tells you how many grapes are still consistent with everything you have been shown.</p>
-      <p>The aroma tile scores twice over: an exact match, or the <strong>right family</strong> with the wrong note — lime against citrus, sour cherry against cherry. Placing the family is real progress.</p>
+      <p>Guess the wine or grape in six. Answers are both — Chardonnay and Chablis, Syrah and Barolo — so the <strong>Grape</strong> tile turns green when your guess and the answer share a variety.</p>
       <div class="key">
-        <div><i class="k-hit"></i> exact match</div>
-        <div><i class="k-near"></i> close — one step off, same continent, or shared aromas</div>
+        <div><i class="k-hit"></i> exact</div>
+        <div><i class="k-near"></i> close</div>
         <div><i class="k-miss"></i> no match</div>
       </div>
+      <p class="howto__fine">Arrows point toward the answer — <strong>↑</strong> means higher. Country and region mean the classic home, not everywhere it is grown. Aromas score for the exact note or the right family.</p>
     </div>
   </details>
 
@@ -71,12 +728,12 @@
   <div class="entry">
     <div class="entry__row">
       <input id="guess-input" type="text" autocomplete="off" autocapitalize="off"
-             spellcheck="false" placeholder="Name a grape…" aria-label="Guess a grape variety"
+             spellcheck="false" placeholder="Name a wine or grape…" aria-label="Guess a wine or grape"
              role="combobox" aria-controls="suggestions" aria-autocomplete="list"
              aria-expanded="false">
       <span id="counter"></span>
     </div>
-    <ul id="suggestions" role="listbox" aria-label="Matching grapes" hidden></ul>
+    <ul id="suggestions" role="listbox" aria-label="Matching wines and grapes" hidden></ul>
     <p id="notice" class="notice" role="status" hidden></p>
     <p id="remaining" class="remaining" role="status" hidden></p>
   </div>
@@ -91,7 +748,7 @@
     <div id="stats-summary" class="stats"></div>
     <h3 class="dialog__sub">Guesses to solve</h3>
     <div id="stats-histogram" class="histogram"></div>
-    <h3 class="dialog__sub">Wines met</h3>
+    <h3 class="dialog__sub">Bottles met</h3>
     <p id="met-count" class="met-count"></p>
     <ol id="met-list" class="met-list"></ol>
     <button id="stats-close" class="share" type="button">Close</button>
@@ -101,8 +758,2400 @@
 
 </main>
 
-<script src="data/aromas.js"></script>
-<script src="data/wines.js"></script>
-<script src="src/game.js"></script>
+<script>
+/* Winedle — aroma families
+ *
+ * The aroma tile used to compare terms as opaque strings, so a wine described
+ * as Lemon scored nothing against one described as Citrus, and Sour Cherry
+ * scored nothing against Cherry. Grouping the vocabulary lets a guess earn
+ * partial credit for landing in the right family, which is how tasting notes
+ * actually work: you place the family first, then narrow.
+ *
+ * Every term used in data/wines.js must appear here exactly once — test.js
+ * enforces both halves of that, so a dead term or an unmapped one fails the
+ * build rather than silently scoring as a miss.
+ *
+ * The vocabulary deliberately avoids catch-alls. "Herbal", "Earthy" and
+ * "Spice" once covered 29, 16 and 14 wines respectively — a third of the bank
+ * sharing one filler word, which made the tile look informative while telling
+ * you almost nothing. Family scoring means a specific term still earns credit
+ * against its neighbours, so there is no longer any reason to be vague.
+ */
+
+const AROMA_FAMILIES = {
+  'Citrus':      ['Citrus', 'Lemon', 'Lime', 'Grapefruit', 'Orange Peel', 'Bergamot'],
+  'Orchard':     ['Green Apple', 'Pear', 'Quince'],
+  'Stone fruit': ['Peach', 'Apricot'],
+  'Tropical':    ['Lychee', 'Banana', 'Grape'],
+  'Red fruit':   ['Cherry', 'Sour Cherry', 'Red Plum', 'Raspberry', 'Strawberry'],
+  'Black fruit': ['Blackberry', 'Blackcurrant', 'Black Cherry', 'Plum'],
+  'Dried fruit': ['Raisin', 'Fig', 'Honey'],
+  'Floral':      ['Rose', 'Violet', 'Orange Blossom', 'Honeysuckle', 'Elderflower', 'Chamomile'],
+  'Herbaceous':  ['Herbal Tea', 'Grass', 'Green Bell Pepper', 'Mint', 'Fennel',
+                  'Gooseberry', 'Olive', 'Tomato', 'Dried Herbs', 'Tomato Leaf',
+                  'Garrigue', 'Nettle', 'Oregano', 'Bay Leaf', 'Rosemary'],
+  'Spice':       ['Black Pepper', 'White Pepper', 'Ginger', 'Liquorice', 'Clove',
+                  'Cinnamon', 'Star Anise', 'Allspice'],
+  'Oak':         ['Cedar', 'Vanilla', 'Toast', 'Chocolate', 'Coffee', 'Smoke'],
+  'Earth':       ['Tar', 'Graphite', 'Slate', 'Petrol', 'Saline', 'Forest Floor',
+                  'Wet Stone', 'Flint', 'Chalk', 'Clay', 'Iron', 'Volcanic Ash',
+                  'Mushroom'],
+  'Savoury':     ['Leather', 'Tobacco'],
+  'Leesy':       ['Bread', 'Butter', 'Wax', 'Wet Wool'],
+  'Nutty':       ['Almond', 'Hazelnut', 'Walnut']
+};
+
+const AROMA_FAMILY = (function () {
+  const map = {};
+  Object.keys(AROMA_FAMILIES).forEach(fam => {
+    AROMA_FAMILIES[fam].forEach(term => { map[term] = fam; });
+  });
+  return map;
+})();
+
+/* Winedle — answer bank
+ *
+ * SCALES (1-5, WSET L3 language)
+ *   body     1 Light  2 Light-Med  3 Medium  4 Med-Full  5 Full
+ *   tannin   1 Low    2 Low-Med    3 Medium  4 Med-High  5 High
+ *   acidity  1 Low    2 Med-Low    3 Medium  4 Med-High  5 High
+ *   climate  1 Cool   2 Moderate   3 Warm    4 Hot
+ *
+ * KINDS: every record is either a grape variety (kind "Grape") or a wine
+ * (kind "Still", "Sparkling", "Fortified" or "Sweet"). Both live in one bank
+ * and are guessed against each other. `grape` names the principal variety —
+ * for a grape that is itself, which is what lets a guess of Chardonnay score
+ * an exact Grape tile against an answer of Chablis.
+ *
+ * TIERS: 1 classic (a casual drinker could name it), 2 known to enthusiasts,
+ * 3 specialist. The daily schedule runs 1,2,1,2,1,2,3 across the week so most
+ * days stay winnable for someone who is not studying for an exam; tier 3 gets
+ * one slot a week and is always available in the archive and in practice.
+ *
+ * RULE ON country/region: this is the grape's CLASSIC HOME — the reference
+ * expression a WSET exam would use — not everywhere it's planted. Chardonnay
+ * is grown on six continents; its answer is Burgundy, France. Stated up front
+ * in the game's How-to-Play so nobody argues with the tile.
+ *
+ * RULE ON structure: where a grape genuinely shifts by place (Syrah in
+ * Hermitage vs Barossa), values describe the classic-home expression. The
+ * post-game reveal card names the variation explicitly.
+ */
+
+const WINES = [
+  {
+    name: "Cabernet Sauvignon",
+    kind: "Grape", grape: "Cabernet Sauvignon",
+    tier: 1,
+    color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
+    body: 5, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Blackcurrant", "Green Bell Pepper", "Cedar", "Mint"],
+    alsoKnownAs: [],
+    note: "The Left Bank benchmark. High everything — tannin, acid, body — which is why it takes oak and time so well. Green bell pepper (pyrazine) shows when it ripens short of full."
+  },
+  {
+    name: "Merlot",
+    kind: "Grape", grape: "Merlot",
+    tier: 1,
+    color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
+    body: 4, tannin: 3, acidity: 3, climate: 2,
+    oak: "Common",
+    flavors: ["Plum", "Blackberry", "Chocolate", "Cedar"],
+    alsoKnownAs: [],
+    note: "Right Bank's answer to Cabernet: same address, softer everything. Medium tannin and acid are the whole reason Saint-Emilion drinks earlier than Pauillac."
+  },
+  {
+    name: "Pinot Noir",
+    kind: "Grape", grape: "Pinot Noir",
+    tier: 1,
+    color: "Red", country: "France", region: "Burgundy", continent: "Europe",
+    body: 2, tannin: 2, acidity: 5, climate: 1,
+    oak: "Common",
+    flavors: ["Cherry", "Raspberry", "Strawberry", "Forest Floor"],
+    alsoKnownAs: ["Spatburgunder", "Pinot Nero"],
+    note: "Thin-skinned and cool-climate: light body, low tannin, high acid. The earthy/mushroom note is classic Burgundy; New World versions push fruit instead."
+  },
+  {
+    name: "Syrah",
+    kind: "Grape", grape: "Syrah",
+    tier: 1,
+    color: "Red", country: "France", region: "Northern Rhône", continent: "Europe",
+    body: 5, tannin: 4, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Blackberry", "Black Pepper", "Smoke", "Violet"],
+    alsoKnownAs: ["Shiraz"],
+    note: "Black pepper (rotundone) is the tell, and it fades as the climate warms — which is the whole Northern Rhone vs Barossa distinction. Same grape, different name, different wine."
+  },
+  {
+    name: "Nebbiolo",
+    kind: "Grape", grape: "Nebbiolo",
+    tier: 1,
+    color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 5, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Cherry", "Rose", "Tar", "Dried Herbs"],
+    alsoKnownAs: ["Spanna", "Chiavennasca"],
+    note: "The great trap: pale garnet in the glass, full-bodied and brutally tannic on the palate. Rose and tar together are diagnostic — nothing else does that pairing."
+  },
+  {
+    name: "Sangiovese",
+    kind: "Grape", grape: "Sangiovese",
+    tier: 1,
+    color: "Red", country: "Italy", region: "Tuscany", continent: "Europe",
+    body: 4, tannin: 5, acidity: 5, climate: 3,
+    oak: "Common",
+    flavors: ["Sour Cherry", "Plum", "Tomato Leaf", "Leather"],
+    alsoKnownAs: ["Prugnolo Gentile", "Morellino", "Nielluccio"],
+    note: "High acid plus high tannin and a sour-cherry core — built for food, which is why Chianti works at the table and struggles alone."
+  },
+  {
+    name: "Malbec",
+    kind: "Grape", grape: "Malbec",
+    tier: 1,
+    color: "Red", country: "Argentina", region: "Mendoza", continent: "South America",
+    body: 5, tannin: 4, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Violet", "Chocolate"],
+    alsoKnownAs: ["Cot", "Auxerrois"],
+    note: "French by birth (Cahors), Argentine by reputation. High-altitude Mendoza keeps enough acid to stop the ripe fruit going flabby."
+  },
+  {
+    name: "Chardonnay",
+    kind: "Grape", grape: "Chardonnay",
+    tier: 1,
+    color: "White", country: "France", region: "Burgundy", continent: "Europe",
+    body: 4, tannin: 1, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Green Apple", "Citrus", "Butter", "Vanilla"],
+    alsoKnownAs: [],
+    note: "A neutral grape that tastes like wherever it was made and whatever was done to it. Butter is malolactic, vanilla is oak — neither is the grape."
+  },
+  {
+    name: "Riesling",
+    kind: "Grape", grape: "Riesling",
+    tier: 1,
+    color: "White", country: "Germany", region: "Mosel", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lime", "Peach", "Petrol"],
+    alsoKnownAs: [],
+    note: "Screaming acidity is what lets it carry sugar without tasting sweet, and what lets it age for decades. Petrol (TDN) develops with bottle age."
+  },
+  {
+    name: "Sauvignon Blanc",
+    kind: "Grape", grape: "Sauvignon Blanc",
+    tier: 1,
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Gooseberry", "Grass", "Grapefruit", "Elderflower"],
+    alsoKnownAs: ["Fume Blanc"],
+    note: "Pyrazines again, but here they're the point rather than a flaw. Sancerre plays it flinty and restrained; Marlborough turns the volume to eleven."
+  },
+  {
+    name: "Cabernet Franc",
+    kind: "Grape", grape: "Cabernet Franc",
+    tier: 1,
+    color: "Red", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 3, tannin: 3, acidity: 5, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Red Plum", "Green Bell Pepper", "Violet", "Graphite"],
+    alsoKnownAs: ["Bouchet", "Breton"],
+    note: "Cabernet Sauvignon's parent, and it shows - the same leafy pyrazine note, but lighter, higher-acid, and ready far sooner. Chinon and Bourgueil are the reference; on the Right Bank it plays support to Merlot."
+  },
+  {
+    name: "Grenache",
+    kind: "Grape", grape: "Grenache",
+    tier: 1,
+    color: "Red", country: "France", region: "Southern Rhône", continent: "Europe",
+    body: 5, tannin: 2, acidity: 2, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Strawberry", "Red Plum", "Garrigue", "White Pepper"],
+    alsoKnownAs: ["Garnacha", "Cannonau"],
+    note: "The great contradiction: pale in the glass, low in tannin and acid, yet full-bodied and high in alcohol. That combination is why it anchors Châteauneuf blends rather than standing alone."
+  },
+  {
+    name: "Tempranillo",
+    kind: "Grape", grape: "Tempranillo",
+    tier: 1,
+    color: "Red", country: "Spain", region: "Rioja", continent: "Europe",
+    body: 4, tannin: 4, acidity: 3, climate: 2,
+    oak: "Common",
+    flavors: ["Red Plum", "Leather", "Tobacco", "Vanilla"],
+    alsoKnownAs: ["Tinto Fino", "Tinta del País", "Tinta Roriz", "Aragonez"],
+    note: "Medium acidity is the tell - it ripens early, which is what the name means. The coconut-vanilla lift in traditional Rioja is American oak, not the grape."
+  },
+  {
+    name: "Zinfandel",
+    kind: "Grape", grape: "Zinfandel",
+    tier: 1,
+    color: "Red", country: "United States", region: "California", continent: "North America",
+    body: 5, tannin: 3, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Raisin", "Cinnamon", "Chocolate"],
+    alsoKnownAs: ["Primitivo", "Tribidrag", "Crljenak Kaštelanski"],
+    note: "Ripens unevenly, so one bunch carries green berries and raisins at once - hence the jammy fruit and high alcohol. Primitivo is the same grape; Croatia is where it actually came from."
+  },
+  {
+    name: "Gamay",
+    kind: "Grape", grape: "Gamay",
+    tier: 1,
+    color: "Red", country: "France", region: "Beaujolais", continent: "Europe",
+    body: 2, tannin: 2, acidity: 5, climate: 2,
+    oak: "Rare",
+    flavors: ["Cherry", "Raspberry", "Banana", "Violet"],
+    alsoKnownAs: [],
+    note: "Banana and bubblegum are not the grape - they are carbonic maceration, the whole-bunch fermentation Beaujolais is built on. The cru wines skip it and taste far more serious."
+  },
+  {
+    name: "Chenin Blanc",
+    kind: "Grape", grape: "Chenin Blanc",
+    tier: 1,
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Green Apple", "Quince", "Honey", "Wet Wool"],
+    alsoKnownAs: ["Steen", "Pineau de la Loire"],
+    note: "The most versatile white there is - bone dry in Savennières, sweet in Coteaux du Layon, sparkling in Vouvray. Searing acidity is the constant that makes all of it work."
+  },
+  {
+    name: "Viognier",
+    kind: "Grape", grape: "Viognier",
+    tier: 1,
+    color: "White", country: "France", region: "Northern Rhône", continent: "Europe",
+    body: 4, tannin: 1, acidity: 2, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Apricot", "Peach", "Honeysuckle", "Ginger"],
+    alsoKnownAs: [],
+    note: "Low acid and full body make it the anti-Riesling. Condrieu is the benchmark, and it has to be picked late enough for the apricot perfume to arrive - too early and there is nothing there."
+  },
+  {
+    name: "Pinot Gris",
+    kind: "Grape", grape: "Pinot Gris",
+    tier: 1,
+    color: "White", country: "France", region: "Alsace", continent: "Europe",
+    body: 4, tannin: 1, acidity: 3, climate: 2,
+    oak: "Rare",
+    flavors: ["Pear", "Peach", "Ginger", "Honey"],
+    alsoKnownAs: ["Pinot Grigio", "Grauburgunder", "Ruländer"],
+    note: "One grape, two wines. Alsace picks it ripe for a rich, oily, off-dry white; Italy picks it early for something light and neutral. The name on the label tells you which you are getting."
+  },
+  {
+    name: "Pinot Blanc",
+    kind: "Grape", grape: "Pinot Blanc",
+    tier: 2,
+    color: "White", country: "France", region: "Alsace", continent: "Europe",
+    body: 3, tannin: 1, acidity: 3, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Pear", "Citrus", "Almond"],
+    alsoKnownAs: ["Weissburgunder", "Pinot Bianco", "Klevner"],
+    note: "A mutation of Pinot Gris, which is itself a mutation of Pinot Noir. Quiet and appley - it does the job Chardonnay does, without the ambition."
+  },
+  {
+    name: "Muscat",
+    kind: "Grape", grape: "Muscat",
+    tier: 1,
+    color: "White", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 2, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Orange Blossom", "Peach", "Grape", "Rose"],
+    alsoKnownAs: ["Moscato", "Moscatel", "Muscat Blanc à Petits Grains"],
+    note: "The only grape that genuinely smells of grapes. Ancient, and spread across half the wine world - Moscato d'Asti is the lightest and most charming expression of it."
+  },
+  {
+    name: "Touriga Nacional",
+    kind: "Grape", grape: "Touriga Nacional",
+    tier: 2,
+    color: "Red", country: "Portugal", region: "Douro", continent: "Europe",
+    body: 5, tannin: 5, acidity: 4, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Violet", "Bergamot", "Slate"],
+    alsoKnownAs: [],
+    note: "Port's backbone, now increasingly bottled dry. Tiny berries mean a brutal skin-to-juice ratio, which is where the colour and tannin come from."
+  },
+  {
+    name: "Montepulciano",
+    kind: "Grape", grape: "Montepulciano",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Abruzzo", continent: "Europe",
+    body: 4, tannin: 3, acidity: 3, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Black Cherry", "Plum", "Dried Herbs", "Clay"],
+    alsoKnownAs: [],
+    note: "Not to be confused with Vino Nobile di Montepulciano, which is Sangiovese from a Tuscan town of the same name. This is the Abruzzo grape - softer, darker, and one of Italy's great everyday reds."
+  },
+  {
+    name: "Gewürztraminer",
+    kind: "Grape", grape: "Gewürztraminer",
+    tier: 1,
+    color: "White", country: "France", region: "Alsace", continent: "Europe",
+    body: 4, tannin: 1, acidity: 2, climate: 2,
+    oak: "Rare",
+    flavors: ["Lychee", "Rose", "Ginger", "Honey"],
+    alsoKnownAs: ["Traminer", "Gewürz"],
+    note: "The easiest white to call blind: lychee and rose, deep gold colour, low acid, high alcohol. Pink-skinned, which is where that unusual depth of colour comes from."
+  },
+  {
+    name: "Sémillon",
+    kind: "Grape", grape: "Sémillon",
+    tier: 1,
+    color: "White", country: "France", region: "Bordeaux", continent: "Europe",
+    body: 4, tannin: 1, acidity: 3, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Lemon", "Wax", "Honey", "Toast"],
+    alsoKnownAs: ["Hunter River Riesling"],
+    note: "Thin skins make it prone to botrytis, which is the whole basis of Sauternes. Dry in the Hunter Valley it starts neutral and turns to toast and honey after a decade with no oak involved."
+  },
+  {
+    name: "Albariño",
+    kind: "Grape", grape: "Albariño",
+    tier: 2,
+    color: "White", country: "Spain", region: "Rías Baixas", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Citrus", "Peach", "Saline", "Almond"],
+    alsoKnownAs: ["Alvarinho"],
+    note: "Thick-skinned, which is how it survives the rain in Galicia. High acid and a saline finish - the reason it gets pushed at anyone eating shellfish."
+  },
+  {
+    name: "Grüner Veltliner",
+    kind: "Grape", grape: "Grüner Veltliner",
+    tier: 2,
+    color: "White", country: "Austria", region: "Wachau", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Citrus", "Green Apple", "White Pepper", "Nettle"],
+    alsoKnownAs: ["Grüner", "Weissgipfler"],
+    note: "White pepper is the marker, and almost nothing else does it in a white. Austria's signature grape, and it scales from cheap and spritzy to serious and age-worthy."
+  },
+  {
+    name: "Torrontés",
+    kind: "Grape", grape: "Torrontés",
+    tier: 2,
+    color: "White", country: "Argentina", region: "Salta", continent: "South America",
+    body: 3, tannin: 1, acidity: 3, climate: 3,
+    oak: "Rare",
+    flavors: ["Rose", "Orange Blossom", "Peach", "Citrus"],
+    alsoKnownAs: [],
+    note: "Smells sweet and finishes dry, which catches people out. A Muscat cross, grown at extreme altitude in Salta where the cool nights hold onto the acidity."
+  },
+  {
+    name: "Furmint",
+    kind: "Grape", grape: "Furmint",
+    tier: 2,
+    color: "White", country: "Hungary", region: "Tokaj", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Green Apple", "Quince", "Honey", "Smoke"],
+    alsoKnownAs: [],
+    note: "The backbone of Tokaji Aszú, and increasingly bottled dry. Acidity high enough to carry 150 grams of residual sugar without the wine tasting cloying."
+  },
+  {
+    name: "Assyrtiko",
+    kind: "Grape", grape: "Assyrtiko",
+    tier: 2,
+    color: "White", country: "Greece", region: "Santorini", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Lemon", "Saline", "Smoke", "Citrus"],
+    alsoKnownAs: [],
+    note: "Almost unique in keeping high acidity in a hot climate - most grapes lose it. Grown in basket-trained vines on volcanic ash to survive the Santorini wind."
+  },
+  {
+    name: "Garganega",
+    kind: "Grape", grape: "Garganega",
+    tier: 2,
+    color: "White", country: "Italy", region: "Veneto", continent: "Europe",
+    body: 3, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Pear", "Almond", "Citrus"],
+    alsoKnownAs: ["Grecanico"],
+    note: "The grape behind Soave, and behind Soave's reputation problem - overcropped on the plains it is water, but from the volcanic Classico hills it is genuinely good."
+  },
+  {
+    name: "Verdejo",
+    kind: "Grape", grape: "Verdejo",
+    tier: 2,
+    color: "White", country: "Spain", region: "Rueda", continent: "Europe",
+    body: 3, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Grapefruit", "Fennel", "Grass", "Almond"],
+    alsoKnownAs: [],
+    note: "Spain's answer to Sauvignon Blanc, and often blended with it in Rueda. The bitter-almond finish is the giveaway that it is not actually Sauvignon."
+  },
+  {
+    name: "Cortese",
+    kind: "Grape", grape: "Cortese",
+    tier: 3,
+    color: "White", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lemon", "Almond", "Saline"],
+    alsoKnownAs: [],
+    note: "Gavi is the place, Cortese is the grape. Piedmont's serious white in a region that is otherwise all about red - lean, high-acid, and deliberately understated."
+  },
+  {
+    name: "Carmenère",
+    kind: "Grape", grape: "Carmenère",
+    tier: 2,
+    color: "Red", country: "Chile", region: "Colchagua", continent: "South America",
+    body: 4, tannin: 4, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Green Bell Pepper", "Chocolate", "Clove"],
+    alsoKnownAs: ["Grande Vidure"],
+    note: "Lost to phylloxera in Bordeaux and mistaken for Merlot in Chile until DNA testing in 1994. Needs a long season - picked early it is all pyrazine and nothing else."
+  },
+  {
+    name: "Pinotage",
+    kind: "Grape", grape: "Pinotage",
+    tier: 2,
+    color: "Red", country: "South Africa", region: "Stellenbosch", continent: "Africa",
+    body: 4, tannin: 4, acidity: 4, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Smoke", "Banana"],
+    alsoKnownAs: [],
+    note: "A 1925 South African crossing of Pinot Noir and Cinsault. Divisive - handled badly it goes to acetone and burnt rubber, handled well it is smoky and dense."
+  },
+  {
+    name: "Mourvèdre",
+    kind: "Grape", grape: "Mourvèdre",
+    tier: 2,
+    color: "Red", country: "France", region: "Bandol", continent: "Europe",
+    body: 5, tannin: 5, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Leather", "Garrigue", "Black Pepper"],
+    alsoKnownAs: ["Monastrell", "Mataro"],
+    note: "The last to ripen of the Rhône trio, and the most demanding - it needs real heat. Bandol is the benchmark; in GSM blends it supplies the tannin and the meaty, gamey edge."
+  },
+  {
+    name: "Corvina",
+    kind: "Grape", grape: "Corvina",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Veneto", continent: "Europe",
+    body: 3, tannin: 2, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Sour Cherry", "Red Plum", "Bay Leaf", "Almond"],
+    alsoKnownAs: ["Corvina Veronese"],
+    note: "Light and tart as Valpolicella, transformed into Amarone by drying the grapes for months first. Same grape, same hillside, and a completely different wine."
+  },
+  {
+    name: "Nerello Mascalese",
+    kind: "Grape", grape: "Nerello Mascalese",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Etna", continent: "Europe",
+    body: 3, tannin: 4, acidity: 5, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Cherry", "Orange Peel", "Smoke", "Volcanic Ash"],
+    alsoKnownAs: ["Nerello"],
+    note: "Grown on the slopes of an active volcano, and constantly compared to Nebbiolo and Pinot Noir - pale, high-acid, high-tannin, and marked by the black volcanic soil."
+  },
+  {
+    name: "Aglianico",
+    kind: "Grape", grape: "Aglianico",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Campania", continent: "Europe",
+    body: 5, tannin: 5, acidity: 5, climate: 3,
+    oak: "Common",
+    flavors: ["Black Cherry", "Leather", "Iron", "Clove"],
+    alsoKnownAs: [],
+    note: "Southern Italy's answer to Nebbiolo, and just as unforgiving young. Ripens dangerously late - well into November - which is how it holds that much acid in a hot region."
+  },
+  {
+    name: "Nero d’Avola",
+    kind: "Grape", grape: "Nero d’Avola",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Sicily", continent: "Europe",
+    body: 4, tannin: 4, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Black Cherry", "Plum", "Liquorice", "Oregano"],
+    alsoKnownAs: ["Calabrese"],
+    note: "Sicily’s workhorse grape, once shipped north in bulk to beef up thin wines from cooler regions. Bottled on its own it is dark, warm and unfussy."
+  },
+  {
+    name: "Barbera",
+    kind: "Grape", grape: "Barbera",
+    tier: 1,
+    color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 3, tannin: 2, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Sour Cherry", "Red Plum", "Liquorice", "Dried Herbs"],
+    alsoKnownAs: [],
+    note: "Piedmont’s everyday red, planted on the sites Nebbiolo does not want. Deep colour but low tannin and searing acidity - the inverse of its famous neighbour."
+  },
+  {
+    name: "Petit Verdot",
+    kind: "Grape", grape: "Petit Verdot",
+    tier: 2,
+    color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
+    body: 5, tannin: 5, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Blackberry", "Violet", "Graphite", "Allspice"],
+    alsoKnownAs: [],
+    note: "The Left Bank seasoning grape - a few percent for colour, tannin and violet perfume. Often refuses to ripen in Bordeaux, which is why it does better in Australia and Spain."
+  },
+  {
+    name: "Vermentino",
+    kind: "Grape", grape: "Vermentino",
+    tier: 2,
+    color: "White", country: "Italy", region: "Sardinia", continent: "Europe",
+    body: 3, tannin: 1, acidity: 4, climate: 3,
+    oak: "Rare",
+    flavors: ["Citrus", "Green Apple", "Saline", "Almond"],
+    alsoKnownAs: ["Rolle", "Pigato", "Favorita"],
+    note: "The Mediterranean coastal white — Sardinia, Liguria, Corsica, and Provence, where it goes by Rolle. Keeps its bite in real heat, which is rarer than it sounds."
+  },
+  {
+    name: "Marsanne",
+    kind: "Grape", grape: "Marsanne",
+    tier: 2,
+    color: "White", country: "France", region: "Northern Rhône", continent: "Europe",
+    body: 5, tannin: 1, acidity: 1, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Quince", "Almond", "Honeysuckle", "Wax"],
+    alsoKnownAs: [],
+    note: "Heavy, waxy and low in acid — the reason it is almost always blended with Roussanne, which supplies the lift it lacks. White Hermitage is the serious version."
+  },
+  {
+    name: "Roussanne",
+    kind: "Grape", grape: "Roussanne",
+    tier: 2,
+    color: "White", country: "France", region: "Northern Rhône", continent: "Europe",
+    body: 4, tannin: 1, acidity: 3, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Pear", "Herbal Tea", "Apricot", "Quince"],
+    alsoKnownAs: [],
+    note: "Marsanne's partner and its opposite: more aromatic, higher acid, far harder to grow. Named for the russet colour the skins turn when ripe."
+  },
+  {
+    name: "Melon de Bourgogne",
+    kind: "Grape", grape: "Melon de Bourgogne",
+    tier: 2,
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Citrus", "Saline", "Bread"],
+    alsoKnownAs: [],
+    note: "Muscadet is the wine, Melon de Bourgogne the grape. Neutral to the point of blankness on its own — the bready weight comes from months resting on the lees, sur lie."
+  },
+  {
+    name: "Godello",
+    kind: "Grape", grape: "Godello",
+    tier: 3,
+    color: "White", country: "Spain", region: "Valdeorras", continent: "Europe",
+    body: 3, tannin: 1, acidity: 4, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Pear", "Citrus", "Fennel", "Almond"],
+    alsoKnownAs: [],
+    note: "Down to a few hundred vines by the 1970s and rescued deliberately. Fuller and more textural than Albariño, and it takes oak in a way Albariño does not."
+  },
+  {
+    name: "Trebbiano",
+    kind: "Grape", grape: "Trebbiano",
+    tier: 2,
+    color: "White", country: "Italy", region: "Abruzzo", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 3,
+    oak: "Rare",
+    flavors: ["Lemon", "Green Apple", "Almond", "Nettle"],
+    alsoKnownAs: ["Ugni Blanc", "Trebbiano Toscano"],
+    note: "One of the most planted white grapes on earth and one of the least remarked upon. As Ugni Blanc in France it is grown thin and acidic on purpose, then distilled into Cognac."
+  },
+  {
+    name: "Xinomavro",
+    kind: "Grape", grape: "Xinomavro",
+    tier: 3,
+    color: "Red", country: "Greece", region: "Naoussa", continent: "Europe",
+    body: 4, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Sour Cherry", "Tomato", "Olive", "Forest Floor"],
+    alsoKnownAs: [],
+    note: "The name means sour-black, which is fair warning. Pale, tannic and savoury enough that it gets called the Greek Nebbiolo — sun-dried tomato is the note nothing else gives you."
+  },
+  {
+    name: "Agiorgitiko",
+    kind: "Grape", grape: "Agiorgitiko",
+    tier: 3,
+    color: "Red", country: "Greece", region: "Nemea", continent: "Europe",
+    body: 4, tannin: 3, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Red Plum", "Black Cherry", "Clove", "Dried Herbs"],
+    alsoKnownAs: ["Saint George"],
+    note: "Greece's most planted red and the approachable one — soft tannins, deep colour, no hard edges. Nemea sits high enough that the altitude does the work the latitude will not."
+  },
+  {
+    name: "Blaufränkisch",
+    kind: "Grape", grape: "Blaufränkisch",
+    tier: 2,
+    color: "Red", country: "Austria", region: "Burgenland", continent: "Europe",
+    body: 4, tannin: 4, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Sour Cherry", "Blackberry", "White Pepper", "Cinnamon"],
+    alsoKnownAs: ["Lemberger", "Kékfrankos"],
+    note: "Austria's serious red, and the peppery counterpart to Grüner Veltliner. High acid and firm tannin make it read as far more northern than it is."
+  },
+  {
+    name: "Saperavi",
+    kind: "Grape", grape: "Saperavi",
+    tier: 3,
+    color: "Red", country: "Georgia", region: "Kakheti", continent: "Asia",
+    body: 5, tannin: 4, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Plum", "Liquorice", "Iron"],
+    alsoKnownAs: [],
+    note: "A teinturier — red flesh as well as red skin, which almost no wine grape has, and why it stains the glass. From the country that has been making wine in clay qvevri for eight thousand years."
+  },
+  {
+    name: "Tannat",
+    kind: "Grape", grape: "Tannat",
+    tier: 2,
+    color: "Red", country: "Uruguay", region: "Canelones", continent: "South America",
+    body: 5, tannin: 5, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Liquorice", "Chocolate"],
+    alsoKnownAs: ["Harriague"],
+    note: "Named for its tannin, and it earns it — the most tannic wine grape in commercial use. French by origin, from Madiran, but Uruguay made it a national identity."
+  },
+  {
+    name: "Cinsault",
+    kind: "Grape", grape: "Cinsault",
+    tier: 2,
+    color: "Red", country: "France", region: "Languedoc", continent: "Europe",
+    body: 2, tannin: 2, acidity: 3, climate: 3,
+    oak: "Rare",
+    flavors: ["Strawberry", "Red Plum", "Garrigue", "White Pepper"],
+    alsoKnownAs: ["Cinsaut"],
+    note: "Pale, soft and perfumed — the grape that makes Provence rosé work. Crossed with Pinot Noir in 1925 to produce Pinotage, which turned out nothing like it."
+  },
+  {
+    name: "Carignan",
+    kind: "Grape", grape: "Carignan",
+    tier: 2,
+    color: "Red", country: "France", region: "Languedoc", continent: "Europe",
+    body: 4, tannin: 4, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Red Plum", "Garrigue", "Leather"],
+    alsoKnownAs: ["Mazuelo", "Cariñena", "Samsó"],
+    note: "Ripped out across the Midi for decades as the symbol of the wine lake. The old vines that survived the purge now make some of the most interesting reds in the south."
+  },
+  {
+    name: "Mencía",
+    kind: "Grape", grape: "Mencía",
+    tier: 3,
+    color: "Red", country: "Spain", region: "Bierzo", continent: "Europe",
+    body: 3, tannin: 3, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Red Plum", "Violet", "Bay Leaf", "Graphite"],
+    alsoKnownAs: ["Jaen"],
+    note: "Long assumed to be a relative of Cabernet Franc, and it does taste like one — floral, leafy, high-acid. The slate soils of Bierzo show up as a distinctly mineral streak."
+  },
+  {
+    name: "Fiano",
+    kind: "Grape", grape: "Fiano",
+    tier: 2,
+    color: "White", country: "Italy", region: "Campania", continent: "Europe",
+    body: 4, tannin: 1, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Hazelnut", "Pear", "Honey", "Chamomile"],
+    alsoKnownAs: [],
+    note: "One of the few southern Italian whites built to age — waxy and nutty after a few years. Nearly extinct by the 1940s; Avellino is where it came back."
+  },
+  {
+    name: "Verdicchio",
+    kind: "Grape", grape: "Verdicchio",
+    tier: 2,
+    color: "White", country: "Italy", region: "Marche", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 2,
+    oak: "Rare",
+    flavors: ["Lemon", "Green Apple", "Almond", "Fennel"],
+    alsoKnownAs: ["Trebbiano di Soave"],
+    note: "The bitter-almond finish is the signature, and it is a feature rather than a fault. Long sold in a novelty amphora bottle that did the wine no favours."
+  },
+  {
+    name: "Silvaner",
+    kind: "Grape", grape: "Silvaner",
+    tier: 3,
+    color: "White", country: "Germany", region: "Franken", continent: "Europe",
+    body: 3, tannin: 1, acidity: 4, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Pear", "Nettle", "Wet Stone"],
+    alsoKnownAs: ["Sylvaner", "Grüner Silvaner"],
+    note: "Germany's quiet alternative to Riesling — earthier, lower in acid, and far more about the site than the fruit. Franken bottles it in the flat green Bocksbeutel."
+  },
+  {
+    name: "Aligoté",
+    kind: "Grape", grape: "Aligoté",
+    tier: 3,
+    color: "White", country: "France", region: "Burgundy", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lemon", "Chalk", "Almond"],
+    alsoKnownAs: [],
+    note: "Burgundy's other white, planted where Chardonnay would not ripen well. Sharp enough that the traditional use was to soften it with crème de cassis — a Kir."
+  },
+  {
+    name: "Picpoul",
+    kind: "Grape", grape: "Picpoul",
+    tier: 3,
+    color: "White", country: "France", region: "Languedoc", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 3,
+    oak: "Rare",
+    flavors: ["Lemon", "Grapefruit", "Saline", "Green Apple"],
+    alsoKnownAs: ["Piquepoul", "Picpoul de Pinet"],
+    note: "The name means lip-stinger. Grown on the étangs near Sète and sold almost exclusively as an oyster wine, which is the correct use for it."
+  },
+  {
+    name: "Macabeo",
+    kind: "Grape", grape: "Macabeo",
+    tier: 2,
+    color: "White", country: "Spain", region: "Penedès", continent: "Europe",
+    body: 3, tannin: 1, acidity: 3, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Green Apple", "Citrus", "Almond", "Honey"],
+    alsoKnownAs: ["Viura", "Macabeu"],
+    note: "Two jobs under two names: Viura is the white grape of Rioja, Macabeo the backbone of Cava. Late-budding, which is what keeps it out of trouble with spring frost."
+  },
+  {
+    name: "Pedro Ximénez",
+    kind: "Grape", grape: "Pedro Ximénez",
+    tier: 2,
+    color: "White", country: "Spain", region: "Jerez", continent: "Europe",
+    body: 5, tannin: 1, acidity: 2, climate: 4,
+    oak: "Common",
+    flavors: ["Raisin", "Fig", "Chocolate", "Coffee"],
+    alsoKnownAs: ["PX"],
+    note: "Laid out on mats to raisin in the Andalusian sun before pressing, which is how a dry white grape ends up as black, syrupy dessert wine. Andalusia is the hottest corner of the wine map represented here."
+  },
+  {
+    name: "Dolcetto",
+    kind: "Grape", grape: "Dolcetto",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 3, tannin: 4, acidity: 2, climate: 2,
+    oak: "Rare",
+    flavors: ["Black Cherry", "Plum", "Liquorice", "Almond"],
+    alsoKnownAs: [],
+    note: "The name means little sweet one, though the wine is dry and firmly tannic. Low acid is what sets it apart from every other Piedmont red — the everyday bottle while the Barolo waits."
+  },
+  {
+    name: "Lagrein",
+    kind: "Grape", grape: "Lagrein",
+    tier: 3,
+    color: "Red", country: "Italy", region: "Alto Adige", continent: "Europe",
+    body: 4, tannin: 4, acidity: 4, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Violet", "Chocolate", "Forest Floor"],
+    alsoKnownAs: [],
+    note: "Startlingly dark for a grape grown in the Alps. A relative of Syrah, and the tannins can turn bitter on the finish if the winemaking is careless."
+  },
+  {
+    name: "Sagrantino",
+    kind: "Grape", grape: "Sagrantino",
+    tier: 3,
+    color: "Red", country: "Italy", region: "Umbria", continent: "Europe",
+    body: 5, tannin: 5, acidity: 4, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Forest Floor", "Cinnamon"],
+    alsoKnownAs: [],
+    note: "Among the most tannic grapes in existence — the polyphenol counts run higher than Tannat. Montefalco law requires nearly three years of ageing before release, and it needs every month."
+  },
+  {
+    name: "Negroamaro",
+    kind: "Grape", grape: "Negroamaro",
+    tier: 3,
+    color: "Red", country: "Italy", region: "Puglia", continent: "Europe",
+    body: 4, tannin: 3, acidity: 3, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Black Cherry", "Raisin", "Oregano", "Clay"],
+    alsoKnownAs: [],
+    note: "Black and bitter, by both name and taste — the roasted, slightly bitter finish is the marker. Salento heat gives it the raisined edge."
+  },
+  {
+    name: "Bobal",
+    kind: "Grape", grape: "Bobal",
+    tier: 3,
+    color: "Red", country: "Spain", region: "Utiel-Requena", continent: "Europe",
+    body: 4, tannin: 4, acidity: 5, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Red Plum", "Rosemary", "Graphite"],
+    alsoKnownAs: [],
+    note: "Spain's second most planted red and almost unknown outside it, long sent away for bulk blending. Old bush vines at altitude hold acidity that has no business surviving that heat."
+  },
+  {
+    name: "Zweigelt",
+    kind: "Grape", grape: "Zweigelt",
+    tier: 2,
+    color: "Red", country: "Austria", region: "Niederösterreich", continent: "Europe",
+    body: 3, tannin: 2, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Sour Cherry", "Raspberry", "Clove", "Violet"],
+    alsoKnownAs: [],
+    note: "Austria's most planted red, a 1922 crossing of Blaufränkisch and St. Laurent. Juicy and low-tannin — the one they chill slightly and drink young."
+  },
+  {
+    name: "Pinot Meunier",
+    kind: "Grape", grape: "Pinot Meunier",
+    tier: 2,
+    color: "Red", country: "France", region: "Champagne", continent: "Europe",
+    body: 2, tannin: 2, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Red Plum", "Raspberry", "Bread", "Mushroom"],
+    alsoKnownAs: ["Meunier"],
+    note: "The third Champagne grape and the least discussed, though it is planted more widely than Pinot Noir there. Buds late and ripens early, which is how it survives frost in the Marne Valley."
+  },
+  {
+    name: "Petite Sirah",
+    kind: "Grape", grape: "Petite Sirah",
+    tier: 2,
+    color: "Red", country: "United States", region: "California", continent: "North America",
+    body: 5, tannin: 5, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Chocolate", "Black Pepper"],
+    alsoKnownAs: ["Durif"],
+    note: "Not Syrah and not petite — a Syrah-Peloursin crossing with tiny berries and enormous tannin. Long used to give backbone to Zinfandel before it was bottled on its own."
+  },
+  {
+    name: "Grillo",
+    kind: "Grape", grape: "Grillo",
+    tier: 3,
+    color: "White", country: "Italy", region: "Sicily", continent: "Europe",
+    body: 3, tannin: 1, acidity: 4, climate: 3,
+    oak: "Rare",
+    flavors: ["Citrus", "Peach", "Saline", "Fennel"],
+    alsoKnownAs: [],
+    note: "Bred for Marsala and left there for a century. Picked early it now makes a taut, saline dry white — one of the clearest signs of how far Sicily has moved."
+  },
+  {
+    name: "Falanghina",
+    kind: "Grape", grape: "Falanghina",
+    tier: 3,
+    color: "White", country: "Italy", region: "Campania", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 3,
+    oak: "Rare",
+    flavors: ["Citrus", "Pear", "Nettle", "Almond"],
+    alsoKnownAs: [],
+    note: "Possibly the grape behind Falernian, the most prized wine of ancient Rome. Keeps a sharp citrus edge in a region where most whites turn flabby."
+  },
+  {
+    name: "Arneis",
+    kind: "Grape", grape: "Arneis",
+    tier: 3,
+    color: "White", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 3, tannin: 1, acidity: 3, climate: 2,
+    oak: "Rare",
+    flavors: ["Pear", "Almond", "Chamomile", "Peach"],
+    alsoKnownAs: ["Roero Arneis"],
+    note: "The name is Piedmontese for little rascal, earned by being difficult in the vineyard and quick to lose its acidity. Once planted among Nebbiolo to distract birds."
+  },
+  {
+    name: "Encruzado",
+    kind: "Grape", grape: "Encruzado",
+    tier: 3,
+    color: "White", country: "Portugal", region: "Dão", continent: "Europe",
+    body: 4, tannin: 1, acidity: 4, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Citrus", "Pear", "Wet Stone", "Wax"],
+    alsoKnownAs: [],
+    note: "Portugal's most serious white, and almost entirely confined to the Dão. Structured enough to take oak and years in bottle without ever getting heavy."
+  },
+  {
+    name: "Petit Manseng",
+    kind: "Grape", grape: "Petit Manseng",
+    tier: 3,
+    color: "White", country: "France", region: "Jurançon", continent: "Europe",
+    body: 4, tannin: 1, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Apricot", "Citrus", "Honey", "Ginger"],
+    alsoKnownAs: [],
+    note: "Thick skins and tiny berries left to shrivel on the vine into December — passerillage, not botrytis. Acidity high enough that the sweet wines finish clean."
+  },
+  {
+    name: "Rkatsiteli",
+    kind: "Grape", grape: "Rkatsiteli",
+    tier: 3,
+    color: "White", country: "Georgia", region: "Kakheti", continent: "Asia",
+    body: 3, tannin: 1, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Green Apple", "Quince", "Walnut", "Honey"],
+    alsoKnownAs: [],
+    note: "Georgia's workhorse white, and the classic amber wine when fermented on its skins in buried qvevri. That method gives it grip no other white has."
+  },
+  {
+    name: "Chasselas",
+    kind: "Grape", grape: "Chasselas",
+    tier: 3,
+    color: "White", country: "Switzerland", region: "Lavaux", continent: "Europe",
+    body: 3, tannin: 1, acidity: 2, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Almond", "Bread", "Flint"],
+    alsoKnownAs: ["Fendant", "Gutedel"],
+    note: "So neutral it is treated as a transmitter rather than a flavour — the Swiss judge it entirely on site. Low acid means it has nowhere to hide."
+  },
+  {
+    name: "Teroldego",
+    kind: "Grape", grape: "Teroldego",
+    tier: 3,
+    color: "Red", country: "Italy", region: "Trentino", continent: "Europe",
+    body: 4, tannin: 3, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Plum", "Violet", "Iron"],
+    alsoKnownAs: [],
+    note: "A parent of Lagrein and a relative of Syrah, grown on the gravel flats of the Campo Rotaliano. Dark and high-acid, with far softer tannins than the colour suggests."
+  },
+  {
+    name: "Frappato",
+    kind: "Grape", grape: "Frappato",
+    tier: 3,
+    color: "Red", country: "Italy", region: "Sicily", continent: "Europe",
+    body: 2, tannin: 2, acidity: 5, climate: 3,
+    oak: "Rare",
+    flavors: ["Strawberry", "Cherry", "Violet", "Oregano"],
+    alsoKnownAs: [],
+    note: "Pale, floral and best served cool — not what most people expect from Sicily. Blended with Nero d'Avola it makes Cerasuolo di Vittoria, the island's only DOCG."
+  },
+  {
+    name: "Baga",
+    kind: "Grape", grape: "Baga",
+    tier: 3,
+    color: "Red", country: "Portugal", region: "Bairrada", continent: "Europe",
+    body: 4, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Sour Cherry", "Blackberry", "Clay", "Leather"],
+    alsoKnownAs: [],
+    note: "Thick-skinned, late-ripening and severe — high acid on top of high tannin, in a damp maritime climate that does it no favours. Rewards patience and little else."
+  },
+  {
+    name: "Graciano",
+    kind: "Grape", grape: "Graciano",
+    tier: 3,
+    color: "Red", country: "Spain", region: "Rioja", continent: "Europe",
+    body: 4, tannin: 4, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Blackberry", "Violet", "Dried Herbs", "Black Pepper"],
+    alsoKnownAs: ["Morrastel"],
+    note: "The seasoning in a Rioja blend — a few percent for acidity and floral lift. Yields so miserly that growers nearly abandoned it before the quality argument won."
+  },
+  {
+    name: "Listán Negro",
+    kind: "Grape", grape: "Listán Negro",
+    tier: 3,
+    color: "Red", country: "Spain", region: "Canary Islands", continent: "Europe",
+    body: 3, tannin: 2, acidity: 4, climate: 3,
+    oak: "Rare",
+    flavors: ["Red Plum", "Smoke", "Bay Leaf", "Volcanic Ash"],
+    alsoKnownAs: [],
+    note: "Phylloxera never reached the Canaries, so these are ungrafted vines on volcanic ash, some of them centuries old. The smoky, ashy note comes with the ground."
+  },
+  {
+    name: "Trousseau",
+    kind: "Grape", grape: "Trousseau",
+    tier: 3,
+    color: "Red", country: "France", region: "Jura", continent: "Europe",
+    body: 3, tannin: 3, acidity: 4, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Red Plum", "Cherry", "Cinnamon", "Mushroom"],
+    alsoKnownAs: ["Bastardo"],
+    note: "The sturdier of the Jura's two pale reds, needing the warmest sites to ripen at all. Travels to Portugal as Bastardo, where it goes into Port."
+  },
+  {
+    name: "Dornfelder",
+    kind: "Grape", grape: "Dornfelder",
+    tier: 3,
+    color: "Red", country: "Germany", region: "Pfalz", continent: "Europe",
+    body: 3, tannin: 3, acidity: 4, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Sour Cherry", "Blackberry", "Violet", "Liquorice"],
+    alsoKnownAs: [],
+    note: "A 1955 crossing bred to solve a specific German problem: red wines too pale to convince anyone. Deeply coloured, moderate in everything else."
+  },
+  {
+    name: "Bonarda",
+    kind: "Grape", grape: "Bonarda",
+    tier: 3,
+    color: "Red", country: "Argentina", region: "Mendoza", continent: "South America",
+    body: 4, tannin: 3, acidity: 3, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Plum", "Black Cherry", "Violet", "Star Anise"],
+    alsoKnownAs: ["Douce Noire", "Charbono"],
+    note: "Argentina's second most planted red, and not Italian Bonarda at all — it is Savoie's Douce Noire, misnamed on arrival. Soft, dark and permanently in Malbec's shadow."
+  },
+  {
+    name: "Glera",
+    kind: "Grape", grape: "Glera",
+    tier: 3,
+    color: "White", country: "Italy", region: "Veneto", continent: "Europe",
+    body: 2, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Pear", "Green Apple", "Honeysuckle", "Citrus"],
+    alsoKnownAs: ["Prosecco Tondo"],
+    note: "Renamed in 2009 so that Prosecco could become a place rather than a grape, and stop anyone else using the word. Neutral, floral and not built to age."
+  },
+  {
+    name: "Palomino",
+    kind: "Grape", grape: "Palomino",
+    tier: 3,
+    color: "White", country: "Spain", region: "Jerez", continent: "Europe",
+    body: 2, tannin: 1, acidity: 2, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Almond", "Green Apple", "Saline", "Citrus"],
+    alsoKnownAs: ["Listán Blanco"],
+    note: "Almost flavourless as a dry white, which is the point — everything in Sherry comes from flor, oxidation and the solera, not the grape."
+  },
+  {
+    name: "Champagne",
+    kind: "Sparkling", grape: "Pinot Noir",
+    tier: 1,
+    color: "White", country: "France", region: "Champagne", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Green Apple", "Citrus", "Bread", "Almond"],
+    alsoKnownAs: [],
+    note: "A white wine mostly made from black grapes — Pinot Noir and Meunier outnumber Chardonnay. The bread and pastry notes are autolysis, years spent on dead yeast in bottle, not anything the fruit brought."
+  },
+  {
+    name: "Prosecco",
+    kind: "Sparkling", grape: "Glera",
+    tier: 1,
+    color: "White", country: "Italy", region: "Veneto", continent: "Europe",
+    body: 2, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Pear", "Green Apple", "Honeysuckle", "Citrus"],
+    alsoKnownAs: [],
+    note: "Second fermentation in a pressurised tank rather than the bottle, which keeps the fruit primary and the price down. No bready autolysis — that is the whole difference from Champagne."
+  },
+  {
+    name: "Cava",
+    kind: "Sparkling", grape: "Macabeo",
+    tier: 2,
+    color: "White", country: "Spain", region: "Penedès", continent: "Europe",
+    body: 2, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Citrus", "Bread", "Saline"],
+    alsoKnownAs: [],
+    note: "Made exactly like Champagne — bottle fermentation, lees ageing — from entirely different grapes in a far warmer place. The method is Champenoise; the wine is Spanish."
+  },
+  {
+    name: "Chablis",
+    kind: "Still", grape: "Chardonnay",
+    tier: 1,
+    color: "White", country: "France", region: "Burgundy", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Citrus", "Flint", "Chalk"],
+    alsoKnownAs: [],
+    note: "The proof that Chardonnay tastes of what is done to it: no oak, cold Kimmeridgian limestone, and it comes out lean and flinty rather than buttery."
+  },
+  {
+    name: "Sancerre",
+    kind: "Still", grape: "Sauvignon Blanc",
+    tier: 1,
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Gooseberry", "Grapefruit", "Flint", "Nettle"],
+    alsoKnownAs: [],
+    note: "Sauvignon Blanc played restrained and stony, the opposite of Marlborough's volume. Pouilly-Fumé sits across the river doing much the same thing."
+  },
+  {
+    name: "Muscadet",
+    kind: "Still", grape: "Melon de Bourgogne",
+    tier: 2,
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lemon", "Saline", "Bread"],
+    alsoKnownAs: ["Muscadet Sèvre et Maine"],
+    note: "Sur lie — months resting on the spent yeast — is what gives a neutral grape any weight at all. The classic oyster wine, from the mouth of the Loire."
+  },
+  {
+    name: "Vouvray",
+    kind: "Still", grape: "Chenin Blanc",
+    tier: 2,
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Quince", "Green Apple", "Honey", "Chamomile"],
+    alsoKnownAs: [],
+    note: "Bone dry to lusciously sweet to sparkling, all under one name — check the label for sec, demi-sec or moelleux, because the wine changes completely."
+  },
+  {
+    name: "Soave",
+    kind: "Still", grape: "Garganega",
+    tier: 2,
+    color: "White", country: "Italy", region: "Veneto", continent: "Europe",
+    body: 3, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Pear", "Almond", "Chamomile"],
+    alsoKnownAs: [],
+    note: "Ruined by bulk production from the plains and rebuilt by the volcanic Classico hills. Worth checking the word Classico on the label."
+  },
+  {
+    name: "Gavi",
+    kind: "Still", grape: "Cortese",
+    tier: 2,
+    color: "White", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lemon", "Almond", "Wet Stone"],
+    alsoKnownAs: ["Cortese di Gavi"],
+    note: "Piedmont's white, in a region the world visits for Nebbiolo. Lean and understated by design — it is meant to disappear behind the food."
+  },
+  {
+    name: "Rías Baixas",
+    kind: "Still", grape: "Albariño",
+    tier: 2,
+    color: "White", country: "Spain", region: "Rías Baixas", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Citrus", "Peach", "Saline", "Nettle"],
+    alsoKnownAs: [],
+    note: "Green, wet Atlantic Galicia — closer to Portugal than to the rest of Spain in climate and in taste. Vines trained overhead on granite posts to keep the rot off."
+  },
+  {
+    name: "Marlborough Sauvignon Blanc",
+    kind: "Still", grape: "Sauvignon Blanc",
+    tier: 1,
+    color: "White", country: "New Zealand", region: "Marlborough", continent: "Oceania",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Gooseberry", "Grapefruit", "Grass", "Elderflower"],
+    alsoKnownAs: ["Marlborough Sauvignon"],
+    note: "The wine that made New Zealand's reputation in about a decade. Intense enough that people either love it or find it exhausting; there is not much middle ground."
+  },
+  {
+    name: "Barolo",
+    kind: "Still", grape: "Nebbiolo",
+    tier: 1,
+    color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 5, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Cherry", "Rose", "Tar", "Leather"],
+    alsoKnownAs: [],
+    note: "Nebbiolo at its most uncompromising, and legally aged three years before release because it needs them. Pale in the glass and ferocious on the palate."
+  },
+  {
+    name: "Barbaresco",
+    kind: "Still", grape: "Nebbiolo",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 4, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Cherry", "Rose", "Tar", "Violet"],
+    alsoKnownAs: [],
+    note: "Barolo's neighbour, slightly warmer and lower, so it ripens a little earlier and needs a year less in cellar. Perennially described as the more elegant of the two."
+  },
+  {
+    name: "Chianti Classico",
+    kind: "Still", grape: "Sangiovese",
+    tier: 1,
+    color: "Red", country: "Italy", region: "Tuscany", continent: "Europe",
+    body: 4, tannin: 4, acidity: 5, climate: 3,
+    oak: "Common",
+    flavors: ["Sour Cherry", "Tomato Leaf", "Leather", "Dried Herbs"],
+    alsoKnownAs: ["Chianti"],
+    note: "The black rooster on the neck marks the original hillside zone, as distinct from the far larger Chianti that grew up around it. Built for the table, not the glass alone."
+  },
+  {
+    name: "Brunello di Montalcino",
+    kind: "Still", grape: "Sangiovese",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Tuscany", continent: "Europe",
+    body: 5, tannin: 5, acidity: 5, climate: 3,
+    oak: "Common",
+    flavors: ["Sour Cherry", "Leather", "Forest Floor", "Liquorice"],
+    alsoKnownAs: ["Brunello"],
+    note: "Sangiovese alone, from a hotter and drier hill south of Chianti, held five years before release. Bigger and longer-lived than anything Chianti attempts."
+  },
+  {
+    name: "Amarone della Valpolicella",
+    kind: "Still", grape: "Corvina",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Veneto", continent: "Europe",
+    body: 5, tannin: 4, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Raisin", "Black Cherry", "Chocolate", "Fig"],
+    alsoKnownAs: ["Amarone"],
+    note: "The grapes are dried on mats for months before pressing, concentrating everything — appassimento. Dry, despite tasting of raisins, and often over 15% alcohol."
+  },
+  {
+    name: "Valpolicella",
+    kind: "Still", grape: "Corvina",
+    tier: 2,
+    color: "Red", country: "Italy", region: "Veneto", continent: "Europe",
+    body: 3, tannin: 2, acidity: 5, climate: 2,
+    oak: "Rare",
+    flavors: ["Sour Cherry", "Red Plum", "Almond", "Bay Leaf"],
+    alsoKnownAs: [],
+    note: "The same grapes and the same hillside as Amarone, pressed fresh instead of dried. Light, tart and served cool — the everyday face of the Veneto."
+  },
+  {
+    name: "Etna Rosso",
+    kind: "Still", grape: "Nerello Mascalese",
+    tier: 3,
+    color: "Red", country: "Italy", region: "Etna", continent: "Europe",
+    body: 3, tannin: 4, acidity: 5, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Cherry", "Orange Peel", "Smoke", "Volcanic Ash"],
+    alsoKnownAs: [],
+    note: "Vineyards on an active volcano, some pre-phylloxera and ungrafted, at altitudes that keep the acidity intact in a Sicilian summer."
+  },
+  {
+    name: "Côte-Rôtie",
+    kind: "Still", grape: "Syrah",
+    tier: 2,
+    color: "Red", country: "France", region: "Northern Rhône", continent: "Europe",
+    body: 5, tannin: 4, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Blackberry", "Black Pepper", "Violet", "Smoke"],
+    alsoKnownAs: [],
+    note: "The roasted slope — terraces steep enough to be worked by hand. A little Viognier is legally allowed in the ferment, which lifts the perfume."
+  },
+  {
+    name: "Châteauneuf-du-Pape",
+    kind: "Still", grape: "Grenache",
+    tier: 1,
+    color: "Red", country: "France", region: "Southern Rhône", continent: "Europe",
+    body: 5, tannin: 3, acidity: 3, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Strawberry", "Garrigue", "Leather", "White Pepper"],
+    alsoKnownAs: [],
+    note: "Thirteen permitted grapes, though Grenache does most of the work. The famous galets — big round stones — hold the day's heat and push the ripeness further."
+  },
+  {
+    name: "Bandol",
+    kind: "Still", grape: "Mourvèdre",
+    tier: 3,
+    color: "Red", country: "France", region: "Bandol", continent: "Europe",
+    body: 5, tannin: 5, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Blackberry", "Leather", "Garrigue", "Forest Floor"],
+    alsoKnownAs: [],
+    note: "One of the few places Mourvèdre ripens fully, on terraces above the Mediterranean. Legally aged eighteen months in wood, and it needs a decade more."
+  },
+  {
+    name: "Beaujolais",
+    kind: "Still", grape: "Gamay",
+    tier: 1,
+    color: "Red", country: "France", region: "Beaujolais", continent: "Europe",
+    body: 2, tannin: 2, acidity: 5, climate: 2,
+    oak: "Rare",
+    flavors: ["Cherry", "Raspberry", "Banana", "Red Plum"],
+    alsoKnownAs: [],
+    note: "Nouveau did the region's reputation lasting damage. The ten named crus — Morgon, Fleurie, Moulin-à-Vent — are serious wines that happen to share the name."
+  },
+  {
+    name: "Chinon",
+    kind: "Still", grape: "Cabernet Franc",
+    tier: 3,
+    color: "Red", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 3, tannin: 3, acidity: 5, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Red Plum", "Green Bell Pepper", "Violet", "Bay Leaf"],
+    alsoKnownAs: [],
+    note: "Cabernet Franc at the northern edge of where it ripens, which is exactly why the leafy pyrazine note shows. Chilled slightly, it is one of the great food reds."
+  },
+  {
+    name: "Pauillac",
+    kind: "Still", grape: "Cabernet Sauvignon",
+    tier: 2,
+    color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
+    body: 5, tannin: 5, acidity: 5, climate: 2,
+    oak: "Common",
+    flavors: ["Blackcurrant", "Cedar", "Graphite", "Mint"],
+    alsoKnownAs: [],
+    note: "Three of the five First Growths sit in this one commune. Deep gravel drains hard and forces the roots down, which is the whole Left Bank argument."
+  },
+  {
+    name: "Saint-Émilion",
+    kind: "Still", grape: "Merlot",
+    tier: 2,
+    color: "Red", country: "France", region: "Bordeaux", continent: "Europe",
+    body: 4, tannin: 3, acidity: 3, climate: 2,
+    oak: "Common",
+    flavors: ["Plum", "Black Cherry", "Chocolate", "Cedar"],
+    alsoKnownAs: [],
+    note: "Right Bank clay and limestone suit Merlot where Left Bank gravel suits Cabernet. Softer, rounder, and drinkable years earlier than its neighbours across the river."
+  },
+  {
+    name: "Rioja",
+    kind: "Still", grape: "Tempranillo",
+    tier: 1,
+    color: "Red", country: "Spain", region: "Rioja", continent: "Europe",
+    body: 4, tannin: 4, acidity: 3, climate: 2,
+    oak: "Common",
+    flavors: ["Red Plum", "Leather", "Vanilla", "Tobacco"],
+    alsoKnownAs: [],
+    note: "Read the back label: Crianza, Reserva and Gran Reserva are legal minimum ageing periods, not quality claims. The coconut-vanilla lift is American oak."
+  },
+  {
+    name: "Ribera del Duero",
+    kind: "Still", grape: "Tempranillo",
+    tier: 2,
+    color: "Red", country: "Spain", region: "Ribera del Duero", continent: "Europe",
+    body: 5, tannin: 4, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Blackberry", "Plum", "Vanilla", "Liquorice"],
+    alsoKnownAs: [],
+    note: "The same grape as Rioja at 800 metres on the Castilian plateau, where nights are cold and days are fierce. Darker, denser and more tannic for it."
+  },
+  {
+    name: "Priorat",
+    kind: "Still", grape: "Grenache",
+    tier: 2,
+    color: "Red", country: "Spain", region: "Priorat", continent: "Europe",
+    body: 5, tannin: 4, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Slate", "Liquorice", "Garrigue"],
+    alsoKnownAs: [],
+    note: "Old bush vines on llicorella, a slate so poor the yields are almost nothing. Abandoned for most of the twentieth century, revived in the 1990s and now Spain's most expensive."
+  },
+  {
+    name: "Napa Cabernet",
+    kind: "Still", grape: "Cabernet Sauvignon",
+    tier: 1,
+    color: "Red", country: "United States", region: "Napa Valley", continent: "North America",
+    body: 5, tannin: 4, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackcurrant", "Chocolate", "Vanilla", "Mint"],
+    alsoKnownAs: ["Napa Valley Cabernet"],
+    note: "The same grape as Pauillac in far more sun: riper fruit, softer tannin, lower acid and more new oak. The 1976 Paris tasting is what put it on the map."
+  },
+  {
+    name: "Barossa Shiraz",
+    kind: "Still", grape: "Syrah",
+    tier: 1,
+    color: "Red", country: "Australia", region: "Barossa Valley", continent: "Oceania",
+    body: 5, tannin: 4, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Chocolate", "Liquorice", "Vanilla"],
+    alsoKnownAs: ["Barossa Valley Shiraz"],
+    note: "Syrah in real heat: the black pepper of the Northern Rhône disappears entirely and sweet dark fruit takes over. Some of the oldest vines on earth, never touched by phylloxera."
+  },
+  {
+    name: "Central Otago Pinot Noir",
+    kind: "Still", grape: "Pinot Noir",
+    tier: 2,
+    color: "Red", country: "New Zealand", region: "Central Otago", continent: "Oceania",
+    body: 3, tannin: 2, acidity: 5, climate: 1,
+    oak: "Common",
+    flavors: ["Cherry", "Raspberry", "Violet", "Forest Floor"],
+    alsoKnownAs: ["Central Otago"],
+    note: "The world's southernmost wine region, and the only one in New Zealand with a continental rather than maritime climate. Riper and darker than Burgundy without losing the acid."
+  },
+  {
+    name: "Port",
+    kind: "Fortified", grape: "Touriga Nacional",
+    tier: 1,
+    color: "Red", country: "Portugal", region: "Douro", continent: "Europe",
+    body: 5, tannin: 4, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Fig", "Chocolate", "Cinnamon"],
+    alsoKnownAs: ["Porto"],
+    note: "Grape spirit is added partway through fermentation, killing the yeast and leaving the unfermented sugar behind. That is what makes it sweet and strong at once."
+  },
+  {
+    name: "Fino Sherry",
+    kind: "Fortified", grape: "Palomino",
+    tier: 2,
+    color: "White", country: "Spain", region: "Jerez", continent: "Europe",
+    body: 2, tannin: 1, acidity: 4, climate: 3,
+    oak: "Sometimes",
+    flavors: ["Almond", "Saline", "Bread", "Green Apple"],
+    alsoKnownAs: ["Fino"],
+    note: "Aged under flor, a living yeast blanket that seals the wine from air and eats what little sugar remains. Bone dry, and it goes stale within days of opening."
+  },
+  {
+    name: "Sauternes",
+    kind: "Sweet", grape: "Sémillon",
+    tier: 1,
+    color: "White", country: "France", region: "Bordeaux", continent: "Europe",
+    body: 5, tannin: 1, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Apricot", "Honey", "Toast", "Orange Peel"],
+    alsoKnownAs: [],
+    note: "Botrytis — noble rot — shrivels the grapes on the vine and concentrates everything. It depends on autumn mists off the Ciron, and in bad years they simply do not make it."
+  },
+  {
+    name: "Tokaji Aszú",
+    kind: "Sweet", grape: "Furmint",
+    tier: 2,
+    color: "White", country: "Hungary", region: "Tokaj", continent: "Europe",
+    body: 4, tannin: 1, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Apricot", "Honey", "Orange Peel", "Quince"],
+    alsoKnownAs: ["Tokay"],
+    note: "Botrytised berries picked individually and kneaded into a paste, measured in puttonyos. Acidity high enough that 150 grams of sugar still finishes clean."
+  },
+  {
+    name: "Muscat de Beaumes-de-Venise",
+    kind: "Fortified", grape: "Muscat",
+    tier: 3,
+    color: "White", country: "France", region: "Southern Rhône", continent: "Europe",
+    body: 4, tannin: 1, acidity: 3, climate: 3,
+    oak: "Rare",
+    flavors: ["Orange Blossom", "Peach", "Grape", "Honey"],
+    alsoKnownAs: ["Beaumes-de-Venise"],
+    note: "A vin doux naturel: fortified early so most of the grape sugar survives. Tastes more purely of fresh grapes than almost any other wine."
+  }
+];
+
+/* Winedle - daily wine guessing game */
+'use strict';
+
+const MAX_GUESSES = 6;
+/* A guess scoring this many exact tiles is close enough that the grid alone
+ * stops being informative — surface something it does not already show. */
+const HINT_AT = 6;
+/* The nine tiles are far more informative than they look: a perfect solver
+ * averages 2.26 guesses over the bank and never needs more than three, and one
+ * opening guess pins the answer outright in most cases. So the remaining-field
+ * count is help for someone stuck, not a running readout - showing it from the
+ * first guess would announce that the puzzle was already logically over. */
+const REMAINING_AFTER = 3;
+const EPOCH = Date.UTC(2026, 0, 1);
+
+const ORD_LABELS = {
+  body:     ['Light', 'Light-Med', 'Medium', 'Med-Full', 'Full'],
+  tannin:   ['Low', 'Low-Med', 'Medium', 'Med-High', 'High'],
+  acidity:  ['Low', 'Med-Low', 'Medium', 'Med-High', 'High'],
+  climate:  ['Cool', 'Moderate', 'Warm', 'Hot']
+};
+
+const COLUMNS = [
+  { key: 'kind',    label: 'Type',    type: 'kind'  },
+  { key: 'color',   label: 'Colour',  type: 'exact' },
+  { key: 'grape',   label: 'Grape',   type: 'exact' },
+  { key: 'country', label: 'Country', type: 'geo'   },
+  { key: 'region',  label: 'Region',  type: 'exact' },
+  { key: 'body',    label: 'Body',    type: 'ord'   },
+  { key: 'tannin',  label: 'Tannin',  type: 'ord'   },
+  { key: 'acidity', label: 'Acidity', type: 'ord'   },
+  { key: 'climate', label: 'Climate', type: 'ord'   },
+  { key: 'flavors', label: 'Aromas',  type: 'set'   }
+];
+
+const EMOJI = { hit: '\u{1F7E5}', near: '\u{1F7E8}', miss: '⬜' };
+
+/* ---------- comparison engine ---------- */
+
+/* Type separates a grape variety from a wine, and among wines separates still
+ * from sparkling, fortified and sweet. Two different wine styles score close:
+ * knowing you are hunting a wine rather than a grape is real progress even
+ * when the style is wrong. */
+function cmpKind(g, a) {
+  if (g === a) return { state: 'hit', text: g };
+  const bothWines = g !== 'Grape' && a !== 'Grape';
+  return { state: bothWines ? 'near' : 'miss', text: g };
+}
+
+function cmpExact(g, a) {
+  return { state: g === a ? 'hit' : 'miss', text: g };
+}
+
+function cmpGeo(g, a, guess, answer) {
+  if (g === a) return { state: 'hit', text: g };
+  if (guess.continent === answer.continent) return { state: 'near', text: g };
+  return { state: 'miss', text: g };
+}
+
+function cmpOrd(g, a, key) {
+  const text = ORD_LABELS[key][g - 1];
+  if (g === a) return { state: 'hit', text };
+  const arrow = g < a ? '↑' : '↓';
+  return { state: Math.abs(g - a) === 1 ? 'near' : 'miss', text, arrow };
+}
+
+/* Aromas score in two steps: an exact term, or the right family with the wrong
+ * term. Placing the family is real progress in tasting, and treating Lemon
+ * against Citrus as a total miss threw that information away. */
+function cmpSet(g, a) {
+  const shared = g.filter(f => a.includes(f));
+  if (shared.length === a.length && g.length === a.length) {
+    return { state: 'hit', text: 'all ' + a.length, shared: shared, kin: [],
+             detail: shared.join(', ') };
+  }
+
+  const missedByAnswer = a.filter(f => !shared.includes(f));
+  const kin = [];
+  const claimed = [];
+  g.filter(f => !shared.includes(f)).forEach(f => {
+    const fam = AROMA_FAMILY[f];
+    const match = missedByAnswer.find(x => AROMA_FAMILY[x] === fam && !claimed.includes(x));
+    if (match) { claimed.push(match); kin.push({ term: f, family: fam }); }
+  });
+
+  const detail = [
+    shared.length ? shared.join(', ') : '',
+    kin.length ? kin.map(k => k.term + ' \u2192 ' + k.family.toLowerCase()).join(', ') : ''
+  ].filter(Boolean).join('; ');
+
+  if (!shared.length && !kin.length) return { state: 'miss', text: 'none', shared: [], kin: [], detail: '' };
+  if (!shared.length) {
+    return { state: 'near', text: kin.length + ' related', shared: [], kin: kin, detail: detail };
+  }
+  return { state: 'near', text: shared.length + ' of ' + a.length,
+           shared: shared, kin: kin, detail: detail };
+}
+
+function compare(guess, answer) {
+  return COLUMNS.map(col => {
+    const g = guess[col.key], a = answer[col.key];
+    let r;
+    if (col.type === 'kind')       r = cmpKind(g, a);
+    else if (col.type === 'exact') r = cmpExact(g, a);
+    else if (col.type === 'geo')   r = cmpGeo(g, a, guess, answer);
+    else if (col.type === 'ord')   r = cmpOrd(g, a, col.key);
+    else                           r = cmpSet(g, a);
+    return Object.assign({ label: col.label }, r);
+  });
+}
+
+/* ---------- daily puzzle selection ---------- */
+
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function () {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= h >>> 16) >>> 0;
+  };
+}
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(arr, seed) {
+  const rand = mulberry32(xmur3('winedle-' + seed)());
+  const out = arr.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function dayNumber(date) {
+  const d = date || new Date();
+  const utc = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  return Math.floor((utc - EPOCH) / 86400000);
+}
+
+/* The week runs easy, medium, easy, medium, easy, medium, specialist. An
+ * 85-grape bank drawn flat would hand a first-time player Rkatsiteli and lose
+ * them; this keeps six days in seven approachable while the deep cuts still
+ * come round. Tier 3 is always reachable in the archive and in practice. */
+const TIER_WEEK = [1, 2, 1, 2, 1, 2, 3];
+
+function tierPool(tier) {
+  return WINES.filter(w => w.tier === tier);
+}
+
+function tierForDay(day) {
+  return TIER_WEEK[((day % 7) + 7) % 7];
+}
+
+/* How many earlier days drew from this same tier - each tier walks its own
+ * deck, so no tier repeats until its pool is spent. */
+function indexWithinTier(day, tier) {
+  const perWeek = TIER_WEEK.filter(t => t === tier).length;
+  const weeks = Math.floor(day / 7);
+  let within = 0;
+  for (let i = 0; i < day % 7; i++) if (TIER_WEEK[i] === tier) within++;
+  return weeks * perWeek + within;
+}
+
+/* Shuffle a fresh deck each cycle so nothing repeats until the pool is spent,
+ * and the order is not guessable from the source order. */
+function puzzleFor(day) {
+  const d = Math.max(0, day);
+  const tier = tierForDay(d);
+  const pool = tierPool(tier);
+  const n = pool.length;
+  const i = indexWithinTier(d, tier);
+  const deck = seededShuffle(pool, tier * 1000 + Math.floor(i / n));
+  return deck[i % n];
+}
+
+/* ---------- name resolution ---------- */
+
+function normalize(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '')
+          .toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+const INDEX = (function () {
+  const map = new Map();
+  WINES.forEach(w => {
+    map.set(normalize(w.name), w);
+    (w.alsoKnownAs || []).forEach(alias => {
+      if (!map.has(normalize(alias))) map.set(normalize(alias), w);
+    });
+  });
+  return map;
+})();
+
+function resolve(input) {
+  return INDEX.get(normalize(input)) || null;
+}
+
+function suggest(query, exclude) {
+  const q = normalize(query);
+  if (!q) return [];
+  const out = [];
+  const seen = new Set(exclude || []);
+  WINES.forEach(w => {
+    if (seen.has(w.name)) return;
+    const hitName = normalize(w.name).includes(q);
+    const alias = (w.alsoKnownAs || []).find(a => normalize(a).includes(q));
+    if (hitName || alias) {
+      out.push({ wine: w, via: hitName ? null : alias });
+      seen.add(w.name);
+    }
+  });
+  return out.slice(0, 8);
+}
+
+/* ---------- deduction ---------- */
+
+/* Two wines are indistinguishable from a given guess when that guess would
+ * score identically against both. Comparing signatures is what lets the board
+ * say how much of the field is still standing. */
+function tileSignature(guess, candidate) {
+  return compare(guess, candidate)
+    .map(t => t.state + (t.arrow || '') + (t.detail || ''))
+    .join('|');
+}
+
+/* Every wine that would have produced exactly the feedback already on screen.
+ * Pure in its arguments so it can be tested without a browser. */
+function candidatesFor(guessNames, answer) {
+  if (!guessNames.length) return WINES.slice();
+  const played = guessNames.map(n => WINES.find(w => w.name === n));
+  const target = played.map(g => tileSignature(g, answer));
+  return WINES.filter(c => played.every((g, i) => tileSignature(g, c) === target[i]));
+}
+
+/* Of the aromas the answer has and the guess lacks, reveal whichever rules out
+ * the most of the remaining field - a hint that halves the candidates beats one
+ * that confirms something nearly everything shares. */
+function bestAroma(guess, answer, revealed, pool) {
+  const fresh = answer.flavors.filter(f => !guess.flavors.includes(f) && !revealed.has(f));
+  if (!fresh.length) return null;
+  let best = fresh[0];
+  let bestLeft = Infinity;
+  fresh.forEach(f => {
+    const left = pool.filter(c => c.flavors.includes(f)).length;
+    if (left < bestLeft) { bestLeft = left; best = f; }
+  });
+  return best;
+}
+
+/* A challenge link carries the wine in the URL. Base64 rather than the plain
+ * name so the answer is not sitting in the address bar, URL-safe so it
+ * survives being pasted into a chat window, and UTF-8 aware because btoa alone
+ * throws on Nero d'Avola's typographic apostrophe. */
+function encodeName(name) {
+  const bytes = new TextEncoder().encode(name);
+  let binary = '';
+  bytes.forEach(b => { binary += String.fromCharCode(b); });
+  return btoa(binary).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function decodeName(token) {
+  try {
+    const padded = token.replace(/-/g, '+').replace(/_/g, '/');
+    const binary = atob(padded + '='.repeat((4 - padded.length % 4) % 4));
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  } catch (e) {
+    return null;
+  }
+}
+
+function wineFromToken(token) {
+  const name = token && decodeName(token);
+  return (name && WINES.find(w => w.name === name)) || null;
+}
+
+/* Practice draws at random from the whole bank, but leans toward wines you
+ * have already failed - a daily puzzle is a habit, revision needs volume and
+ * repetition of the things you got wrong. Takes its randomness as an argument
+ * so it can be tested. */
+const PRACTICE_MISS_BIAS = 0.4;
+
+function practicePick(rand, misses) {
+  const missed = Object.keys(misses || {})
+    .map(n => WINES.find(w => w.name === n))
+    .filter(Boolean);
+  if (missed.length && rand() < PRACTICE_MISS_BIAS) {
+    return missed[Math.floor(rand() * missed.length)];
+  }
+  return WINES[Math.floor(rand() * WINES.length)];
+}
+
+/* ---------- persistence ---------- */
+
+const KEY_STATE = 'winedle:state';
+const KEY_STATS = 'winedle:stats';
+const KEY_MISSES = 'winedle:misses';
+const KEY_MET = 'winedle:met';
+
+function readJSON(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+  catch (e) { return fallback; }
+}
+
+function writeJSON(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+}
+
+function blankStats() {
+  return { played: 0, wins: 0, streak: 0, maxStreak: 0, dist: [0,0,0,0,0,0], lastDay: null };
+}
+
+function recordResult(won, guessCount, day, live) {
+  const s = readJSON(KEY_STATS, blankStats());
+  /* Replaying the archive must not inflate a streak that is about the daily. */
+  if (!live || s.lastDay === day) return s;
+  s.played++;
+  if (won) {
+    s.wins++;
+    s.dist[guessCount - 1]++;
+    s.streak = (s.lastDay === day - 1) ? s.streak + 1 : 1;
+    s.maxStreak = Math.max(s.maxStreak, s.streak);
+  } else {
+    s.streak = 0;
+  }
+  s.lastDay = day;
+  writeJSON(KEY_STATS, s);
+  return s;
+}
+
+/* ---------- game state ---------- */
+
+const TODAY = dayNumber();
+
+/* ?d=<n> replays an archived puzzle. Clamped to the schedule's own range so a
+ * hand-edited URL cannot land on an undefined day. */
+const query = new URLSearchParams(location.search);
+const CHALLENGE = wineFromToken(query.get('w'));
+const IS_CHALLENGE = !!CHALLENGE;
+const IS_PRACTICE = !IS_CHALLENGE && query.get('mode') === 'practice';
+const asked = parseInt(query.get('d'), 10);
+const DAY = Number.isInteger(asked) ? Math.min(Math.max(asked, 0), TODAY) : TODAY;
+const IS_ARCHIVE = DAY !== TODAY;
+
+/* Archived plays get their own slot, so replaying one never overwrites the
+ * live puzzle and never touches the streak. */
+const STATE_KEY = IS_CHALLENGE ? KEY_STATE + ':w:' + query.get('w')
+  : IS_PRACTICE ? KEY_STATE + ':practice'
+  : IS_ARCHIVE ? KEY_STATE + ':' + DAY
+  : KEY_STATE;
+
+function dateForDay(d) {
+  return new Date(EPOCH + d * 86400000);
+}
+
+let state = readJSON(STATE_KEY, null);
+const stateFits = state && (
+  IS_CHALLENGE ? state.answer === CHALLENGE.name
+  : IS_PRACTICE ? state.mode === 'practice'
+  : state.day === DAY);
+
+if (!stateFits) {
+  state = IS_CHALLENGE
+    ? { mode: 'challenge', guesses: [], status: 'playing', answer: CHALLENGE.name }
+    : IS_PRACTICE
+    ? { mode: 'practice', guesses: [], status: 'playing',
+        answer: practicePick(Math.random, readJSON(KEY_MISSES, {})).name }
+    : { day: DAY, guesses: [], status: 'playing', answer: puzzleFor(DAY).name };
+  writeJSON(STATE_KEY, state);
+}
+
+/* Pin the answer to whatever this player started on. The schedule is derived
+ * from the bank, so adding a grape mid-day reshuffles it - and a player halfway
+ * through would otherwise have the answer swapped underneath them. Falls back
+ * to the schedule for states saved before this field existed. */
+const ANSWER = (state.answer && WINES.find(w => w.name === state.answer)) || puzzleFor(DAY);
+if (state.answer !== ANSWER.name) {
+  state.answer = ANSWER.name;
+  writeJSON(STATE_KEY, state);
+}
+
+/* ---------- rendering ---------- */
+
+/* ---------- hints ---------- */
+
+/* Near-misses reveal an aroma the answer carries and the guess did not, one at
+ * a time and never the same one twice. Once the aromas are spent, fall back to
+ * oak — the one recorded attribute the grid never scores. */
+function hintFor(guess, tiles, revealed, pool) {
+  const hits = tiles.filter(t => t.state === 'hit').length;
+  if (hits < HINT_AT) return null;
+  const aroma = bestAroma(guess, ANSWER, revealed, pool);
+  if (aroma) {
+    revealed.add(aroma);
+    return { kind: 'aroma', value: aroma };
+  }
+  if (!revealed.has('\u0000oak')) {
+    revealed.add('\u0000oak');
+    return { kind: 'oak', value: ANSWER.oak };
+  }
+  return null;
+}
+
+const $ = sel => document.querySelector(sel);
+const board = $('#board');
+const input = $('#guess-input');
+const sugBox = $('#suggestions');
+const endPanel = $('#end-panel');
+const counter = $('#counter');
+const noticeEl = $('#notice');
+const remaining = $('#remaining');
+const announcer = $('#announcer');
+
+/* The board re-renders in full on every guess, so it must not be a live region -
+ * that would re-read every previous row. Announce just what changed. */
+function announce(wine, tiles) {
+  const exact = tiles.filter(t => t.state === 'hit').map(t => t.label.toLowerCase());
+  announcer.textContent = wine.name + ', ' + exact.length + ' of ' + tiles.length +
+    ' exact' + (exact.length ? ': ' + exact.join(', ') : '') + '.';
+}
+
+const STATE_WORD = { hit: 'exact match', near: 'close', miss: 'no match' };
+const STATE_MARK = { hit: '\u2713', near: '\u2248', miss: '' };
+
+function tileLabel(t) {
+  let s = t.label + ': ' + t.text + ', ' + STATE_WORD[t.state];
+  if (t.arrow) s += ', answer is ' + (t.arrow === '\u2191' ? 'higher' : 'lower');
+  if (t.detail) s += ' (' + t.detail + ')';
+  return s;
+}
+
+function tileEl(t, delay) {
+  const el = document.createElement('div');
+  el.className = 'tile tile--' + t.state;
+  el.style.animationDelay = delay + 'ms';
+  el.setAttribute('role', 'listitem');
+  el.setAttribute('aria-label', tileLabel(t));
+  if (t.detail) el.title = t.detail;
+  if (STATE_MARK[t.state]) {
+    const mark = document.createElement('span');
+    mark.className = 'tile__mark';
+    mark.setAttribute('aria-hidden', 'true');
+    mark.textContent = STATE_MARK[t.state];
+    el.appendChild(mark);
+  }
+  const lab = document.createElement('span');
+  lab.className = 'tile__label';
+  lab.textContent = t.label;
+  const val = document.createElement('span');
+  val.className = 'tile__value';
+  val.textContent = t.text;
+  el.appendChild(lab);
+  el.appendChild(val);
+  if (t.arrow) {
+    const ar = document.createElement('span');
+    ar.className = 'tile__arrow';
+    ar.textContent = t.arrow;
+    el.appendChild(ar);
+  }
+  return el;
+}
+
+/* One caption block under the tiles rather than two floating callouts: a
+ * tiny-caps label in the tile's own type, then the detail. Reads as part of
+ * the row instead of something stuck to it. */
+function noteLine(label, body, kind) {
+  const line = document.createElement('p');
+  line.className = 'note' + (kind ? ' note--' + kind : '');
+  const tag = document.createElement('span');
+  tag.className = 'note__label';
+  tag.textContent = label;
+  const text = document.createElement('span');
+  text.className = 'note__body';
+  text.textContent = body;
+  line.appendChild(tag);
+  line.appendChild(text);
+  return line;
+}
+
+function hintEl(hint) {
+  return hint.kind === 'aroma'
+    ? noteLine('Hint', 'the answer shows ' + hint.value.toLowerCase(), 'hint')
+    : noteLine('Hint', 'oak on the answer is ' + hint.value.toLowerCase(), 'hint');
+}
+
+/* The aroma tile can only fit a count. Desktop gets the names on hover, so
+ * without this a phone is simply told less about the same guess. */
+function aromaLine(tiles) {
+  const t = tiles.find(x => x.label === 'Aromas');
+  if (!t || t.state === 'miss') return null;
+  const parts = [];
+  if (t.shared && t.shared.length) parts.push(t.shared.join(', ').toLowerCase());
+  if (t.kin && t.kin.length) {
+    parts.push(t.kin.map(k => k.term.toLowerCase() + ' \u2192 ' + k.family.toLowerCase()).join(', '));
+  }
+  if (!parts.length) return null;
+  return noteLine('Aromas', parts.join(' \u00b7 '));
+}
+
+function rowEl(wine, tiles, animate) {
+  const row = document.createElement('article');
+  row.className = 'row' + (animate ? ' row--new' : '');
+
+  const name = document.createElement('h2');
+  name.className = 'row__name';
+  name.textContent = wine.name;
+  row.appendChild(name);
+
+  const grid = document.createElement('div');
+  grid.className = 'row__tiles';
+  grid.setAttribute('role', 'list');
+  grid.setAttribute('aria-label', 'How ' + wine.name + ' scored');
+  tiles.forEach((t, i) => grid.appendChild(tileEl(t, animate ? i * 90 : 0)));
+  row.appendChild(grid);
+  const notes = document.createElement('div');
+  notes.className = 'row__notes';
+  const shared = aromaLine(tiles);
+  if (shared) notes.appendChild(shared);
+  row.appendChild(notes);
+  return row;
+}
+
+function render(animateLast) {
+  board.innerHTML = '';
+  const revealed = new Set();
+  state.guesses.forEach((n, i) => {
+    const wine = WINES.find(w => w.name === n);
+    const tiles = compare(wine, ANSWER);
+    const row = rowEl(wine, tiles, animateLast && i === state.guesses.length - 1);
+    if (wine.name !== ANSWER.name) {
+      const hint = hintFor(wine, tiles, revealed, candidatesFor(state.guesses, ANSWER));
+      if (hint) row.querySelector('.row__notes').appendChild(hintEl(hint));
+    }
+    board.appendChild(row);
+  });
+  counter.textContent = state.status === 'playing'
+    ? (MAX_GUESSES - state.guesses.length) + ' left'
+    : state.guesses.length + '/' + MAX_GUESSES;
+
+  /* How much of the field is still standing. Held back until the player has
+   * spent half their guesses - see REMAINING_AFTER. */
+  if (state.status === 'playing' && state.guesses.length >= REMAINING_AFTER) {
+    const n = candidatesFor(state.guesses, ANSWER).length;
+    remaining.textContent = n === 1 ? '1 answer still fits' : n + ' answers still fit';
+    remaining.hidden = false;
+  } else {
+    remaining.hidden = true;
+  }
+  if (state.status !== 'playing') showEnd();
+}
+
+/* A shared result is useless if the recipient cannot find the game. Prefer the
+ * address it is actually being played at, so a fork or a custom domain shares
+ * itself rather than the original. */
+const SHARE_URL = /^https?:$/.test(location.protocol)
+  ? location.origin + location.pathname.replace(/index\.html$/, '')
+  : 'https://leemoose.github.io/winedle/';
+
+function shareText() {
+  const grid = state.guesses.map(n => {
+    const wine = WINES.find(w => w.name === n);
+    return compare(wine, ANSWER).map(t => EMOJI[t.state]).join('');
+  }).join('\n');
+  const score = state.status === 'won' ? state.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
+  const url = IS_ARCHIVE ? SHARE_URL + '?d=' + DAY : SHARE_URL;
+  return 'Winedle #' + DAY + '  ' + score + '\n\n' + grid + '\n\n' + url;
+}
+
+/* What you missed comes back sooner in practice; what you got, stops nagging.
+ * Solves are also tallied permanently - a streak says how consistent you have
+ * been, but the tally says which of the bank you can actually name, which is
+ * the part worth knowing if you are revising. */
+function recordOutcome(won) {
+  const misses = readJSON(KEY_MISSES, {});
+  if (won) delete misses[ANSWER.name];
+  else misses[ANSWER.name] = (misses[ANSWER.name] || 0) + 1;
+  writeJSON(KEY_MISSES, misses);
+
+  if (won) {
+    const met = readJSON(KEY_MET, {});
+    met[ANSWER.name] = (met[ANSWER.name] || 0) + 1;
+    writeJSON(KEY_MET, met);
+  }
+}
+
+function showEnd() {
+  const won = state.status === 'won';
+  recordOutcome(won);
+  const stats = recordResult(won, state.guesses.length, DAY, !IS_ARCHIVE && !IS_PRACTICE && !IS_CHALLENGE);
+  const pct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
+
+  endPanel.innerHTML = '';
+  endPanel.hidden = false;
+
+  const verdict = document.createElement('p');
+  verdict.className = 'end__verdict';
+  verdict.textContent = won
+    ? ['Uncanny.', 'Sharp palate.', 'Well judged.', 'Got there.', 'Close run.', 'By the skin of your teeth.'][state.guesses.length - 1]
+    : 'Not this time.';
+  endPanel.appendChild(verdict);
+
+  const card = document.createElement('div');
+  card.className = 'reveal';
+  card.innerHTML =
+    '<p class="reveal__eyebrow">' +
+      (IS_ARCHIVE || IS_PRACTICE || IS_CHALLENGE ? 'The ' : 'Today’s ') +
+      (ANSWER.kind === 'Grape' ? 'grape' : 'wine') + '</p>' +
+    '<h3 class="reveal__name">' + ANSWER.name + '</h3>' +
+    '<p class="reveal__origin">' + ANSWER.region + ', ' + ANSWER.country + '</p>' +
+    '<p class="reveal__note">' + ANSWER.note + '</p>' +
+    '<dl class="reveal__meta">' +
+      '<div><dt>Oak</dt><dd>' + ANSWER.oak + '</dd></div>' +
+      '<div><dt>Aromas</dt><dd>' + ANSWER.flavors.join(', ') + '</dd></div>' +
+      (ANSWER.alsoKnownAs.length
+        ? '<div><dt>Also called</dt><dd>' + ANSWER.alsoKnownAs.join(', ') + '</dd></div>' : '') +
+    '</dl>';
+  endPanel.appendChild(card);
+
+  const bar = document.createElement('div');
+  bar.className = 'stats';
+  if (IS_PRACTICE || IS_CHALLENGE) bar.hidden = true;
+  bar.innerHTML =
+    '<div><strong>' + stats.played + '</strong><span>Played</span></div>' +
+    '<div><strong>' + pct + '%</strong><span>Won</span></div>' +
+    '<div><strong>' + stats.streak + '</strong><span>Streak</span></div>' +
+    '<div><strong>' + stats.maxStreak + '</strong><span>Best</span></div>';
+  endPanel.appendChild(bar);
+
+  if (IS_CHALLENGE) {
+    const back = document.createElement('p');
+    back.className = 'countdown';
+    back.innerHTML = '<a href="' + SELF + '">Play today\u2019s wine</a>';
+    endPanel.appendChild(back);
+  } else if (IS_PRACTICE) {
+    const again = document.createElement('button');
+    again.className = 'share';
+    again.textContent = 'Another wine';
+    again.addEventListener('click', () => {
+      try { localStorage.removeItem(STATE_KEY); } catch (e) {}
+      location.reload();
+    });
+    endPanel.appendChild(again);
+  } else if (IS_ARCHIVE) {
+    const back = document.createElement('p');
+    back.className = 'countdown';
+    back.innerHTML = '<a href="' + dayHref(TODAY) + '">Back to today\u2019s wine</a>';
+    endPanel.appendChild(back);
+  } else {
+    const clock = document.createElement('p');
+    clock.className = 'countdown';
+    endPanel.appendChild(clock);
+    startCountdown(clock);
+  }
+
+  /* Pass this exact wine on to someone else. Works from any mode, because the
+   * wine travels in the link rather than depending on the date. */
+  const challenge = document.createElement('button');
+  challenge.className = 'share share--ghost';
+  challenge.textContent = 'Challenge a friend';
+  challenge.addEventListener('click', () => {
+    const link = SHARE_URL + '?w=' + encodeName(ANSWER.name);
+    const done = () => {
+      challenge.textContent = 'Link copied';
+      setTimeout(() => { challenge.textContent = 'Challenge a friend'; }, 1600);
+    };
+    if (navigator.clipboard) navigator.clipboard.writeText(link).then(done, done);
+    else done();
+  });
+  endPanel.appendChild(challenge);
+
+  /* Nothing to share from practice or a challenge: the grid would be stamped
+   * with a daily puzzle number it does not belong to. */
+  if (IS_PRACTICE || IS_CHALLENGE) return;
+
+  const btn = document.createElement('button');
+  btn.className = 'share';
+  btn.textContent = 'Copy result';
+  btn.addEventListener('click', () => {
+    const text = shareText();
+    const done = () => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy result', 1600); };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, done);
+    else done();
+  });
+  endPanel.appendChild(btn);
+}
+
+/* Puzzles roll over at local midnight, matching how DAY is derived. */
+function startCountdown(el) {
+  function tick() {
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const left = next - now;
+    const pad = n => String(n).padStart(2, '0');
+    const h = Math.floor(left / 3600000);
+    const m = Math.floor((left % 3600000) / 60000);
+    const s = Math.floor((left % 60000) / 1000);
+    el.textContent = 'Next wine in ' + pad(h) + ':' + pad(m) + ':' + pad(s);
+    /* `next` is recomputed every tick, so `left` never reaches zero - compare
+     * the day instead, or the page sits on a stale puzzle past midnight. */
+    if (dayNumber() !== DAY) location.reload();
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+/* ---------- archive ---------- */
+
+const ARCHIVE_SHOWN = 30;
+
+/* Link relative to the file actually being viewed, not to the directory: the
+ * portable dist/winedle.html copy is not an index, so './' would 404 there. */
+const SELF = location.pathname;
+const dayHref = d => (d === TODAY ? SELF : SELF + '?d=' + d);
+
+function statusOf(day) {
+  const s = readJSON(day === TODAY ? KEY_STATE : KEY_STATE + ':' + day, null);
+  if (!s || s.day !== day || s.status === 'playing') return null;
+  return s.status;
+}
+
+function renderArchive() {
+  const list = $('#archive-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (let d = TODAY; d > Math.max(-1, TODAY - ARCHIVE_SHOWN); d--) {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = dayHref(d);
+    a.textContent = 'No. ' + d;
+    const when = document.createElement('span');
+    when.className = 'archive-list__date';
+    when.textContent = dateForDay(d).toLocaleDateString(undefined,
+      { day: 'numeric', month: 'short', timeZone: 'UTC' });
+    const st = statusOf(d);
+    const mark = document.createElement('span');
+    mark.className = 'archive-list__mark';
+    mark.textContent = st === 'won' ? '\u2713' : st === 'lost' ? '\u2715' : '';
+    if (st) a.classList.add('is-done');
+    if (d === DAY) li.className = 'is-current';
+    li.appendChild(a);
+    li.appendChild(when);
+    li.appendChild(mark);
+    list.appendChild(li);
+  }
+}
+
+function renderArchiveNav() {
+  const nav = $('#archive-nav');
+  if (!nav || !IS_ARCHIVE) return;
+  nav.hidden = false;
+  const bits = [];
+  if (DAY > 0) bits.push('<a href="' + dayHref(DAY - 1) + '">\u2190 No. ' + (DAY - 1) + '</a>');
+  bits.push('<a href="' + dayHref(TODAY) + '">Today</a>');
+  if (DAY < TODAY) bits.push('<a href="' + dayHref(DAY + 1) + '">No. ' + (DAY + 1) + ' \u2192</a>');
+  nav.innerHTML = 'Archive \u00b7 ' + bits.join('<span class="sep">\u00b7</span>');
+}
+
+/* ---------- cellar book ---------- */
+
+function renderStats() {
+  const s = readJSON(KEY_STATS, blankStats());
+  const pct = s.played ? Math.round((s.wins / s.played) * 100) : 0;
+  $('#stats-summary').innerHTML =
+    '<div><strong>' + s.played + '</strong><span>Played</span></div>' +
+    '<div><strong>' + pct + '%</strong><span>Won</span></div>' +
+    '<div><strong>' + s.streak + '</strong><span>Streak</span></div>' +
+    '<div><strong>' + s.maxStreak + '</strong><span>Best</span></div>';
+
+  const peak = Math.max(1, ...s.dist);
+  const solvedToday = !IS_ARCHIVE && state.status === 'won' ? state.guesses.length : 0;
+  $('#stats-histogram').innerHTML = s.dist.map(function (n, i) {
+    const pctW = Math.round((n / peak) * 100);
+    return '<div class="bar' + (i + 1 === solvedToday ? ' is-latest' : '') + '">' +
+      '<span class="bar__n">' + (i + 1) + '</span>' +
+      '<span class="bar__fill" style="width:' + Math.max(pctW, n ? 8 : 2) + '%">' +
+      '<span class="bar__count">' + n + '</span></span></div>';
+  }).join('');
+}
+
+/* The bank, alphabetically, marked with what you have solved. Every name is
+ * already reachable through the typeahead, so listing the unmet ones gives
+ * nothing away - it just makes the gap visible. */
+function renderMet() {
+  const met = readJSON(KEY_MET, {});
+  const solved = WINES.filter(w => met[w.name]);
+  $('#met-count').textContent = solved.length + ' of ' + WINES.length +
+    ' (' + Math.round((solved.length / WINES.length) * 100) + '%)';
+
+  const list = $('#met-list');
+  list.innerHTML = '';
+  WINES.slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach(w => {
+      const times = met[w.name] || 0;
+      const li = document.createElement('li');
+      li.className = 'met' + (times ? ' is-met' : '');
+      const name = document.createElement('span');
+      name.textContent = w.name;
+      const tally = document.createElement('span');
+      tally.className = 'met__tally';
+      tally.textContent = times > 1 ? '\u00d7' + times : times ? '\u2713' : '';
+      li.appendChild(name);
+      li.appendChild(tally);
+      list.appendChild(li);
+    });
+}
+
+const statsDialog = $('#stats-dialog');
+$('#stats-open').addEventListener('click', () => { renderStats(); renderMet(); statsDialog.showModal(); });
+$('#stats-close').addEventListener('click', () => statsDialog.close());
+statsDialog.addEventListener('click', e => { if (e.target === statsDialog) statsDialog.close(); });
+
+/* ---------- input ---------- */
+
+function submitGuess(wine) {
+  if (state.status !== 'playing') return;
+  if (state.guesses.includes(wine.name)) return;
+  state.guesses.push(wine.name);
+  if (wine.name === ANSWER.name) state.status = 'won';
+  else if (state.guesses.length >= MAX_GUESSES) state.status = 'lost';
+  writeJSON(STATE_KEY, state);
+  input.value = '';
+  activeIdx = 0;
+  notice('');
+  renderSuggestions([]);
+  render(true);
+  announce(wine, compare(wine, ANSWER));
+  if (state.status !== 'playing') {
+    input.disabled = true;
+    input.placeholder = 'Back tomorrow';
+  }
+}
+
+/* The suggestion list is a combobox: arrow keys move the selection, Enter takes
+ * it, Escape dismisses. activeIdx is the only piece of state that matters. */
+let currentList = [];
+let activeIdx = 0;
+
+function renderSuggestions(list) {
+  currentList = list;
+  if (activeIdx >= list.length) activeIdx = 0;
+  sugBox.innerHTML = '';
+  sugBox.hidden = list.length === 0;
+  input.setAttribute('aria-expanded', String(list.length > 0));
+  list.forEach((s, i) => {
+    const li = document.createElement('li');
+    li.className = 'suggestion' + (i === activeIdx ? ' is-active' : '');
+    li.id = 'suggestion-' + i;
+    li.setAttribute('role', 'option');
+    li.setAttribute('aria-selected', String(i === activeIdx));
+    li.textContent = s.wine.name;
+    if (s.via) {
+      const via = document.createElement('em');
+      via.textContent = ' \u2014 ' + s.via;
+      li.appendChild(via);
+    }
+    li.addEventListener('mousedown', e => { e.preventDefault(); submitGuess(s.wine); });
+    sugBox.appendChild(li);
+  });
+  input.setAttribute('aria-activedescendant', list.length ? 'suggestion-' + activeIdx : '');
+}
+
+function moveActive(delta) {
+  if (!currentList.length) return;
+  activeIdx = (activeIdx + delta + currentList.length) % currentList.length;
+  renderSuggestions(currentList);
+  const el = sugBox.children[activeIdx];
+  if (el) el.scrollIntoView({ block: 'nearest' });
+}
+
+/* Silent failure is the worst outcome for a typed guess - say what went wrong. */
+function notice(msg) {
+  noticeEl.textContent = msg || '';
+  noticeEl.hidden = !msg;
+  if (!msg) return;
+  input.classList.remove('is-wrong');
+  void input.offsetWidth;
+  input.classList.add('is-wrong');
+}
+
+input.addEventListener('input', () => {
+  notice('');
+  activeIdx = 0;
+  renderSuggestions(suggest(input.value, state.guesses));
+});
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); return moveActive(1); }
+  if (e.key === 'ArrowUp')   { e.preventDefault(); return moveActive(-1); }
+  if (e.key === 'Escape')    { renderSuggestions([]); return notice(''); }
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+
+  const typed = input.value.trim();
+  if (!typed) return;
+
+  const exact = resolve(typed);
+  if (exact) {
+    if (state.guesses.includes(exact.name)) return notice('Already guessed ' + exact.name + '.');
+    return submitGuess(exact);
+  }
+  if (currentList.length) return submitGuess(currentList[activeIdx].wine);
+  notice('Nothing by that name \u2014 keep typing, or pick from the list.');
+});
+
+input.addEventListener('blur', () => setTimeout(() => renderSuggestions([]), 120));
+
+if (IS_CHALLENGE) {
+  $('#puzzle-no').textContent = 'Challenge';
+  $('#puzzle-date').textContent = 'Sent by a friend';
+} else if (IS_PRACTICE) {
+  $('#puzzle-no').textContent = 'Practice';
+  $('#puzzle-date').textContent = 'No streak, no limit';
+} else {
+  $('#puzzle-no').textContent = 'No. ' + DAY;
+  $('#puzzle-date').textContent = dateForDay(DAY).toLocaleDateString(undefined,
+    { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+$('#mode-link').textContent = IS_PRACTICE ? 'Back to the daily' : 'Practice';
+$('#mode-link').href = IS_PRACTICE ? SELF : SELF + '?mode=practice';
+if (IS_ARCHIVE) document.body.classList.add('is-archive');
+renderArchive();
+renderArchiveNav();
+
+/* A newcomer otherwise lands on a bare input with no idea what is wanted. */
+if (!readJSON(KEY_STATS, null) && !state.guesses.length) {
+  const howto = document.querySelector('.howto:not(.archive)');
+  if (howto) howto.open = true;
+}
+
+/* Offline play and a home-screen icon. Registration is best-effort: it fails
+ * harmlessly from file:// and from the portable single-file copy. */
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+if (state.status !== 'playing') {
+  input.disabled = true;
+  input.placeholder = 'Back tomorrow';
+}
+render(false);
+
+if (state.status === 'playing' && !matchMedia('(hover: none)').matches) input.focus();
+
+</script>
 </body>
 </html>

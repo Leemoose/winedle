@@ -5,23 +5,24 @@ scored against the answer across nine attributes.
 
 ## Play it
 
-Open `dist/winedle.html` — one self-contained file, no server, no install.
+Open `index.html` — one self-contained file, no server, no install.
 
 ## Editing
 
-Sources are split for editing, then inlined into the single file:
+`index.html` is **generated**. Never edit it; edit the sources and rebuild:
 
+    page.html        page shell (the template)
     data/wines.js    the answer bank (the part worth your attention)
-    src/game.js      comparison engine, daily seed, rendering
+    data/aromas.js   aroma family map
+    src/game.js      comparison engine, schedule, rendering
     src/style.css    the label aesthetic
-    index.html       page shell
-    ./build.sh       inlines all of the above into dist/winedle.html
+    ./build.sh       runs the tests, then inlines all of it into index.html
 
-Run `./build.sh` after any change. Opening `index.html` directly also works for
-quick iteration, but note some browsers block local file loads — if the board
-comes up blank, serve the folder instead:
-
-    python3 -m http.server 8000
+Run `./build.sh` after any change. Inlining is not just for portability: four
+separate files meant four separate caches, and a browser holding a stale
+`data/wines.js` next to a fresh `src/game.js` runs new code against an old
+answer bank. That happened during development. One file cannot desynchronise
+with itself.
 
 ## Tests
 
