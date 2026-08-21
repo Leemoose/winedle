@@ -2,6 +2,11 @@
 # Inline data + css + js into one portable file at dist/winedle.html
 set -e
 cd "$(dirname "$0")"
+
+# Refuse to build on a failing suite - the bank keeps growing and an
+# indistinguishable pair would make a puzzle unwinnable.
+node test.js
+
 python3 - <<'PY'
 import re
 html = open('index.html').read()

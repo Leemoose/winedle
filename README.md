@@ -23,6 +23,15 @@ comes up blank, serve the folder instead:
 
     python3 -m http.server 8000
 
+## Tests
+
+    node test.js
+
+Checks data integrity (schema, ordinal ranges, aroma shape, name and alias
+collisions, and the no-two-wines-alike invariant), the comparison engine
+including arrow direction and symmetry, schedule determinism, and name
+resolution. `build.sh` runs it first and refuses to build on failure.
+
 ## Adding wines
 
 Append to `WINES` in `data/wines.js`. Every record needs all fields; the build
@@ -38,13 +47,8 @@ argue with the tiles:
 The bank currently holds 85 grapes — roughly twelve weeks before the deck runs
 out. Each cycle reshuffles, so the order is never the same twice.
 
-Before adding, check that the new record is not indistinguishable from an
-existing one. No two wines may match on all nine scored attributes:
-
-    node -e 'const W=new Function(require("fs").readFileSync("data/wines.js","utf8")+";return WINES;")();
-    const K=["color","country","region","colorInt","body","tannin","acidity","climate"];
-    const m={};W.forEach(w=>(m[K.map(k=>w[k]).join("|")+"|"+[...w.flavors].sort()] ||= []).push(w.name));
-    console.log(Object.values(m).filter(v=>v.length>1))'
+Run `node test.js` after adding — it will catch a record that is
+indistinguishable from an existing one, or an alias that collides.
 
 ## Attributes scored
 
