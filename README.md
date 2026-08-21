@@ -53,6 +53,21 @@ Colour · Country · Region · Depth · Body · Tannin · Acidity · Climate · 
 Oxblood = exact. Amber = one step off, same continent, or shared aromas.
 Blank = no match. Arrows on structural tiles point toward the answer.
 
+## Archive
+
+`?d=<n>` replays any past puzzle, clamped to the schedule's range. Archived
+plays are stored under their own key (`winedle:state:<n>`), so a replay never
+overwrites the live puzzle and never moves the streak. The index in the page
+lists the last 30 days.
+
+## Social card
+
+`assets/og.png` is a capture of `assets/og-card.html`, which is viewport-sized
+so it can be re-shot at any resolution. To regenerate: serve the folder, open
+the card at a viewport with a 1.905 aspect ratio, screenshot, then
+
+    magick <capture> -resize '1200x630!' -strip assets/og.png
+
 ## Hints
 
 A guess scoring `HINT_AT` (6) or more exact tiles is close enough that the grid
