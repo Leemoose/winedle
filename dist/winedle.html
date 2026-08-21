@@ -292,6 +292,24 @@ body {
   @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
 }
 
+.hint {
+  margin: 0.65rem 0 0;
+  padding: 0.4rem 0 0.4rem 0.85rem;
+  border-left: 2px solid var(--gold);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  animation: fade .45s .6s backwards;
+}
+
+.hint strong {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+
 /* ---------- end panel ---------- */
 
 #end-panel { margin-top: 2.5rem; text-align: center; }
@@ -408,6 +426,7 @@ body {
       <p><strong>Country and region</strong> mean the grape’s classic home — the reference expression, not everywhere it is planted. Chardonnay grows on six continents; its answer is Burgundy, France.</p>
       <p><strong>Depth</strong> is colour intensity judged within the wine’s own colour category, the way WSET does it. Nebbiolo is pale for a red; Riesling is pale for a white.</p>
       <p>Arrows on the structural tiles point toward the answer: <strong>↑</strong> means the answer is higher than your guess.</p>
+      <p>Guess something very close but wrong and the board offers a <strong>hint</strong> — an aroma the answer carries that your guess did not. Each one is given only once.</p>
       <div class="key">
         <div><i class="k-hit"></i> exact match</div>
         <div><i class="k-near"></i> close — one step off, same continent, or shared aromas</div>
@@ -1014,6 +1033,9 @@ const WINES = [
 'use strict';
 
 const MAX_GUESSES = 6;
+/* A guess scoring this many exact tiles is close enough that the grid alone
+ * stops being informative — surface something it does not already show. */
+const HINT_AT = 7;
 const EPOCH = Date.UTC(2026, 0, 1);
 
 const ORD_LABELS = {
@@ -1213,6 +1235,26 @@ if (!state || state.day !== DAY) {
 
 /* ---------- rendering ---------- */
 
+/* ---------- hints ---------- */
+
+/* Near-misses reveal an aroma the answer carries and the guess did not, one at
+ * a time and never the same one twice. Once the aromas are spent, fall back to
+ * oak — the one recorded attribute the grid never scores. */
+function hintFor(guess, tiles, revealed) {
+  const hits = tiles.filter(t => t.state === 'hit').length;
+  if (hits < HINT_AT) return null;
+  const fresh = ANSWER.flavors.filter(f => !guess.flavors.includes(f) && !revealed.has(f));
+  if (fresh.length) {
+    revealed.add(fresh[0]);
+    return { kind: 'aroma', value: fresh[0] };
+  }
+  if (!revealed.has('\u0000oak')) {
+    revealed.add('\u0000oak');
+    return { kind: 'oak', value: ANSWER.oak };
+  }
+  return null;
+}
+
 const $ = sel => document.querySelector(sel);
 const board = $('#board');
 const input = $('#guess-input');
@@ -1242,8 +1284,20 @@ function tileEl(t, delay) {
   return el;
 }
 
-function rowEl(wine, animate) {
-  const tiles = compare(wine, ANSWER);
+function hintEl(hint) {
+  const el = document.createElement('p');
+  el.className = 'hint';
+  if (hint.kind === 'aroma') {
+    el.innerHTML = 'Close. The answer shows <strong>' +
+      hint.value.toLowerCase() + '</strong> — your guess does not.';
+  } else {
+    el.innerHTML = 'Close. Oak on the answer: <strong>' +
+      hint.value.toLowerCase() + '</strong>.';
+  }
+  return el;
+}
+
+function rowEl(wine, tiles, animate) {
   const row = document.createElement('article');
   row.className = 'row' + (animate ? ' row--new' : '');
 
@@ -1261,9 +1315,16 @@ function rowEl(wine, animate) {
 
 function render(animateLast) {
   board.innerHTML = '';
+  const revealed = new Set();
   state.guesses.forEach((n, i) => {
     const wine = WINES.find(w => w.name === n);
-    board.appendChild(rowEl(wine, animateLast && i === state.guesses.length - 1));
+    const tiles = compare(wine, ANSWER);
+    const row = rowEl(wine, tiles, animateLast && i === state.guesses.length - 1);
+    if (wine.name !== ANSWER.name) {
+      const hint = hintFor(wine, tiles, revealed);
+      if (hint) row.appendChild(hintEl(hint));
+    }
+    board.appendChild(row);
   });
   counter.textContent = state.status === 'playing'
     ? (MAX_GUESSES - state.guesses.length) + ' left'

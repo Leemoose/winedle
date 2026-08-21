@@ -2,6 +2,9 @@
 'use strict';
 
 const MAX_GUESSES = 6;
+/* A guess scoring this many exact tiles is close enough that the grid alone
+ * stops being informative — surface something it does not already show. */
+const HINT_AT = 7;
 const EPOCH = Date.UTC(2026, 0, 1);
 
 const ORD_LABELS = {
@@ -201,6 +204,26 @@ if (!state || state.day !== DAY) {
 
 /* ---------- rendering ---------- */
 
+/* ---------- hints ---------- */
+
+/* Near-misses reveal an aroma the answer carries and the guess did not, one at
+ * a time and never the same one twice. Once the aromas are spent, fall back to
+ * oak — the one recorded attribute the grid never scores. */
+function hintFor(guess, tiles, revealed) {
+  const hits = tiles.filter(t => t.state === 'hit').length;
+  if (hits < HINT_AT) return null;
+  const fresh = ANSWER.flavors.filter(f => !guess.flavors.includes(f) && !revealed.has(f));
+  if (fresh.length) {
+    revealed.add(fresh[0]);
+    return { kind: 'aroma', value: fresh[0] };
+  }
+  if (!revealed.has('\u0000oak')) {
+    revealed.add('\u0000oak');
+    return { kind: 'oak', value: ANSWER.oak };
+  }
+  return null;
+}
+
 const $ = sel => document.querySelector(sel);
 const board = $('#board');
 const input = $('#guess-input');
@@ -230,8 +253,20 @@ function tileEl(t, delay) {
   return el;
 }
 
-function rowEl(wine, animate) {
-  const tiles = compare(wine, ANSWER);
+function hintEl(hint) {
+  const el = document.createElement('p');
+  el.className = 'hint';
+  if (hint.kind === 'aroma') {
+    el.innerHTML = 'Close. The answer shows <strong>' +
+      hint.value.toLowerCase() + '</strong> — your guess does not.';
+  } else {
+    el.innerHTML = 'Close. Oak on the answer: <strong>' +
+      hint.value.toLowerCase() + '</strong>.';
+  }
+  return el;
+}
+
+function rowEl(wine, tiles, animate) {
   const row = document.createElement('article');
   row.className = 'row' + (animate ? ' row--new' : '');
 
@@ -249,9 +284,16 @@ function rowEl(wine, animate) {
 
 function render(animateLast) {
   board.innerHTML = '';
+  const revealed = new Set();
   state.guesses.forEach((n, i) => {
     const wine = WINES.find(w => w.name === n);
-    board.appendChild(rowEl(wine, animateLast && i === state.guesses.length - 1));
+    const tiles = compare(wine, ANSWER);
+    const row = rowEl(wine, tiles, animateLast && i === state.guesses.length - 1);
+    if (wine.name !== ANSWER.name) {
+      const hint = hintFor(wine, tiles, revealed);
+      if (hint) row.appendChild(hintEl(hint));
+    }
+    board.appendChild(row);
   });
   counter.textContent = state.status === 'playing'
     ? (MAX_GUESSES - state.guesses.length) + ' left'
