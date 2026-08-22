@@ -132,9 +132,20 @@ ok('families are not single-term', Object.values(AROMA_FAMILIES).every(v => v.le
 
 /* Sweetness is carried by kind rather than a column of its own, so the sweet
  * and fortified styles must actually be populated enough to be guessable. */
-['Sweet', 'Fortified'].forEach(k => ok('the ' + k.toLowerCase() + ' style has a real cohort',
-  WINES.filter(w => w.kind === k).length >= 5,
-  'only ' + WINES.filter(w => w.kind === k).length));
+/* A style with one member is not a clue, it is the answer - every kind the
+ * board can display must have somewhere to hide. */
+['Sparkling', 'Off-dry', 'Sweet', 'Fortified'].forEach(k =>
+  ok('the ' + k.toLowerCase() + ' style has a real cohort',
+     WINES.filter(w => w.kind === k).length >= 5,
+     'only ' + WINES.filter(w => w.kind === k).length));
+
+/* Same argument for colour. */
+['Red', 'White', 'Rosé'].forEach(c =>
+  ok(c.toLowerCase() + ' has a real cohort', WINES.filter(w => w.color === c).length >= 5,
+     'only ' + WINES.filter(w => w.color === c).length));
+
+ok('rosé is a wine style, never a grape',
+   WINES.filter(w => w.color === 'Rosé').every(w => w.kind !== 'Grape'));
 
 /* ---------- comparison engine ---------- */
 

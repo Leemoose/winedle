@@ -1,7 +1,8 @@
 # Winedle
 
-A daily wine guessing game. Guess the grape variety in six tries; every guess is
-scored against the answer across nine attributes.
+A daily wine guessing game. Answers are grape varieties *and* wines — Chardonnay
+and Chablis, Syrah and Barolo — guessed against each other on one board. Every
+guess is scored across ten attributes.
 
 ## Play it
 
@@ -50,6 +51,17 @@ out. Each cycle reshuffles, so the order is never the same twice.
 
 Run `node test.js` after adding — it will catch a record that is
 indistinguishable from an existing one, or an alias that collides.
+
+## Colour and style cohorts
+
+Rosé is a colour value that only wines carry — a grape's colour is its skin, and
+rosé is a winemaking choice, so it sits alongside Sweet and Fortified as
+something claimed only where it is a fact about the bottle.
+
+The suite requires every displayable value of `kind` and `color` to have at
+least five members. A style with one member is not a clue, it is the answer:
+`Off-dry` shipped with exactly one wine in it and the Type tile gave the game
+away whenever it appeared.
 
 ## Aroma families
 

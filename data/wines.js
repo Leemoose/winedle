@@ -1506,5 +1506,170 @@ const WINES = [
     flavors: ["Lychee", "Honey", "Rose", "Ginger"],
     alsoKnownAs: ["Vendanges Tardives"],
     note: "Late harvest, legally defined minimum ripeness, and no chaptalisation allowed. Gewürztraminer's low acidity makes it the richest and most divisive of the four Alsace noble grapes in this style."
+  },
+  {
+    name: "Franciacorta",
+    kind: "Sparkling", grape: "Chardonnay",
+    tier: 2,
+    color: "White", country: "Italy", region: "Lombardy", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Green Apple", "Pear", "Bread", "Hazelnut"],
+    alsoKnownAs: [],
+    note: "Italy's answer to Champagne — bottle fermented, lees aged, and legally held longer than most Champagne is. Made an hour from Milan, and priced accordingly."
+  },
+  {
+    name: "Crémant d’Alsace",
+    kind: "Sparkling", grape: "Pinot Blanc",
+    tier: 2,
+    color: "White", country: "France", region: "Alsace", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 2,
+    oak: "Rare",
+    flavors: ["Green Apple", "Pear", "Bread", "Citrus"],
+    alsoKnownAs: ["Cremant"],
+    note: "Crémant is the traditional method made anywhere in France that is not Champagne, and Alsace makes more of it than anywhere else. The same technique at a third of the price."
+  },
+  {
+    name: "Sekt",
+    kind: "Sparkling", grape: "Riesling",
+    tier: 3,
+    color: "White", country: "Germany", region: "Pfalz", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lime", "Bread", "Peach"],
+    alsoKnownAs: ["Winzersekt"],
+    note: "Most Sekt is industrial and made from imported base wine. Winzersekt — estate-grown, bottle fermented, usually Riesling — is a completely different and much better drink."
+  },
+  {
+    name: "Sparkling Shiraz",
+    kind: "Sparkling", grape: "Syrah",
+    tier: 3,
+    color: "Red", country: "Australia", region: "Barossa Valley", continent: "Oceania",
+    body: 5, tannin: 3, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Blackberry", "Chocolate", "Black Pepper", "Bread"],
+    alsoKnownAs: [],
+    note: "A sparkling red, dry and full of tannin, and an Australian Christmas tradition. Sounds like a mistake and is not — the bubbles carry the dark fruit surprisingly well."
+  },
+  {
+    name: "Cap Classique",
+    kind: "Sparkling", grape: "Chardonnay",
+    tier: 3,
+    color: "White", country: "South Africa", region: "Stellenbosch", continent: "Africa",
+    body: 3, tannin: 1, acidity: 5, climate: 2,
+    oak: "Sometimes",
+    flavors: ["Citrus", "Green Apple", "Bread", "Toast"],
+    alsoKnownAs: ["Méthode Cap Classique", "MCC"],
+    note: "South Africa's traditional-method sparkling, named so it could stop borrowing the word Champagne. Often the best value bottle-fermented fizz on a wine list."
+  },
+  {
+    name: "Vinho Verde",
+    kind: "Off-dry", grape: "Albariño",
+    tier: 2,
+    color: "White", country: "Portugal", region: "Minho", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Citrus", "Green Apple", "Saline", "Lime"],
+    alsoKnownAs: [],
+    note: "Green in the sense of young, not in colour — bottled within months, often with a deliberate prickle of gas and barely 10% alcohol. The rainiest corner of Portugal."
+  },
+  {
+    name: "Riesling Spätlese",
+    kind: "Off-dry", grape: "Riesling",
+    tier: 2,
+    color: "White", country: "Germany", region: "Mosel", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Peach", "Lime", "Honey", "Wet Stone"],
+    alsoKnownAs: ["Spätlese"],
+    note: "One rung up the Prädikat ladder from Kabinett: later picked, riper, weightier. The ladder measures sugar at harvest, not sweetness in the glass — a Spätlese can be bone dry if labelled trocken."
+  },
+  {
+    name: "Vouvray Demi-Sec",
+    kind: "Off-dry", grape: "Chenin Blanc",
+    tier: 3,
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Quince", "Green Apple", "Honey", "Wax"],
+    alsoKnownAs: ["Demi-Sec"],
+    note: "The same appellation as dry Vouvray with the fermentation stopped earlier. Chenin's acidity does the work — the sugar reads as texture rather than sweetness."
+  },
+  {
+    name: "Alsace Pinot Gris",
+    kind: "Off-dry", grape: "Pinot Gris",
+    tier: 2,
+    color: "White", country: "France", region: "Alsace", continent: "Europe",
+    body: 4, tannin: 1, acidity: 3, climate: 2,
+    oak: "Rare",
+    flavors: ["Pear", "Apricot", "Ginger", "Honey"],
+    alsoKnownAs: [],
+    note: "Rich, oily and usually carrying a few grams of sugar the label never mentions — the long-standing complaint about Alsace. Nothing like the Pinot Grigio of the same grape."
+  },
+  {
+    name: "White Zinfandel",
+    kind: "Off-dry", grape: "Zinfandel",
+    tier: 2,
+    color: "Rosé", country: "United States", region: "California", continent: "North America",
+    body: 2, tannin: 1, acidity: 3, climate: 3,
+    oak: "Rare",
+    flavors: ["Strawberry", "Raspberry", "Grape", "Peach"],
+    alsoKnownAs: [],
+    note: "A stuck fermentation in 1975 that sold so well it was never fixed. Widely sneered at, and single-handedly responsible for saving California's old Zinfandel vines from being pulled out."
+  },
+  {
+    name: "Provence Rosé",
+    kind: "Still", grape: "Cinsault",
+    tier: 1,
+    color: "Rosé", country: "France", region: "Provence", continent: "Europe",
+    body: 2, tannin: 1, acidity: 4, climate: 3,
+    oak: "Rare",
+    flavors: ["Strawberry", "Peach", "Garrigue", "Citrus"],
+    alsoKnownAs: ["Côtes de Provence"],
+    note: "Pale to the point of near-colourless, and that pallor is a deliberate style rather than a sign of weakness. Direct pressed, cold fermented, meant to be drunk within the year."
+  },
+  {
+    name: "Tavel",
+    kind: "Still", grape: "Grenache",
+    tier: 3,
+    color: "Rosé", country: "France", region: "Southern Rhône", continent: "Europe",
+    body: 4, tannin: 2, acidity: 3, climate: 3,
+    oak: "Rare",
+    flavors: ["Strawberry", "Red Plum", "Garrigue", "White Pepper"],
+    alsoKnownAs: [],
+    note: "The only French appellation that makes nothing but rosé, and it is the opposite of Provence — deep, structured, and capable of ageing. Serve it at red wine temperature."
+  },
+  {
+    name: "Rosé Champagne",
+    kind: "Sparkling", grape: "Pinot Noir",
+    tier: 2,
+    color: "Rosé", country: "France", region: "Champagne", continent: "Europe",
+    body: 3, tannin: 1, acidity: 5, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Raspberry", "Cherry", "Bread", "Citrus"],
+    alsoKnownAs: [],
+    note: "Almost uniquely, it is legal here to make rosé by blending red wine into white — everywhere else in the EU that is forbidden. The alternative is a short skin maceration."
+  },
+  {
+    name: "Cerasuolo d’Abruzzo",
+    kind: "Still", grape: "Montepulciano",
+    tier: 3,
+    color: "Rosé", country: "Italy", region: "Abruzzo", continent: "Europe",
+    body: 3, tannin: 2, acidity: 4, climate: 3,
+    oak: "Rare",
+    flavors: ["Cherry", "Red Plum", "Almond", "Dried Herbs"],
+    alsoKnownAs: ["Cerasuolo"],
+    note: "Cherry-coloured, as the name says, and far darker than a French rosé. Its own DOC since 2010, made from the same Montepulciano that gives the region its red."
+  },
+  {
+    name: "Navarra Rosado",
+    kind: "Still", grape: "Grenache",
+    tier: 3,
+    color: "Rosé", country: "Spain", region: "Navarra", continent: "Europe",
+    body: 3, tannin: 2, acidity: 3, climate: 3,
+    oak: "Rare",
+    flavors: ["Strawberry", "Red Plum", "Rosemary", "Citrus"],
+    alsoKnownAs: ["Rosado"],
+    note: "Spain made serious rosado long before Provence made it fashionable, and Navarra is its home. Garnacha bled off its skins after a day — the saignée method."
   }
 ];

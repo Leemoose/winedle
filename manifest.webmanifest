@@ -1,7 +1,7 @@
 {
   "name": "Winedle — the daily wine puzzle",
   "short_name": "Winedle",
-  "description": "Guess the grape variety in six tries. A new wine every day.",
+  "description": "Guess the wine or grape in six tries. A new one every day.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
