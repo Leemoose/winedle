@@ -195,6 +195,17 @@ function scheduledPick(day) {
  * archive starts here and grows by one a day. */
 const LAUNCH_DAY = 232;
 
+/* What the player sees. DAY is an internal count of days since the epoch the
+ * schedule is keyed on; the puzzle's public identity is simply how many have
+ * been published, so launch day is No. 1. */
+function puzzleNo(day) {
+  return day - LAUNCH_DAY + 1;
+}
+
+function dayForPuzzleNo(no) {
+  return LAUNCH_DAY + no - 1;
+}
+
 /* The game reads the published schedule, never the algorithm. Computing the
  * answer from the bank meant that adding a grape reshuffled every past and
  * present puzzle - a player mid-game could have the answer swapped underneath
@@ -408,7 +419,9 @@ const CHALLENGE = wineFromToken(query.get('w'));
 const IS_CHALLENGE = !!CHALLENGE;
 const IS_PRACTICE = !IS_CHALLENGE && query.get('mode') === 'practice';
 const asked = parseInt(query.get('d'), 10);
-const DAY = Number.isInteger(asked) ? Math.min(Math.max(asked, LAUNCH_DAY), TODAY) : TODAY;
+const DAY = Number.isInteger(asked)
+  ? Math.min(Math.max(dayForPuzzleNo(asked), LAUNCH_DAY), TODAY)
+  : TODAY;
 const IS_ARCHIVE = DAY !== TODAY;
 
 /* Archived plays get their own slot, so replaying one never overwrites the
@@ -639,8 +652,8 @@ function triesPhrase() {
 
 function shareText() {
   const score = state.status === 'won' ? state.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
-  const url = IS_ARCHIVE ? SHARE_URL + '?d=' + DAY : SHARE_URL;
-  return 'Winedle #' + DAY + '  ' + score + '\n\n' + gridBars() + '\n\n' + url;
+  const url = IS_ARCHIVE ? SHARE_URL + '?d=' + puzzleNo(DAY) : SHARE_URL;
+  return 'Winedle #' + puzzleNo(DAY) + '  ' + score + '\n\n' + gridBars() + '\n\n' + url;
 }
 
 /* Deliberately never names the wine - the whole point is that the recipient
@@ -681,14 +694,21 @@ function offerCopy(button, text, label) {
   const fallback = () => {
     button.textContent = label;
     const multiline = text.indexOf('\n') !== -1;
-    let box = endPanel.querySelector('.copy-fallback');
+
+    /* Put the fallback beside the button that asked for it. Anchoring it to the
+     * end panel meant a copy started from the cellar book landed in a hidden
+     * element - the text was produced and then thrown away. The distinct
+     * copy-out class keeps this lookup from matching the restore box, which
+     * borrows copy-fallback only for its styling. */
+    const container = button.closest('#stats-dialog') || endPanel;
+    let box = container.querySelector('.copy-out');
     if (!box || (box.tagName === 'TEXTAREA') !== multiline) {
       if (box) box.remove();
       box = document.createElement(multiline ? 'textarea' : 'input');
-      box.className = 'copy-fallback';
+      box.className = 'copy-fallback copy-out';
       if (multiline) box.rows = 8;
       box.readOnly = true;
-      endPanel.appendChild(box);
+      container.appendChild(box);
     }
     box.value = text;
     box.hidden = false;
@@ -706,6 +726,7 @@ function offerCopy(button, text, label) {
 function showEnd() {
   const won = state.status === 'won';
   recordOutcome(won);
+  requestDurableStorage();
   const stats = recordResult(won, state.guesses.length, DAY, !IS_ARCHIVE && !IS_PRACTICE && !IS_CHALLENGE);
   const pct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
 
@@ -821,7 +842,7 @@ const ARCHIVE_SHOWN = 30;
 /* Link relative to the file actually being viewed, not to the directory: the
  * portable dist/winedle.html copy is not an index, so './' would 404 there. */
 const SELF = location.pathname;
-const dayHref = d => (d === TODAY ? SELF : SELF + '?d=' + d);
+const dayHref = d => (d === TODAY ? SELF : SELF + '?d=' + puzzleNo(d));
 
 function statusOf(day) {
   const s = readJSON(day === TODAY ? KEY_STATE : KEY_STATE + ':' + day, null);
@@ -838,7 +859,7 @@ function renderArchive() {
     const li = document.createElement('li');
     const a = document.createElement('a');
     a.href = dayHref(d);
-    a.textContent = 'No. ' + d;
+    a.textContent = 'No. ' + puzzleNo(d);
     const when = document.createElement('span');
     when.className = 'archive-list__date';
     when.textContent = dateForDay(d).toLocaleDateString(undefined,
@@ -861,9 +882,9 @@ function renderArchiveNav() {
   if (!nav || !IS_ARCHIVE) return;
   nav.hidden = false;
   const bits = [];
-  if (DAY > LAUNCH_DAY) bits.push('<a href="' + dayHref(DAY - 1) + '">\u2190 No. ' + (DAY - 1) + '</a>');
+  if (DAY > LAUNCH_DAY) bits.push('<a href="' + dayHref(DAY - 1) + '">\u2190 No. ' + puzzleNo(DAY - 1) + '</a>');
   bits.push('<a href="' + dayHref(TODAY) + '">Today</a>');
-  if (DAY < TODAY) bits.push('<a href="' + dayHref(DAY + 1) + '">No. ' + (DAY + 1) + ' \u2192</a>');
+  if (DAY < TODAY) bits.push('<a href="' + dayHref(DAY + 1) + '">No. ' + puzzleNo(DAY + 1) + ' \u2192</a>');
   nav.innerHTML = 'Archive \u00b7 ' + bits.join('<span class="sep">\u00b7</span>');
 }
 
@@ -917,18 +938,97 @@ function renderMet() {
     });
 }
 
+function renderKeeping() {
+  const note = $('#keeping');
+  const store = navigator.storage;
+  if (store && store.persisted) {
+    store.persisted().then(yes => {
+      note.textContent = yes
+        ? 'Progress is saved on this device and marked as protected from cleanup.'
+        : 'Progress is saved on this device. Back it up if you clear your browser often.';
+    }).catch(() => { note.textContent = 'Progress is saved on this device.'; });
+  } else {
+    note.textContent = 'Progress is saved on this device.';
+  }
+}
+
 const statsDialog = $('#stats-dialog');
-$('#stats-open').addEventListener('click', () => { renderStats(); renderMet(); statsDialog.showModal(); });
+$('#stats-open').addEventListener('click', () => {
+  renderStats(); renderMet(); renderKeeping();
+  $('#restore-box').hidden = true;
+  $('#restore-note').hidden = true;
+  statsDialog.showModal();
+});
+
+$('#backup-copy').addEventListener('click', () =>
+  offerCopy($('#backup-copy'), backupText(), 'Copy backup'));
+
+$('#restore-open').addEventListener('click', () => {
+  const box = $('#restore-box');
+  box.hidden = !box.hidden;
+  if (!box.hidden) { box.value = ''; box.focus(); }
+});
+
+$('#restore-box').addEventListener('change', () => {
+  const problem = restoreFrom($('#restore-box').value);
+  const note = $('#restore-note');
+  note.hidden = false;
+  note.textContent = problem || 'Restored. Reloading…';
+  if (!problem) setTimeout(() => location.reload(), 900);
+});
 $('#stats-close').addEventListener('click', () => statsDialog.close());
 statsDialog.addEventListener('click', e => { if (e.target === statsDialog) statsDialog.close(); });
 
+/* ---------- keeping progress ---------- */
+
+const BACKUP_KEYS = [KEY_STATS, KEY_MET, KEY_MISSES];
+
+/* Progress lives in localStorage, which browsers may evict under storage
+ * pressure, and which Safari's tracking prevention clears after seven days
+ * without interaction. Asking for persistent storage exempts it in Chrome and
+ * Firefox. The request is far likelier to be granted after real engagement, so
+ * it happens when a game finishes rather than on load. */
+function requestDurableStorage() {
+  if (!navigator.storage || !navigator.storage.persist) return;
+  navigator.storage.persisted()
+    .then(already => { if (!already) return navigator.storage.persist(); })
+    .catch(() => {});
+}
+
+/* A device is not a backup. This is the escape hatch for a new phone, a
+ * cleared browser, or Safari deciding a fortnight's silence means the data is
+ * disposable. */
+function backupText() {
+  const payload = { v: 1 };
+  BACKUP_KEYS.forEach(k => { payload[k] = readJSON(k, null); });
+  return JSON.stringify(payload);
+}
+
+function restoreFrom(text) {
+  let payload;
+  try { payload = JSON.parse(text.trim()); } catch (e) { return 'That does not look like a backup.'; }
+  if (!payload || payload.v !== 1) return 'That backup is from a different version.';
+  const present = BACKUP_KEYS.filter(k => payload[k] && typeof payload[k] === 'object');
+  if (!present.length) return 'That backup has nothing in it.';
+  present.forEach(k => writeJSON(k, payload[k]));
+  return null;
+}
+
 /* ---------- optional integrations ---------- */
+
+/* Local builds hit the same production endpoints as the live site, so a single
+ * afternoon of testing can outnumber the real players. Anything served from a
+ * loopback address is development and reports nothing. */
+function isDevHost() {
+  return /^(localhost|127\.|0\.0\.0\.0|\[::1\]|.*\.local)$/i.test(location.hostname) ||
+         location.protocol === 'file:';
+}
 
 /* Page-view analytics. Loaded only if a site code is configured, and only for
  * the real daily puzzle - counting archive replays and practice rounds would
  * make the numbers meaningless. */
 function loadAnalytics() {
-  if (!CONFIG.GOATCOUNTER || !/^https?:$/.test(location.protocol)) return;
+  if (!CONFIG.GOATCOUNTER || !/^https?:$/.test(location.protocol) || isDevHost()) return;
   const s = document.createElement('script');
   s.async = true;
   s.dataset.goatcounter = 'https://' + CONFIG.GOATCOUNTER + '.goatcounter.com/count';
@@ -942,7 +1042,7 @@ function loadAnalytics() {
 const KEY_REPORTED = 'winedle:reported';
 
 function reportAndShow(won, guessCount) {
-  if (!CONFIG.COUNTER_URL || IS_ARCHIVE || IS_PRACTICE || IS_CHALLENGE) return;
+  if (!CONFIG.COUNTER_URL || IS_ARCHIVE || IS_PRACTICE || IS_CHALLENGE || isDevHost()) return;
 
   const reported = readJSON(KEY_REPORTED, {});
   const already = reported[DAY] === true;
@@ -1086,7 +1186,7 @@ if (IS_CHALLENGE) {
   $('#puzzle-no').textContent = 'Practice';
   $('#puzzle-date').textContent = 'No streak, no limit';
 } else {
-  $('#puzzle-no').textContent = 'No. ' + DAY;
+  $('#puzzle-no').textContent = 'No. ' + puzzleNo(DAY);
   $('#puzzle-date').textContent = dateForDay(DAY).toLocaleDateString(undefined,
     { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 }

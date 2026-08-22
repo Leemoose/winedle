@@ -89,6 +89,13 @@
     <h3 class="dialog__sub">Bottles met</h3>
     <p id="met-count" class="met-count"></p>
     <ol id="met-list" class="met-list"></ol>
+    <p id="keeping" class="keeping"></p>
+    <div class="keeping-actions">
+      <button id="backup-copy" class="share share--ghost" type="button">Copy backup</button>
+      <button id="restore-open" class="share share--ghost" type="button">Restore</button>
+    </div>
+    <textarea id="restore-box" class="copy-fallback" rows="3" placeholder="Paste a backup here, then click away" hidden></textarea>
+    <p id="restore-note" class="notice" hidden></p>
     <button id="stats-close" class="share" type="button">Close</button>
   </dialog>
 

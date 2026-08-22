@@ -21,7 +21,7 @@ const api = new Function('WINES', 'AROMA_FAMILY', 'SCHEDULE', pure + `; return {
   COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK,
   candidatesFor, tileSignature, bestAroma, REMAINING_AFTER, barFor, BAR_WIDTH, EMOJI,
   practicePick, PRACTICE_MISS_BIAS, encodeName, decodeName, wineFromToken
-  , scheduledPick, LAUNCH_DAY, SCHEDULE
+  , scheduledPick, LAUNCH_DAY, SCHEDULE, puzzleNo, dayForPuzzleNo
 };`)(WINES, AROMA_FAMILY, SCHEDULE);
 
 let failures = 0;
@@ -297,6 +297,15 @@ for (let i = 0; i < SCHEDULE.days.length; i++) {
 ok('no wine repeats inside 20 days', tooSoon.length === 0,
    [...new Set(tooSoon)].slice(0, 5).join(', '));
 
+/* The number on screen counts published puzzles, not days since the schedule
+ * epoch - launch day is No. 1. */
+ok('launch day is puzzle No. 1', api.puzzleNo(api.LAUNCH_DAY) === 1);
+ok('the day after launch is No. 2', api.puzzleNo(api.LAUNCH_DAY + 1) === 2);
+ok('the mapping round-trips',
+   [1, 2, 17, 400].every(n => api.puzzleNo(api.dayForPuzzleNo(n)) === n));
+ok('today is a sensible small number', api.puzzleNo(api.dayNumber()) >= 1 &&
+   api.puzzleNo(api.dayNumber()) < 40, 'No. ' + api.puzzleNo(api.dayNumber()));
+
 /* ---------- name resolution ---------- */
 
 section('names');
@@ -450,6 +459,47 @@ ok('a malformed token resolves to nothing', api.wineFromToken('!!!not-base64!!!'
 ok('a valid token for an unknown grape resolves to nothing',
    api.wineFromToken(api.encodeName('Not A Grape')) === null);
 ok('a missing token resolves to nothing', api.wineFromToken(null) === null);
+
+/* ---------- backup and restore ---------- */
+
+section('keeping progress');
+
+/* restoreFrom lives in the DOM half because it writes storage, so exercise the
+ * shape rules directly against the same source. */
+const keepSrc = source.slice(source.indexOf('function backupText'),
+                            source.indexOf('/* ---------- optional integrations'));
+const store = {};
+const keep = new Function('readJSON', 'writeJSON', 'KEY_STATS', 'KEY_MET', 'KEY_MISSES', 'BACKUP_KEYS',
+  keepSrc + '; return { backupText, restoreFrom };')(
+    k => (k in store ? store[k] : null),
+    (k, v) => { store[k] = v; },
+    'winedle:stats', 'winedle:met', 'winedle:misses',
+    ['winedle:stats', 'winedle:met', 'winedle:misses']);
+
+store['winedle:stats'] = { played: 9, wins: 7, streak: 3, maxStreak: 5, dist: [0,1,3,2,1,0], lastDay: 231 };
+store['winedle:met'] = { Nebbiolo: 3, Chablis: 1 };
+store['winedle:misses'] = { Saperavi: 1 };
+
+const snapshot = keep.backupText();
+ok('a backup is valid json', (() => { try { JSON.parse(snapshot); return true; } catch (e) { return false; } })());
+ok('a backup carries every progress key',
+   ['winedle:stats', 'winedle:met', 'winedle:misses'].every(k => JSON.parse(snapshot)[k]));
+ok('a backup carries no puzzle state', !JSON.stringify(snapshot).includes('winedle:state'));
+
+/* Wipe, then restore. */
+Object.keys(store).forEach(k => delete store[k]);
+ok('a good backup restores cleanly', keep.restoreFrom(snapshot) === null);
+ok('restore brings the tally back', store['winedle:met'].Nebbiolo === 3);
+ok('restore brings the stats back', store['winedle:stats'].maxStreak === 5);
+
+ok('junk is refused', typeof keep.restoreFrom('not json') === 'string');
+ok('a future version is refused', typeof keep.restoreFrom('{"v":99}') === 'string');
+ok('an empty payload is refused', typeof keep.restoreFrom('{"v":1}') === 'string');
+
+/* A refused restore must leave what was there alone. */
+const before = JSON.stringify(store);
+keep.restoreFrom('not json');
+ok('a refused restore changes nothing', JSON.stringify(store) === before);
 
 /* ---------- counter worker ---------- */
 

@@ -118,6 +118,23 @@ split 22/35/28. The daily week runs `1,2,1,2,1,2,3` — six approachable days
 and one deep cut — so an 85-grape bank does not hand a first-time player
 Rkatsiteli. Each tier walks its own deck and does not repeat until spent.
 
+## Keeping progress
+
+Progress lives in `localStorage`, which browsers may evict under storage
+pressure and which Safari's tracking prevention clears after seven days without
+interaction. On finishing a game the page requests persistent storage, which
+exempts it from eviction in Chrome and Firefox.
+
+The Cellar book also offers **Copy backup** and **Restore** — a JSON blob of
+stats, tally and misses, for a new device or a cleared browser. Puzzle state is
+deliberately excluded; only the record of what you have played travels.
+
+## Numbering
+
+The number on screen counts published puzzles, so launch day is No. 1. The
+internal day number is an offset from the schedule epoch and never appears in
+the interface; `?d=` takes the public number.
+
 ## Stored state
 
 | Key | What it holds |
