@@ -4086,11 +4086,18 @@ function offerCopy(button, text, label) {
   attempt.then(() => flash('Copied'), fallback);
 }
 
+/* Called once, at the moment the game ends - deliberately not from showEnd,
+ * which re-runs on every render of a finished puzzle and so counted the same
+ * win again on every reload and every new tab. */
+function recordFinish(won) {
+  recordOutcome(won);
+  recordResult(won, state.guesses.length, DAY, !IS_ARCHIVE && !IS_PRACTICE && !IS_CHALLENGE);
+  requestDurableStorage();
+}
+
 function showEnd() {
   const won = state.status === 'won';
-  recordOutcome(won);
-  requestDurableStorage();
-  const stats = recordResult(won, state.guesses.length, DAY, !IS_ARCHIVE && !IS_PRACTICE && !IS_CHALLENGE);
+  const stats = readJSON(KEY_STATS, blankStats());
   const pct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
 
   endPanel.innerHTML = '';
@@ -4456,6 +4463,10 @@ function submitGuess(wine) {
   if (wine.name === ANSWER.name) state.status = 'won';
   else if (state.guesses.length >= MAX_GUESSES) state.status = 'lost';
   writeJSON(STATE_KEY, state);
+
+  /* Before render, so the end panel shows stats that include this game. */
+  if (state.status !== 'playing') recordFinish(state.status === 'won');
+
   input.value = '';
   activeIdx = 0;
   notice('');

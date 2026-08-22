@@ -571,6 +571,38 @@ const before = JSON.stringify(store);
 keep.restoreFrom('not json');
 ok('a refused restore changes nothing', JSON.stringify(store) === before);
 
+/* Recording is a transition event, not a rendering one. showEnd runs on every
+ * render of a finished puzzle - every reload, every new tab - so a write in
+ * there counts the same game repeatedly. That shipped: a single win showed as
+ * "Sancerre x2" after opening a second tab. */
+section('recording once');
+
+const showEndBody = (() => {
+  const start = source.indexOf('function showEnd()');
+  let depth = 0, i = source.indexOf('{', start);
+  for (let j = i; j < source.length; j++) {
+    if (source[j] === '{') depth++;
+    else if (source[j] === '}' && --depth === 0) return source.slice(i, j);
+  }
+  return '';
+})();
+
+ok('showEnd does not record an outcome', !/\brecordOutcome\s*\(/.test(showEndBody));
+ok('showEnd does not record a result', !/\brecordResult\s*\(/.test(showEndBody));
+ok('showEnd does not record a finish', !/\brecordFinish\s*\(/.test(showEndBody));
+ok('showEnd reads the stats it displays', /readJSON\(KEY_STATS/.test(showEndBody));
+
+const submitBody = (() => {
+  const start = source.indexOf('function submitGuess(');
+  let depth = 0, i = source.indexOf('{', start);
+  for (let j = i; j < source.length; j++) {
+    if (source[j] === '{') depth++;
+    else if (source[j] === '}' && --depth === 0) return source.slice(i, j);
+  }
+  return '';
+})();
+ok('the transition is where a finish gets recorded', /recordFinish\s*\(/.test(submitBody));
+
 /* ---------- counter worker ---------- */
 
 section('counter');
