@@ -38,7 +38,7 @@ const COLUMNS = [
   { key: 'flavors', label: 'Aromas',  type: 'set'   }
 ];
 
-const EMOJI = { hit: '\u{1F7E5}', near: '\u{1F7E8}', miss: '⬜' };
+const EMOJI = { hit: '\u{1F7E9}', near: '\u{1F7E8}', miss: '\u2B1C' };
 
 /* ---------- comparison engine ---------- */
 

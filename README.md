@@ -77,8 +77,12 @@ mapped term must be used. `node test.js` enforces both.
 
 Colour · Country · Region · Depth · Body · Tannin · Acidity · Climate · Aromas
 
-Oxblood = exact. Amber = one step off, same continent, or shared aromas.
+Green = exact. Amber = one step off, same continent, or shared aromas.
 Blank = no match. Arrows on structural tiles point toward the answer.
+
+Green beside amber is the harder pair for deuteranopes — it is the classic
+confusion, and worse than the oxblood it replaced. The ✓ and ≈ marks on each
+tile are what actually carry the state; the colour corroborates.
 
 ## Modes
 
