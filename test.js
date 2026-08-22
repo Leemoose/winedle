@@ -13,14 +13,16 @@ const aromas = fs.readFileSync('data/aromas.js', 'utf8');
 const { AROMA_FAMILIES, AROMA_FAMILY } =
   new Function(aromas + '; return { AROMA_FAMILIES, AROMA_FAMILY };')();
 const WINES = new Function(fs.readFileSync('data/wines.js', 'utf8') + '; return WINES;')();
+const SCHEDULE = new Function(fs.readFileSync('data/schedule.js', 'utf8') + '; return SCHEDULE;')();
 const source = fs.readFileSync('src/game.js', 'utf8');
 const pure = source.split('/* ---------- persistence ---------- */')[0];
-const api = new Function('WINES', 'AROMA_FAMILY', pure + `; return {
+const api = new Function('WINES', 'AROMA_FAMILY', 'SCHEDULE', pure + `; return {
   compare, puzzleFor, dayNumber, seededShuffle, resolve, suggest, normalize,
   COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK,
   candidatesFor, tileSignature, bestAroma, REMAINING_AFTER, barFor, BAR_WIDTH, EMOJI,
   practicePick, PRACTICE_MISS_BIAS, encodeName, decodeName, wineFromToken
-};`)(WINES, AROMA_FAMILY);
+  , scheduledPick, LAUNCH_DAY, SCHEDULE
+};`)(WINES, AROMA_FAMILY, SCHEDULE);
 
 let failures = 0;
 let checks = 0;
@@ -210,13 +212,13 @@ ok('comparison arrows invert', ab.every((t, i) =>
 
 /* ---------- schedule ---------- */
 
-section('schedule');
+section('schedule generator');
 
-ok('the schedule is deterministic', api.puzzleFor(500).name === api.puzzleFor(500).name);
+ok('the generator is deterministic', api.scheduledPick(500).name === api.scheduledPick(500).name);
 
 const run = [];
-for (let d = 0; d < 400; d++) run.push(api.puzzleFor(d).name);
-ok('every scheduled day yields a wine', run.every(Boolean));
+for (let d = 0; d < 400; d++) run.push(api.scheduledPick(d).name);
+ok('every generated day yields a wine', run.every(Boolean));
 
 /* Each tier walks its own deck, so nothing should repeat until that tier's
  * pool is spent - check each tier's own run rather than the mixed sequence. */
@@ -224,12 +226,12 @@ ok('every scheduled day yields a wine', run.every(Boolean));
   const days = [];
   for (let d = 0; d < 400; d++) if (api.tierForDay(d) === tier) days.push(d);
   const size = api.tierPool(tier).length;
-  const firstPass = days.slice(0, size).map(d => api.puzzleFor(d).name);
+  const firstPass = days.slice(0, size).map(d => api.scheduledPick(d).name);
   ok('tier ' + tier + ' does not repeat within one pass',
      new Set(firstPass).size === firstPass.length,
      firstPass.filter((n, i) => firstPass.indexOf(n) !== i).join(', '));
   ok('tier ' + tier + ' days only draw tier ' + tier + ' wines',
-     days.slice(0, 60).every(d => api.puzzleFor(d).tier === tier));
+     days.slice(0, 60).every(d => api.scheduledPick(d).tier === tier));
 });
 
 /* Six days in seven must be approachable. */
@@ -238,18 +240,62 @@ ok('the week is mostly tiers 1 and 2', week.filter(t => t < 3).length === 6);
 ok('the week includes one specialist day', week.filter(t => t === 3).length === 1);
 
 const sample = [];
-for (let d = 0; d < 70; d++) sample.push(api.puzzleFor(d).tier);
+for (let d = 0; d < 70; d++) sample.push(api.scheduledPick(d).tier);
 ok('a ten-week sample is 30/30/10 by tier',
    sample.filter(t => t === 1).length === 30 &&
    sample.filter(t => t === 2).length === 30 &&
    sample.filter(t => t === 3).length === 10,
    JSON.stringify([1,2,3].map(t => sample.filter(x => x === t).length)));
 
-ok('negative and out-of-range days still resolve', !!api.puzzleFor(0) && !!api.puzzleFor(99999));
+ok('negative and out-of-range days still resolve',
+   !!api.scheduledPick(0) && !!api.scheduledPick(99999) && !!api.puzzleFor(-5));
 
 const shuffled = api.seededShuffle(WINES, 7).map(w => w.name).join();
 ok('the shuffle is stable for a given seed', shuffled === api.seededShuffle(WINES, 7).map(w => w.name).join());
 ok('different seeds give different orders', shuffled !== api.seededShuffle(WINES, 8).map(w => w.name).join());
+
+/* ---------- published schedule ---------- */
+
+section('schedule data');
+
+ok('the schedule starts at launch', SCHEDULE.start === api.LAUNCH_DAY,
+   SCHEDULE.start + ' vs ' + api.LAUNCH_DAY);
+
+const bankNames = new Set(WINES.map(w => w.name));
+const unknownDays = SCHEDULE.days.filter(n => !bankNames.has(n));
+ok('every scheduled day names an entry in the bank', unknownDays.length === 0,
+   [...new Set(unknownDays)].join(', '));
+
+ok('the schedule covers today', SCHEDULE.start + SCHEDULE.days.length - 1 >= api.dayNumber(),
+   'ends at ' + (SCHEDULE.start + SCHEDULE.days.length - 1) + ', today is ' + api.dayNumber());
+
+ok('the schedule runs well past today',
+   SCHEDULE.start + SCHEDULE.days.length - 1 - api.dayNumber() > 300);
+
+/* The whole point: what the game serves comes from the file, not the bank. */
+const servedMatchesFile = SCHEDULE.days.every((name, i) =>
+  api.puzzleFor(SCHEDULE.start + i).name === name);
+ok('the game serves exactly what the schedule publishes', servedMatchesFile);
+
+/* Nothing before launch is playable. */
+ok('days before launch clamp to launch',
+   api.puzzleFor(api.LAUNCH_DAY - 50).name === SCHEDULE.days[0]);
+
+/* If entries are added and tools/schedule.js is not re-run, the new ones never
+ * reach a player. Over two years every entry should come round several times. */
+const scheduled = new Set(SCHEDULE.days);
+const neverScheduled = WINES.filter(w => !scheduled.has(w.name)).map(w => w.name);
+ok('every entry in the bank reaches the schedule', neverScheduled.length === 0,
+   neverScheduled.join(', ') + '  — run: node tools/schedule.js');
+
+/* A wine should not come round again immediately. */
+let tooSoon = [];
+for (let i = 0; i < SCHEDULE.days.length; i++) {
+  const back = SCHEDULE.days.slice(Math.max(0, i - 20), i);
+  if (back.includes(SCHEDULE.days[i])) tooSoon.push(SCHEDULE.days[i]);
+}
+ok('no wine repeats inside 20 days', tooSoon.length === 0,
+   [...new Set(tooSoon)].slice(0, 5).join(', '));
 
 /* ---------- name resolution ---------- */
 

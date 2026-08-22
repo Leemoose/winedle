@@ -179,8 +179,9 @@ function indexWithinTier(day, tier) {
 }
 
 /* Shuffle a fresh deck each cycle so nothing repeats until the pool is spent,
- * and the order is not guessable from the source order. */
-function puzzleFor(day) {
+ * and the order is not guessable from the source order. This is how the
+ * schedule is *generated*; it is not what the game reads day to day. */
+function scheduledPick(day) {
   const d = Math.max(0, day);
   const tier = tierForDay(d);
   const pool = tierPool(tier);
@@ -188,6 +189,26 @@ function puzzleFor(day) {
   const i = indexWithinTier(d, tier);
   const deck = seededShuffle(pool, tier * 1000 + Math.floor(i / n));
   return deck[i % n];
+}
+
+/* The first published day. Nothing before this exists as a puzzle, so the
+ * archive starts here and grows by one a day. */
+const LAUNCH_DAY = 232;
+
+/* The game reads the published schedule, never the algorithm. Computing the
+ * answer from the bank meant that adding a grape reshuffled every past and
+ * present puzzle - a player mid-game could have the answer swapped underneath
+ * them, and two people playing "today" either side of a deploy got different
+ * wines, which makes a challenge link meaningless. Past days are frozen data;
+ * only days beyond the horizon fall back to the algorithm. */
+function puzzleFor(day) {
+  const d = Math.max(LAUNCH_DAY, day);
+  if (typeof SCHEDULE === 'object' && SCHEDULE && Array.isArray(SCHEDULE.days)) {
+    const name = SCHEDULE.days[d - SCHEDULE.start];
+    const found = name && WINES.find(w => w.name === name);
+    if (found) return found;
+  }
+  return scheduledPick(d);
 }
 
 /* ---------- name resolution ---------- */
@@ -387,7 +408,7 @@ const CHALLENGE = wineFromToken(query.get('w'));
 const IS_CHALLENGE = !!CHALLENGE;
 const IS_PRACTICE = !IS_CHALLENGE && query.get('mode') === 'practice';
 const asked = parseInt(query.get('d'), 10);
-const DAY = Number.isInteger(asked) ? Math.min(Math.max(asked, 0), TODAY) : TODAY;
+const DAY = Number.isInteger(asked) ? Math.min(Math.max(asked, LAUNCH_DAY), TODAY) : TODAY;
 const IS_ARCHIVE = DAY !== TODAY;
 
 /* Archived plays get their own slot, so replaying one never overwrites the
@@ -812,7 +833,8 @@ function renderArchive() {
   const list = $('#archive-list');
   if (!list) return;
   list.innerHTML = '';
-  for (let d = TODAY; d > Math.max(-1, TODAY - ARCHIVE_SHOWN); d--) {
+  const oldest = Math.max(LAUNCH_DAY, TODAY - ARCHIVE_SHOWN + 1);
+  for (let d = TODAY; d >= oldest; d--) {
     const li = document.createElement('li');
     const a = document.createElement('a');
     a.href = dayHref(d);
@@ -839,7 +861,7 @@ function renderArchiveNav() {
   if (!nav || !IS_ARCHIVE) return;
   nav.hidden = false;
   const bits = [];
-  if (DAY > 0) bits.push('<a href="' + dayHref(DAY - 1) + '">\u2190 No. ' + (DAY - 1) + '</a>');
+  if (DAY > LAUNCH_DAY) bits.push('<a href="' + dayHref(DAY - 1) + '">\u2190 No. ' + (DAY - 1) + '</a>');
   bits.push('<a href="' + dayHref(TODAY) + '">Today</a>');
   if (DAY < TODAY) bits.push('<a href="' + dayHref(DAY + 1) + '">No. ' + (DAY + 1) + ' \u2192</a>');
   nav.innerHTML = 'Archive \u00b7 ' + bits.join('<span class="sep">\u00b7</span>');

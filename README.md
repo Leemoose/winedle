@@ -134,12 +134,35 @@ Rkatsiteli. Each tier walks its own deck and does not repeat until spent.
 how consistent you have been; the tally says which of the bank you can
 actually name.
 
+## The schedule
+
+`data/schedule.js` is **generated data, not code**: the published answer for
+every day from launch (day 232, 21 August 2026) onward.
+
+    node tools/schedule.js      # after adding entries, then ./build.sh
+
+The game reads this file and never computes the answer from the bank. That
+matters for three reasons:
+
+- **Everyone playing on a given day gets the same wine**, whenever they loaded
+  the page. Previously the answer was derived from the bank, so a deploy
+  silently changed it — two friends either side of one got different wines,
+  which makes a challenge link meaningless.
+- **Adding entries cannot disturb the past or the present.** Regeneration
+  freezes every day up to and including today and rewrites only the future, so
+  new wines join the rotation from tomorrow. Verified: adding three entries
+  would have flipped today from Sancerre to Sangiovese under the old scheme.
+- **The archive is real history**, not a simulation of days nobody played.
+
+A test fails if any bank entry never appears in the schedule, which is what
+forgetting to regenerate looks like.
+
 ## Archive
 
-`?d=<n>` replays any past puzzle, clamped to the schedule's range. Archived
-plays are stored under their own key (`winedle:state:<n>`), so a replay never
-overwrites the live puzzle and never moves the streak. The index in the page
-lists the last 30 days.
+`?d=<n>` replays a past puzzle, clamped to `[LAUNCH_DAY, today]` — so it starts
+at two days and grows by one a day. Archived plays are stored under their own
+key (`winedle:state:<n>`), so a replay never overwrites the live puzzle and
+never moves the streak.
 
 ## Sharing
 
