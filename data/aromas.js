@@ -40,6 +40,26 @@ const AROMA_FAMILIES = {
   'Nutty':       ['Almond', 'Hazelnut', 'Walnut']
 };
 
+/* Same thing at a different shade. These deliberately sit in different families
+ * - red fruit against black fruit is a real distinction a taster makes - but
+ * scoring cherry against black cherry as completely unrelated reads as a bug,
+ * and it did: 5.2% of all guess/answer pairs had a same-fruit term earning
+ * nothing. Kinship is checked alongside family, never instead of it.
+ */
+const AROMA_KIN = {
+  'Cherry':  ['Cherry', 'Black Cherry', 'Sour Cherry'],
+  'Plum':    ['Plum', 'Red Plum'],
+  'Toasted': ['Toast', 'Bread']
+};
+
+const AROMA_STEM = (function () {
+  const map = {};
+  Object.keys(AROMA_KIN).forEach(stem => {
+    AROMA_KIN[stem].forEach(term => { map[term] = stem; });
+  });
+  return map;
+})();
+
 const AROMA_FAMILY = (function () {
   const map = {};
   Object.keys(AROMA_FAMILIES).forEach(fam => {

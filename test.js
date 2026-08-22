@@ -10,19 +10,19 @@
 const fs = require('fs');
 
 const aromas = fs.readFileSync('data/aromas.js', 'utf8');
-const { AROMA_FAMILIES, AROMA_FAMILY } =
-  new Function(aromas + '; return { AROMA_FAMILIES, AROMA_FAMILY };')();
+const { AROMA_FAMILIES, AROMA_FAMILY, AROMA_KIN, AROMA_STEM } =
+  new Function(aromas + '; return { AROMA_FAMILIES, AROMA_FAMILY, AROMA_KIN, AROMA_STEM };')();
 const WINES = new Function(fs.readFileSync('data/wines.js', 'utf8') + '; return WINES;')();
 const SCHEDULE = new Function(fs.readFileSync('data/schedule.js', 'utf8') + '; return SCHEDULE;')();
 const source = fs.readFileSync('src/game.js', 'utf8');
 const pure = source.split('/* ---------- persistence ---------- */')[0];
-const api = new Function('WINES', 'AROMA_FAMILY', 'SCHEDULE', pure + `; return {
+const api = new Function('WINES', 'AROMA_FAMILY', 'AROMA_STEM', 'SCHEDULE', pure + `; return {
   compare, puzzleFor, dayNumber, seededShuffle, resolve, suggest, normalize,
   COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK,
   candidatesFor, tileSignature, bestAroma, REMAINING_AFTER, barFor, BAR_WIDTH, EMOJI,
   practicePick, PRACTICE_MISS_BIAS, encodeName, decodeName, wineFromToken
   , scheduledPick, LAUNCH_DAY, SCHEDULE, puzzleNo, dayForPuzzleNo
-};`)(WINES, AROMA_FAMILY, SCHEDULE);
+};`)(WINES, AROMA_FAMILY, AROMA_STEM, SCHEDULE);
 
 let failures = 0;
 let checks = 0;
@@ -149,6 +149,20 @@ ok('families are not single-term', Object.values(AROMA_FAMILIES).every(v => v.le
 ok('rosé is a wine style, never a grape',
    WINES.filter(w => w.color === 'Rosé').every(w => w.kind !== 'Grape'));
 
+/* Kinship covers terms that are the same thing at a different shade, which
+ * family cannot express because the red/black fruit split is meaningful. */
+const kinTerms = Object.values(AROMA_KIN).flat();
+ok('every kin term is a real aroma', kinTerms.every(t => AROMA_FAMILY[t]),
+   kinTerms.filter(t => !AROMA_FAMILY[t]).join(', '));
+ok('kin groups have at least two members',
+   Object.values(AROMA_KIN).every(v => v.length >= 2));
+ok('no term is in two kin groups',
+   kinTerms.length === new Set(kinTerms).size);
+ok('kin groups actually cross a family boundary — otherwise family already covers it',
+   Object.values(AROMA_KIN).every(v => new Set(v.map(t => AROMA_FAMILY[t])).size > 1),
+   Object.entries(AROMA_KIN).filter(([, v]) => new Set(v.map(t => AROMA_FAMILY[t])).size === 1)
+     .map(([k]) => k).join(', '));
+
 /* ---------- comparison engine ---------- */
 
 section('engine');
@@ -191,10 +205,47 @@ ok('a right-family aroma is not a total miss', famTile.state !== 'miss',
 ok('family matches are reported separately from exact ones',
    Array.isArray(famTile.kin) && Array.isArray(famTile.shared));
 
+/* The pair that prompted this: same fruit, different shade, different family. */
+const shades = api.compare(by('Amarone della Valpolicella'), by('Recioto della Valpolicella'));
+const shadeTile = tile(shades, 'Aromas');
+ok('black cherry scores against cherry',
+   shadeTile.kin.some(k => k.term === 'Black Cherry'), JSON.stringify(shadeTile.kin));
+
+/* Scoring must still be the best possible pairing, now including kinship.
+ * Brute-force every assignment of the four aromas to check it. */
+function bestPairing(gr, ar) {
+  const related = (x, f) => AROMA_FAMILY[x] === AROMA_FAMILY[f] ||
+    (AROMA_STEM[f] && AROMA_STEM[x] === AROMA_STEM[f]);
+  let best = 0;
+  const walk = (gi, used, score) => {
+    if (gi === gr.length) { best = Math.max(best, score); return; }
+    walk(gi + 1, used, score);
+    ar.forEach((x, xi) => {
+      if (!used.includes(xi) && related(x, gr[gi])) walk(gi + 1, used.concat(xi), score + 1);
+    });
+  };
+  walk(0, [], 0);
+  return best;
+}
+
+let suboptimal = 0;
+for (const g of WINES) {
+  for (const a of WINES) {
+    if (g === a) continue;
+    const t = api.compare(g, a).find(x => x.label === 'Aromas');
+    const exact = g.flavors.filter(f => a.flavors.includes(f));
+    const gr = g.flavors.filter(f => !exact.includes(f));
+    const ar = a.flavors.filter(f => !exact.includes(f));
+    if (t.shared.length !== exact.length || t.kin.length !== bestPairing(gr, ar)) suboptimal++;
+  }
+}
+ok('aroma scoring finds the best possible pairing for every pair', suboptimal === 0,
+   suboptimal + ' pairs scored below the optimum');
+
 /* A family match must never be claimed twice by the same answer term. */
 const doubleClaim = WINES.every(g => WINES.every(a => {
   const t = api.compare(g, a).find(x => x.label === 'Aromas');
-  const claimedFamilies = t.kin.map(k => k.family);
+  const claimedFamilies = t.kin.map(k => k.via);
   return t.shared.length + t.kin.length <= a.flavors.length &&
          new Set(claimedFamilies).size <= claimedFamilies.length;
 }));

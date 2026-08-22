@@ -73,6 +73,21 @@ the tile was blank in 62% of all guess/answer pairs; it is now blank in 34%.
 Every term used in `data/wines.js` must appear in exactly one family, and every
 mapped term must be used. `node test.js` enforces both.
 
+**Kinship** (`AROMA_KIN`) covers terms that are the same thing at a different
+shade — cherry / black cherry / sour cherry, plum / red plum, toast / bread.
+These sit in different families on purpose, because red fruit against black
+fruit is a distinction a taster makes, but scoring them as unrelated read as a
+bug: 5.2% of all pairs had a same-fruit term earning nothing. Kinship is
+checked alongside family, never instead of it, and the suite requires every kin
+group to actually cross a family boundary — otherwise family already covered it.
+
+Leftover aromas are paired by **maximum bipartite matching**, not by claiming
+the first available partner. Greedy claiming let an earlier term take the only
+partner a later one could have used, so the score came out below what the two
+sets genuinely shared — and changed depending on the order the aromas happened
+to be written in. A test brute-forces every assignment for all 22,052 pairs and
+requires the optimum.
+
 ## Attributes scored
 
 Colour · Country · Region · Depth · Body · Tannin · Acidity · Climate · Aromas

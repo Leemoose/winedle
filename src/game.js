@@ -79,18 +79,47 @@ function cmpSet(g, a) {
              detail: shared.join(', ') };
   }
 
-  const missedByAnswer = a.filter(f => !shared.includes(f));
+  /* Two terms are related if they share a family, or if they are the same thing
+   * at a different shade - black cherry against cherry, red plum against plum -
+   * which family alone cannot express, because the red/black split is real. */
+  function relation(x, f) {
+    if (AROMA_FAMILY[x] === AROMA_FAMILY[f]) return AROMA_FAMILY[f];
+    if (AROMA_STEM[f] && AROMA_STEM[x] === AROMA_STEM[f]) return AROMA_STEM[f];
+    return null;
+  }
+
+  /* Pair up the leftovers to the best possible extent. Claiming the first
+   * available match in listing order is not enough: if an earlier term takes
+   * the only partner a later one could have used, the score comes out below
+   * what the two sets actually share, and it changes depending on the order
+   * the aromas happen to be written in. This is maximum bipartite matching -
+   * augmenting paths - over at most four terms a side. */
+  const guessRest = g.filter(f => !shared.includes(f));
+  const answerRest = a.filter(f => !shared.includes(f));
+  const takenBy = new Array(answerRest.length).fill(-1);
+
+  function assign(gi, seen) {
+    for (let ai = 0; ai < answerRest.length; ai++) {
+      if (seen[ai] || !relation(answerRest[ai], guessRest[gi])) continue;
+      seen[ai] = true;
+      if (takenBy[ai] === -1 || assign(takenBy[ai], seen)) {
+        takenBy[ai] = gi;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  guessRest.forEach((_, gi) => assign(gi, new Array(answerRest.length).fill(false)));
+
   const kin = [];
-  const claimed = [];
-  g.filter(f => !shared.includes(f)).forEach(f => {
-    const fam = AROMA_FAMILY[f];
-    const match = missedByAnswer.find(x => AROMA_FAMILY[x] === fam && !claimed.includes(x));
-    if (match) { claimed.push(match); kin.push({ term: f, family: fam }); }
+  takenBy.forEach((gi, ai) => {
+    if (gi !== -1) kin.push({ term: guessRest[gi], via: relation(answerRest[ai], guessRest[gi]) });
   });
 
   const detail = [
     shared.length ? shared.join(', ') : '',
-    kin.length ? kin.map(k => k.term + ' \u2192 ' + k.family.toLowerCase()).join(', ') : ''
+    kin.length ? kin.map(k => k.term + ' \u2192 ' + k.via.toLowerCase()).join(', ') : ''
   ].filter(Boolean).join('; ');
 
   if (!shared.length && !kin.length) return { state: 'miss', text: 'none', shared: [], kin: [], detail: '' };
