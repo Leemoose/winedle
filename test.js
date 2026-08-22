@@ -242,6 +242,25 @@ for (const g of WINES) {
 ok('aroma scoring finds the best possible pairing for every pair', suboptimal === 0,
    suboptimal + ' pairs scored below the optimum');
 
+/* The rendering layer is not exercised by this suite, so a rename can leave it
+ * reading a field the engine no longer produces - which shipped once: aromaLine
+ * kept reading k.family after it became k.via, and every guess that produced a
+ * kin match threw and rendered nothing. Check that every property read off a
+ * kin entry anywhere in the source actually exists on one. */
+const sampleKin = (() => {
+  for (const g of WINES) for (const a of WINES) {
+    const t = api.compare(g, a).find(x => x.label === 'Aromas');
+    if (t.kin.length) return t.kin[0];
+  }
+  return null;
+})();
+ok('the bank produces at least one kin match to inspect', !!sampleKin);
+
+const kinProps = [...new Set([...source.matchAll(/\bk\.([a-zA-Z_$][\w$]*)/g)].map(m => m[1]))];
+const unknownProps = kinProps.filter(p => sampleKin && !(p in sampleKin));
+ok('every property read off a kin entry exists on one', unknownProps.length === 0,
+   'unknown: ' + unknownProps.join(', ') + ' — kin has: ' + Object.keys(sampleKin || {}).join(', '));
+
 /* A family match must never be claimed twice by the same answer term. */
 const doubleClaim = WINES.every(g => WINES.every(a => {
   const t = api.compare(g, a).find(x => x.label === 'Aromas');

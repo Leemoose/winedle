@@ -3933,7 +3933,7 @@ function aromaLine(tiles) {
   const parts = [];
   if (t.shared && t.shared.length) parts.push(t.shared.join(', ').toLowerCase());
   if (t.kin && t.kin.length) {
-    parts.push(t.kin.map(k => k.term.toLowerCase() + ' \u2192 ' + k.family.toLowerCase()).join(', '));
+    parts.push(t.kin.map(k => k.term.toLowerCase() + ' \u2192 ' + k.via.toLowerCase()).join(', '));
   }
   if (!parts.length) return null;
   return noteLine('Aromas', parts.join(' \u00b7 '));
