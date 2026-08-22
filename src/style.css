@@ -643,6 +643,20 @@ a.linkish { text-decoration: none; }
 
 .share--ghost:hover { background: var(--tile-miss-bg); color: var(--ink); }
 
+.copy-fallback {
+  display: block;
+  width: 100%;
+  margin: 1rem auto 0;
+  padding: 0.6rem 0.7rem;
+  background: var(--tile-miss-bg);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
 .colophon {
   margin-top: 4rem;
   text-align: center;

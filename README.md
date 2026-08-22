@@ -87,6 +87,18 @@ have previously failed (`PRACTICE_MISS_BIAS`), and touches neither the streak
 nor the shared result. Wines you miss are recorded in `winedle:misses` and
 cleared when you next get them right.
 
+## Sweetness
+
+There is no sweetness column, deliberately. A grape has no inherent sweetness —
+Riesling runs from Trocken to Trockenbeerenauslese — so the tile would carry an
+invented value for the 87 grape records, and it measured 94% green across all
+pairs while separating zero pairs the other tiles could not already separate.
+
+Sweetness lives in `kind` instead, which only claims something where it is a
+fact about the wine in the bottle: `Off-dry`, `Sweet`, `Fortified`. The suite
+requires the sweet and fortified styles to keep a real cohort so the values
+stay guessable.
+
 ## Tiers
 
 Each wine carries `tier`: 1 classic, 2 known to enthusiasts, 3 specialist,

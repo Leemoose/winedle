@@ -595,6 +595,42 @@ function recordOutcome(won) {
   }
 }
 
+/* navigator.clipboard rejects for reasons the page cannot control: focus lost
+ * to another window, Safari's stricter activation rules, a denied permission.
+ * Reporting success either way - which this did - is how a "copied" challenge
+ * link ends up never reaching the person it was meant for. On failure, put the
+ * text on screen, selected, so it can still be copied by hand. */
+function offerCopy(button, text, label) {
+  const flash = msg => {
+    button.textContent = msg;
+    setTimeout(() => { button.textContent = label; }, 1800);
+  };
+
+  const fallback = () => {
+    button.textContent = label;
+    const multiline = text.indexOf('\n') !== -1;
+    let box = endPanel.querySelector('.copy-fallback');
+    if (!box || (box.tagName === 'TEXTAREA') !== multiline) {
+      if (box) box.remove();
+      box = document.createElement(multiline ? 'textarea' : 'input');
+      box.className = 'copy-fallback';
+      if (multiline) box.rows = 8;
+      box.readOnly = true;
+      endPanel.appendChild(box);
+    }
+    box.value = text;
+    box.hidden = false;
+    box.focus();
+    box.select();
+  };
+
+  const attempt = navigator.clipboard && window.isSecureContext
+    ? navigator.clipboard.writeText(text)
+    : Promise.reject(new Error('clipboard unavailable'));
+
+  attempt.then(() => flash('Copied'), fallback);
+}
+
 function showEnd() {
   const won = state.status === 'won';
   recordOutcome(won);
@@ -670,13 +706,7 @@ function showEnd() {
   challenge.className = 'share share--ghost';
   challenge.textContent = 'Challenge a friend';
   challenge.addEventListener('click', () => {
-    const link = SHARE_URL + '?w=' + encodeName(ANSWER.name);
-    const done = () => {
-      challenge.textContent = 'Link copied';
-      setTimeout(() => { challenge.textContent = 'Challenge a friend'; }, 1600);
-    };
-    if (navigator.clipboard) navigator.clipboard.writeText(link).then(done, done);
-    else done();
+    offerCopy(challenge, SHARE_URL + '?w=' + encodeName(ANSWER.name), 'Challenge a friend');
   });
   endPanel.appendChild(challenge);
 
@@ -687,12 +717,7 @@ function showEnd() {
   const btn = document.createElement('button');
   btn.className = 'share';
   btn.textContent = 'Copy result';
-  btn.addEventListener('click', () => {
-    const text = shareText();
-    const done = () => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy result', 1600); };
-    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, done);
-    else done();
-  });
+  btn.addEventListener('click', () => offerCopy(btn, shareText(), 'Copy result'));
   endPanel.appendChild(btn);
 }
 

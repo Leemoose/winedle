@@ -64,7 +64,7 @@ ok('every wine has a tier of 1, 2 or 3', badTier.length === 0, badTier.map(w => 
   api.tierPool(tier).length >= 10, 'only ' + api.tierPool(tier).length));
 
 const badFlavors = WINES.filter(w => !Array.isArray(w.flavors) || w.flavors.length !== 4);
-const KINDS = ['Grape', 'Still', 'Sparkling', 'Fortified', 'Sweet'];
+const KINDS = ['Grape', 'Still', 'Sparkling', 'Off-dry', 'Sweet', 'Fortified'];
 const badKind = WINES.filter(w => !KINDS.includes(w.kind));
 ok('every entry has a valid kind', badKind.length === 0, badKind.map(w => w.name).join(', '));
 
@@ -129,6 +129,12 @@ ok('no term sits in two families', inTwo.length === 0, inTwo.join(', '));
 
 ok('families are not single-term', Object.values(AROMA_FAMILIES).every(v => v.length >= 2),
    Object.entries(AROMA_FAMILIES).filter(([, v]) => v.length < 2).map(([k]) => k).join(', '));
+
+/* Sweetness is carried by kind rather than a column of its own, so the sweet
+ * and fortified styles must actually be populated enough to be guessable. */
+['Sweet', 'Fortified'].forEach(k => ok('the ' + k.toLowerCase() + ' style has a real cohort',
+  WINES.filter(w => w.kind === k).length >= 5,
+  'only ' + WINES.filter(w => w.kind === k).length));
 
 /* ---------- comparison engine ---------- */
 

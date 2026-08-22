@@ -7,7 +7,12 @@
  *   climate  1 Cool   2 Moderate   3 Warm    4 Hot
  *
  * KINDS: every record is either a grape variety (kind "Grape") or a wine
- * (kind "Still", "Sparkling", "Fortified" or "Sweet"). Both live in one bank
+ * (kind "Still", "Sparkling", "Off-dry", "Sweet" or "Fortified"). Sweetness
+ * lives here rather than in a column of its own: a grape has no inherent
+ * sweetness — Riesling runs from Trocken to Trockenbeerenauslese — so a
+ * sweetness tile would carry an invented value for 87 of these records and
+ * score green in 94% of comparisons. Kind only claims something where it is
+ * a fact about the wine in the bottle. Both live in one bank
  * and are guessed against each other. `grape` names the principal variety —
  * for a grape that is itself, which is what lets a guess of Chardonnay score
  * an exact Grape tile against an answer of Chablis.
@@ -1380,5 +1385,126 @@ const WINES = [
     flavors: ["Orange Blossom", "Peach", "Grape", "Honey"],
     alsoKnownAs: ["Beaumes-de-Venise"],
     note: "A vin doux naturel: fortified early so most of the grape sugar survives. Tastes more purely of fresh grapes than almost any other wine."
+  },
+  {
+    name: "Mosel Kabinett",
+    kind: "Off-dry", grape: "Riesling",
+    tier: 2,
+    color: "White", country: "Germany", region: "Mosel", continent: "Europe",
+    body: 2, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Green Apple", "Lime", "Peach", "Wet Stone"],
+    alsoKnownAs: ["Kabinett"],
+    note: "Barely 8% alcohol, a few grams of sugar left in, and acidity high enough that it reads as refreshing rather than sweet. The Prädikat describes ripeness at harvest, not sweetness in the glass."
+  },
+  {
+    name: "Eiswein",
+    kind: "Sweet", grape: "Riesling",
+    tier: 3,
+    color: "White", country: "Germany", region: "Mosel", continent: "Europe",
+    body: 4, tannin: 1, acidity: 5, climate: 1,
+    oak: "Rare",
+    flavors: ["Apricot", "Lime", "Honey", "Peach"],
+    alsoKnownAs: ["Ice Wine"],
+    note: "Grapes left on the vine until they freeze solid, then pressed still frozen so the water stays behind as ice. No botrytis involved — the fruit stays piercingly clean."
+  },
+  {
+    name: "Coteaux du Layon",
+    kind: "Sweet", grape: "Chenin Blanc",
+    tier: 3,
+    color: "White", country: "France", region: "Loire Valley", continent: "Europe",
+    body: 4, tannin: 1, acidity: 5, climate: 1,
+    oak: "Sometimes",
+    flavors: ["Quince", "Honey", "Apricot", "Chamomile"],
+    alsoKnownAs: ["Layon"],
+    note: "Botrytised Chenin from a tributary of the Loire. Chenin's acidity is what stops it cloying — the same grape that makes bone-dry Savennières a few miles north."
+  },
+  {
+    name: "Moscato d’Asti",
+    kind: "Sweet", grape: "Muscat",
+    tier: 1,
+    color: "White", country: "Italy", region: "Piedmont", continent: "Europe",
+    body: 2, tannin: 1, acidity: 4, climate: 2,
+    oak: "Rare",
+    flavors: ["Grape", "Orange Blossom", "Peach", "Honeysuckle"],
+    alsoKnownAs: [],
+    note: "Fermentation stopped early by chilling, leaving sugar, a gentle fizz and about 5% alcohol. Piedmont's other wine, made a few valleys from Barolo and about as different as possible."
+  },
+  {
+    name: "Recioto della Valpolicella",
+    kind: "Sweet", grape: "Corvina",
+    tier: 3,
+    color: "Red", country: "Italy", region: "Veneto", continent: "Europe",
+    body: 5, tannin: 3, acidity: 4, climate: 2,
+    oak: "Common",
+    flavors: ["Raisin", "Cherry", "Chocolate", "Cinnamon"],
+    alsoKnownAs: ["Recioto"],
+    note: "The original wine of the Veneto — dried grapes, fermentation stopped while sugar remains. Amarone was the accident that happened when a batch was left to ferment dry."
+  },
+  {
+    name: "Vin Santo",
+    kind: "Sweet", grape: "Trebbiano",
+    tier: 3,
+    color: "White", country: "Italy", region: "Tuscany", continent: "Europe",
+    body: 4, tannin: 1, acidity: 4, climate: 3,
+    oak: "Common",
+    flavors: ["Raisin", "Walnut", "Honey", "Toast"],
+    alsoKnownAs: [],
+    note: "Grapes hung in the rafters to dry for months, then years in small sealed barrels through Tuscan summers. Oxidative and nutty by design — and the correct thing to dunk cantucci into."
+  },
+  {
+    name: "Pedro Ximénez Sherry",
+    kind: "Fortified", grape: "Pedro Ximénez",
+    tier: 2,
+    color: "White", country: "Spain", region: "Jerez", continent: "Europe",
+    body: 5, tannin: 1, acidity: 2, climate: 4,
+    oak: "Common",
+    flavors: ["Raisin", "Fig", "Coffee", "Toast"],
+    alsoKnownAs: [],
+    note: "Black, viscous and around 400 grams of sugar per litre — poured over ice cream as often as drunk. A white grape sun-dried into something that looks like treacle."
+  },
+  {
+    name: "Oloroso Sherry",
+    kind: "Fortified", grape: "Palomino",
+    tier: 2,
+    color: "White", country: "Spain", region: "Jerez", continent: "Europe",
+    body: 4, tannin: 1, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Walnut", "Toast", "Orange Peel", "Leather"],
+    alsoKnownAs: ["Oloroso"],
+    note: "Fortified high enough to kill the flor, so it ages in contact with air rather than under yeast. Dry despite tasting of walnuts and dried fruit — the opposite end of Jerez from Fino."
+  },
+  {
+    name: "Rutherglen Muscat",
+    kind: "Fortified", grape: "Muscat",
+    tier: 3,
+    color: "White", country: "Australia", region: "Rutherglen", continent: "Oceania",
+    body: 5, tannin: 1, acidity: 3, climate: 4,
+    oak: "Common",
+    flavors: ["Raisin", "Toast", "Orange Peel", "Cinnamon"],
+    alsoKnownAs: ["Rutherglen Muscatel"],
+    note: "Aged in barrel through baking Victorian summers in a solera-like system, some of it for decades. Thick, brown and sweet enough to coat the glass."
+  },
+  {
+    name: "Banyuls",
+    kind: "Fortified", grape: "Grenache",
+    tier: 3,
+    color: "Red", country: "France", region: "Roussillon", continent: "Europe",
+    body: 5, tannin: 3, acidity: 3, climate: 3,
+    oak: "Common",
+    flavors: ["Fig", "Chocolate", "Cherry", "Cinnamon"],
+    alsoKnownAs: [],
+    note: "France's answer to Port, from terraces above the Mediterranean at the Spanish border. Grenache fortified mid-ferment, then often left in glass demijohns in the sun to oxidise deliberately."
+  },
+  {
+    name: "Alsace Vendanges Tardives",
+    kind: "Sweet", grape: "Gewürztraminer",
+    tier: 3,
+    color: "White", country: "France", region: "Alsace", continent: "Europe",
+    body: 5, tannin: 1, acidity: 2, climate: 2,
+    oak: "Rare",
+    flavors: ["Lychee", "Honey", "Rose", "Ginger"],
+    alsoKnownAs: ["Vendanges Tardives"],
+    note: "Late harvest, legally defined minimum ripeness, and no chaptalisation allowed. Gewürztraminer's low acidity makes it the richest and most divisive of the four Alsace noble grapes in this style."
   }
 ];
