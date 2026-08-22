@@ -18,7 +18,7 @@ const pure = source.split('/* ---------- persistence ---------- */')[0];
 const api = new Function('WINES', 'AROMA_FAMILY', pure + `; return {
   compare, puzzleFor, dayNumber, seededShuffle, resolve, suggest, normalize,
   COLUMNS, ORD_LABELS, MAX_GUESSES, HINT_AT, tierPool, tierForDay, TIER_WEEK,
-  candidatesFor, tileSignature, bestAroma, REMAINING_AFTER,
+  candidatesFor, tileSignature, bestAroma, REMAINING_AFTER, barFor, BAR_WIDTH, EMOJI,
   practicePick, PRACTICE_MISS_BIAS, encodeName, decodeName, wineFromToken
 };`)(WINES, AROMA_FAMILY);
 
@@ -350,6 +350,34 @@ ok('the practice draw always returns a real wine',
 
 ok('the miss bias leaves room for new wines',
    api.PRACTICE_MISS_BIAS > 0 && api.PRACTICE_MISS_BIAS < 1);
+
+/* ---------- shared grid ---------- */
+
+section('sharing');
+
+/* Every row must be exactly as wide as advertised, whatever the rounding does. */
+let wrongWidth = 0, lostAnExact = 0;
+for (const g of WINES) {
+  for (const a of WINES) {
+    const tiles = api.compare(g, a);
+    const bar = [...api.barFor(tiles)];
+    if (bar.length !== api.BAR_WIDTH) wrongWidth++;
+    const hit = tiles.filter(t => t.state === 'hit').length;
+    if (hit > 0 && bar.filter(b => b === api.EMOJI.hit).length === 0) lostAnExact++;
+  }
+}
+ok('every row compresses to exactly ' + api.BAR_WIDTH + ' blocks', wrongWidth === 0,
+   wrongWidth + ' rows came out the wrong width');
+ok('a row with any exact match never rounds down to none', lostAnExact === 0,
+   lostAnExact + ' rows lost their exact match');
+
+const allHit = api.barFor(api.compare(by('Nebbiolo'), by('Nebbiolo')));
+ok('a perfect row is all exact', allHit === api.EMOJI.hit.repeat(api.BAR_WIDTH), allHit);
+
+const allMiss = api.barFor(api.compare(by('Riesling'), by('Cabernet Sauvignon')));
+ok('a distant row keeps at least one blank', [...allMiss].includes(api.EMOJI.miss), allMiss);
+
+ok('the bar is narrower than the board', api.BAR_WIDTH < api.COLUMNS.length);
 
 /* ---------- challenge links ---------- */
 

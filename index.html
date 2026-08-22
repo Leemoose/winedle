@@ -792,7 +792,7 @@ const CONFIG = {
   /* GoatCounter site code — the xxx in https://xxx.goatcounter.com.
    * Create a free site at https://www.goatcounter.com/signup and paste it here.
    * No cookies, no personal data, no consent banner required. */
-  GOATCOUNTER: '',
+  GOATCOUNTER: 'leemoose',
 
   /* Deployed counter Worker, e.g. https://winedle-counter.<you>.workers.dev
    * See worker/README.md. Leave empty to keep the game fully offline. */
@@ -2756,6 +2756,37 @@ function suggest(query, exclude) {
   return out.slice(0, 8);
 }
 
+/* ---------- sharing ---------- */
+
+const BAR_WIDTH = 5;
+
+/* Ten blocks a row is honest but unreadable: it wraps in every messaging app,
+ * and six rows of it is a wall. Each row is compressed to five blocks holding
+ * the same proportions - red for exact, amber for close, blank for neither - so
+ * the shape of closing in survives at a width that fits a phone. */
+function barFor(tiles) {
+  const hit = tiles.filter(t => t.state === 'hit').length;
+  const near = tiles.filter(t => t.state === 'near').length;
+  const total = tiles.length;
+
+  let red = Math.round((hit / total) * BAR_WIDTH);
+  let amber = Math.round((near / total) * BAR_WIDTH);
+
+  /* Rounding can overshoot; trim the softer signal first, and never round a
+   * genuine exact match away to nothing. */
+  while (red + amber > BAR_WIDTH) {
+    if (amber > 0) amber--;
+    else red--;
+  }
+  if (red === 0 && hit > 0) {
+    red = 1;
+    if (red + amber > BAR_WIDTH) amber--;
+  }
+
+  return EMOJI.hit.repeat(red) + EMOJI.near.repeat(amber) +
+         EMOJI.miss.repeat(BAR_WIDTH - red - amber);
+}
+
 /* ---------- deduction ---------- */
 
 /* Two wines are indistinguishable from a given guess when that guess would
@@ -3100,14 +3131,29 @@ const SHARE_URL = /^https?:$/.test(location.protocol)
   ? location.origin + location.pathname.replace(/index\.html$/, '')
   : 'https://leemoose.github.io/winedle/';
 
+function gridBars() {
+  return state.guesses
+    .map(n => barFor(compare(WINES.find(w => w.name === n), ANSWER)))
+    .join('\n');
+}
+
+function triesPhrase() {
+  if (state.status !== 'won') return 'I did not get this one';
+  const n = state.guesses.length;
+  return 'I got it in ' + n + (n === 1 ? ' try' : ' tries');
+}
+
 function shareText() {
-  const grid = state.guesses.map(n => {
-    const wine = WINES.find(w => w.name === n);
-    return compare(wine, ANSWER).map(t => EMOJI[t.state]).join('');
-  }).join('\n');
   const score = state.status === 'won' ? state.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
   const url = IS_ARCHIVE ? SHARE_URL + '?d=' + DAY : SHARE_URL;
-  return 'Winedle #' + DAY + '  ' + score + '\n\n' + grid + '\n\n' + url;
+  return 'Winedle #' + DAY + '  ' + score + '\n\n' + gridBars() + '\n\n' + url;
+}
+
+/* Deliberately never names the wine - the whole point is that the recipient
+ * plays it blind. */
+function challengeText() {
+  return 'Winedle challenge \u2014 ' + triesPhrase() + '. Can you do better?\n\n' +
+    gridBars() + '\n\nYour turn:\n' + SHARE_URL + '?w=' + encodeName(ANSWER.name);
 }
 
 /* What you missed comes back sooner in practice; what you got, stops nagging.
@@ -3240,7 +3286,7 @@ function showEnd() {
   challenge.className = 'share share--ghost';
   challenge.textContent = 'Challenge a friend';
   challenge.addEventListener('click', () => {
-    offerCopy(challenge, SHARE_URL + '?w=' + encodeName(ANSWER.name), 'Challenge a friend');
+    offerCopy(challenge, challengeText(), 'Challenge a friend');
   });
   endPanel.appendChild(challenge);
 

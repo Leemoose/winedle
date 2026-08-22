@@ -141,13 +141,34 @@ plays are stored under their own key (`winedle:state:<n>`), so a replay never
 overwrites the live puzzle and never moves the streak. The index in the page
 lists the last 30 days.
 
+## Sharing
+
+Ten blocks a row is honest and unreadable — it wraps in every messaging app,
+and six rows of it is a wall. Each row is compressed to `BAR_WIDTH` (5) blocks
+holding the same proportions of exact / close / neither, so the shape of
+closing in survives at a width that fits a phone. The suite checks every
+guess/answer pair compresses to exactly five and that a row with any exact
+match never rounds down to none.
+
+The challenge text carries the score but never the wine — the recipient is
+meant to play it blind:
+
+    Winedle challenge — I got it in 3 tries. Can you do better?
+
+    🟥🟥🟥🟨⬜
+    🟥🟥🟨🟨⬜
+    🟥🟥🟥🟥🟥
+
+    Your turn:
+    https://leemoose.github.io/winedle/?w=…
+
 ## Analytics and the anonymous counter
 
 Both live in `src/config.js` and are **off until filled in**. While the values
 are empty nothing leaves the browser, and if either is configured but
 unreachable the game is unaffected — a failed counter simply omits its line.
 
-    GOATCOUNTER   site code from goatcounter.com  -> page views
+    GOATCOUNTER   site code from goatcounter.com  -> page views  [set: leemoose]
     COUNTER_URL   deployed worker/ URL            -> "1,247 players today"
 
 Neither fires for archive replays, practice rounds or challenge links; counting
