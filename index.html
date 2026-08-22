@@ -2549,7 +2549,12 @@ const ORD_LABELS = {
 
 const COLUMNS = [
   { key: 'kind',    label: 'Type',    type: 'kind'  },
-  { key: 'color',   label: 'Colour',  type: 'exact' },
+  /* "Hue" rather than "Colour": Champagne genuinely is a white wine, but a tile
+   * reading Colour: White next to Type: Sparkling reads as a contradiction to
+   * anyone who files sparkling as its own category. Hue says the same thing
+   * without arguing with the Type tile - and rosé Champagne then reads
+   * Hue: Rosé, Type: Sparkling, which is exactly right. */
+  { key: 'color',   label: 'Hue',     type: 'exact' },
   { key: 'grape',   label: 'Grape',   type: 'exact' },
   { key: 'country', label: 'Country', type: 'geo'   },
   { key: 'region',  label: 'Region',  type: 'exact' },
