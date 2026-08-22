@@ -817,6 +817,11 @@ const CONFIG = {
    * No cookies, no personal data, no consent banner required. */
   GOATCOUNTER: 'leemoose',
 
+  /* Where the game actually lives. Used for shared links whenever the page is
+     not being served from a real host - a local build must never hand someone
+     a localhost address they cannot open. */
+  CANONICAL_URL: 'https://leemoose.github.io/winedle/',
+
   /* Deployed counter Worker, e.g. https://winedle-counter.<you>.workers.dev
    * See worker/README.md. Leave empty to keep the game fully offline. */
   COUNTER_URL: 'https://winedle-counter.leemoose.workers.dev'
@@ -3932,9 +3937,12 @@ function render(animateLast) {
 /* A shared result is useless if the recipient cannot find the game. Prefer the
  * address it is actually being played at, so a fork or a custom domain shares
  * itself rather than the original. */
-const SHARE_URL = /^https?:$/.test(location.protocol)
+/* Prefer the address the game is actually being played at, so a fork or a
+ * custom domain shares itself - but never hand out a loopback or file:// URL
+ * the recipient cannot open. */
+const SHARE_URL = (/^https?:$/.test(location.protocol) && !isDevHost())
   ? location.origin + location.pathname.replace(/index\.html$/, '')
-  : 'https://leemoose.github.io/winedle/';
+  : CONFIG.CANONICAL_URL;
 
 function gridBars() {
   return state.guesses

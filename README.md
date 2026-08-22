@@ -208,11 +208,16 @@ Both live in `src/config.js` and are **off until filled in**. While the values
 are empty nothing leaves the browser, and if either is configured but
 unreachable the game is unaffected — a failed counter simply omits its line.
 
+    CANONICAL_URL where the game lives          -> used in shared links off-host
     GOATCOUNTER   site code from goatcounter.com  -> page views  [set: leemoose]
     COUNTER_URL   deployed worker/ URL            -> "1,247 players today"
 
 Neither fires for archive replays, practice rounds or challenge links; counting
-those would make the numbers meaningless.
+those would make the numbers meaningless. Neither fires from a loopback host or
+`file://` either — a local build hits the same production endpoints as the live
+site, and an afternoon of testing can outnumber the real players. Shared links
+fall back to `CANONICAL_URL` off-host, so a local build never hands anyone a
+localhost address.
 
 ### Page views
 

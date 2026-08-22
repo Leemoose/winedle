@@ -634,9 +634,12 @@ function render(animateLast) {
 /* A shared result is useless if the recipient cannot find the game. Prefer the
  * address it is actually being played at, so a fork or a custom domain shares
  * itself rather than the original. */
-const SHARE_URL = /^https?:$/.test(location.protocol)
+/* Prefer the address the game is actually being played at, so a fork or a
+ * custom domain shares itself - but never hand out a loopback or file:// URL
+ * the recipient cannot open. */
+const SHARE_URL = (/^https?:$/.test(location.protocol) && !isDevHost())
   ? location.origin + location.pathname.replace(/index\.html$/, '')
-  : 'https://leemoose.github.io/winedle/';
+  : CONFIG.CANONICAL_URL;
 
 function gridBars() {
   return state.guesses
