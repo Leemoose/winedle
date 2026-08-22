@@ -8,8 +8,12 @@ this needs (100k requests/day).
     cd worker
     npx wrangler login                       # opens a browser, one time
     npx wrangler kv namespace create WINEDLE # prints an id
-    # paste that id into wrangler.toml
+    # paste that id into wrangler.jsonc
     npx wrangler deploy                      # prints the worker URL
+
+Cloudflare refuses to deploy any Worker until the account's email address is
+verified — deploy fails with error 10034 until you click the link Cloudflare
+emails you.
 
 Then put the URL into `COUNTER_URL` in `../src/config.js` and run `../build.sh`.
 

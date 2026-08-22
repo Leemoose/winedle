@@ -1,0 +1,14 @@
+{
+  // Winedle anonymous counter. See README.md in this directory.
+  "name": "winedle-counter",
+  "main": "index.js",
+  "compatibility_date": "2026-08-22",
+
+  // Aggregate play counts, one record per day, expiring after 60 days.
+  // Created with: npx wrangler kv namespace create WINEDLE
+  "kv_namespaces": [
+    { "binding": "WINEDLE", "id": "d6e95cc11c7640ceba70d8a152e46333" }
+  ],
+
+  "observability": { "enabled": true }
+}
