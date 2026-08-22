@@ -13,5 +13,5 @@ const CONFIG = {
 
   /* Deployed counter Worker, e.g. https://winedle-counter.<you>.workers.dev
    * See worker/README.md. Leave empty to keep the game fully offline. */
-  COUNTER_URL: ''
+  COUNTER_URL: 'https://winedle-counter.leemoose.workers.dev'
 };
