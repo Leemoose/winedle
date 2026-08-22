@@ -366,7 +366,88 @@ ok('a valid token for an unknown grape resolves to nothing',
    api.wineFromToken(api.encodeName('Not A Grape')) === null);
 ok('a missing token resolves to nothing', api.wineFromToken(null) === null);
 
+/* ---------- counter worker ---------- */
+
+section('counter');
+
+/* The worker is an ES module; load it the same way as the game engine rather
+ * than standing up wrangler to test pure logic. */
+const workerSrc = fs.readFileSync('worker/index.js', 'utf8').replace('export default', 'return');
+const worker = new Function(workerSrc)();
+
+function fakeEnv() {
+  const store = new Map();
+  return {
+    WINEDLE: {
+      get: async k => (store.has(k) ? store.get(k) : null),
+      put: async (k, v) => { store.set(k, v); }
+    },
+    _store: store
+  };
+}
+
+const post = (body) => new Request('https://c.example/play', {
+  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+});
+
+const counterChecks = (async () => {
+  const env = fakeEnv();
+
+  let res = await worker.fetch(post({ day: 5, guesses: 3, won: true }), env);
+  let data = await res.json();
+  ok('a win is counted', data.plays === 1 && data.wins === 1 && data.dist[2] === 1,
+     JSON.stringify(data));
+
+  res = await worker.fetch(post({ day: 5, guesses: 6, won: false }), env);
+  data = await res.json();
+  ok('a loss counts as a play but not a win', data.plays === 2 && data.wins === 1);
+  ok('a loss adds nothing to the distribution',
+     data.dist.reduce((a, b) => a + b, 0) === 1, JSON.stringify(data.dist));
+
+  res = await worker.fetch(new Request('https://c.example/stats?day=5'), env);
+  data = await res.json();
+  ok('stats read back what was written', data.plays === 2 && data.wins === 1);
+
+  res = await worker.fetch(new Request('https://c.example/stats?day=99'), env);
+  data = await res.json();
+  ok('an unseen day reads as empty', data.plays === 0 && data.dist.length === 6);
+
+  /* Anything outside the shape the game can produce must be refused, or one
+   * stray post skews the distribution for everybody. */
+  for (const bad of [
+    { day: -1, guesses: 3, won: true },
+    { day: 5, guesses: 0, won: true },
+    { day: 5, guesses: 7, won: true },
+    { day: 5, guesses: 999999, won: true },
+    { day: 'x', guesses: 3, won: true }
+  ]) {
+    const r = await worker.fetch(post(bad), env);
+    ok('rejects ' + JSON.stringify(bad), r.status === 400);
+  }
+
+  const malformed = await worker.fetch(new Request('https://c.example/play', {
+    method: 'POST', body: 'not json'
+  }), env);
+  ok('rejects malformed json', malformed.status === 400);
+
+  const cors = await worker.fetch(new Request('https://c.example/play', { method: 'OPTIONS' }), env);
+  ok('answers preflight', cors.headers.get('Access-Control-Allow-Origin') === '*');
+
+  const missing = await worker.fetch(new Request('https://c.example/nope'), env);
+  ok('unknown routes 404', missing.status === 404);
+
+  /* Nothing identifying may ever reach storage. */
+  const stored = [...env._store.values()].join(' ');
+  ok('storage holds only counts', !/ip|user|name|agent|token/i.test(stored), stored);
+})();
+
 /* ---------- summary ---------- */
 
-console.log('\n' + (failures ? failures + ' failed' : 'all passed') + ' — ' + checks + ' checks\n');
-process.exit(failures ? 1 : 0);
+/* The counter section is async, so the summary waits on it rather than racing
+ * it to the exit. */
+counterChecks
+  .catch(err => { failures++; console.log('  FAIL  counter section threw\n        ' + err.message); })
+  .then(() => {
+    console.log('\n' + (failures ? failures + ' failed' : 'all passed') + ' — ' + checks + ' checks\n');
+    process.exit(failures ? 1 : 0);
+  });

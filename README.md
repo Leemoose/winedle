@@ -129,6 +129,38 @@ plays are stored under their own key (`winedle:state:<n>`), so a replay never
 overwrites the live puzzle and never moves the streak. The index in the page
 lists the last 30 days.
 
+## Analytics and the anonymous counter
+
+Both live in `src/config.js` and are **off until filled in**. While the values
+are empty nothing leaves the browser, and if either is configured but
+unreachable the game is unaffected — a failed counter simply omits its line.
+
+    GOATCOUNTER   site code from goatcounter.com  -> page views
+    COUNTER_URL   deployed worker/ URL            -> "1,247 players today"
+
+Neither fires for archive replays, practice rounds or challenge links; counting
+those would make the numbers meaningless.
+
+### Page views
+
+Sign up free at <https://www.goatcounter.com/signup>, take the code from your
+`xxx.goatcounter.com` address, put it in `GOATCOUNTER`, rebuild. No cookies, no
+personal data, no consent banner needed.
+
+### Counter
+
+Deploy `worker/` (see `worker/README.md`), then put the URL it prints into
+`COUNTER_URL` and rebuild.
+
+It stores one record per day — a play count, a win count and a six-bucket guess
+distribution — and nothing else. No identifiers, no IP addresses, not even which
+wine it was. Records expire after 60 days. Each browser posts once per finished
+puzzle and reads thereafter.
+
+**It is not a leaderboard, on purpose.** The game is entirely client-side, so
+any score can be forged with one fetch and a ranking would be fiction.
+Aggregates degrade gracefully under that: forging them gains nobody anything.
+
 ## Installing
 
 `manifest.webmanifest` plus `sw.js` make it installable and playable offline.

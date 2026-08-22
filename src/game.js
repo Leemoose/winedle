@@ -700,6 +700,8 @@ function showEnd() {
     startCountdown(clock);
   }
 
+  reportAndShow(won, state.guesses.length);
+
   /* Pass this exact wine on to someone else. Works from any mode, because the
    * wine travels in the link rather than depending on the date. */
   const challenge = document.createElement('button');
@@ -847,6 +849,68 @@ $('#stats-open').addEventListener('click', () => { renderStats(); renderMet(); s
 $('#stats-close').addEventListener('click', () => statsDialog.close());
 statsDialog.addEventListener('click', e => { if (e.target === statsDialog) statsDialog.close(); });
 
+/* ---------- optional integrations ---------- */
+
+/* Page-view analytics. Loaded only if a site code is configured, and only for
+ * the real daily puzzle - counting archive replays and practice rounds would
+ * make the numbers meaningless. */
+function loadAnalytics() {
+  if (!CONFIG.GOATCOUNTER || !/^https?:$/.test(location.protocol)) return;
+  const s = document.createElement('script');
+  s.async = true;
+  s.dataset.goatcounter = 'https://' + CONFIG.GOATCOUNTER + '.goatcounter.com/count';
+  s.src = 'https://gc.zgo.at/count.js';
+  document.head.appendChild(s);
+}
+
+/* Aggregate counts, posted once per finished daily puzzle. The payload is a day
+ * number, a guess count and a boolean - nothing that identifies a player and
+ * nothing that says which wine it was. */
+const KEY_REPORTED = 'winedle:reported';
+
+function reportAndShow(won, guessCount) {
+  if (!CONFIG.COUNTER_URL || IS_ARCHIVE || IS_PRACTICE || IS_CHALLENGE) return;
+
+  const reported = readJSON(KEY_REPORTED, {});
+  const already = reported[DAY] === true;
+
+  const target = CONFIG.COUNTER_URL.replace(/\/$/, '');
+  const request = already
+    ? fetch(target + '/stats?day=' + DAY)
+    : fetch(target + '/play', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day: DAY, guesses: guessCount, won: won })
+      });
+
+  request
+    .then(r => (r.ok ? r.json() : null))
+    .then(data => {
+      if (!data || typeof data.plays !== 'number') return;
+      if (!already) {
+        reported[DAY] = true;
+        writeJSON(KEY_REPORTED, reported);
+      }
+      showCrowd(data, won, guessCount);
+    })
+    .catch(() => {});   /* offline, blocked, or not deployed - say nothing */
+}
+
+function showCrowd(data, won, guessCount) {
+  if (!data.plays) return;
+  const line = document.createElement('p');
+  line.className = 'crowd';
+
+  const bits = [data.plays.toLocaleString() + (data.plays === 1 ? ' player today' : ' players today')];
+  if (won && data.wins) {
+    const better = data.dist.slice(0, guessCount - 1).reduce((a, b) => a + b, 0);
+    const share = Math.round((better / data.wins) * 100);
+    bits.push(share === 0 ? 'nobody solved it faster' : share + '% solved it faster');
+  }
+  line.textContent = bits.join(' \u00b7 ');
+  endPanel.appendChild(line);
+}
+
 /* ---------- input ---------- */
 
 function submitGuess(wine) {
@@ -958,6 +1022,7 @@ $('#mode-link').href = IS_PRACTICE ? SELF : SELF + '?mode=practice';
 if (IS_ARCHIVE) document.body.classList.add('is-archive');
 renderArchive();
 renderArchiveNav();
+if (!IS_ARCHIVE && !IS_PRACTICE && !IS_CHALLENGE) loadAnalytics();
 
 /* A newcomer otherwise lands on a bare input with no idea what is wanted. */
 if (!readJSON(KEY_STATS, null) && !state.guesses.length) {

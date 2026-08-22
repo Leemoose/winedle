@@ -1,0 +1,10 @@
+name = "winedle-counter"
+main = "index.js"
+compatibility_date = "2026-01-01"
+
+# Create the namespace first:
+#   npx wrangler kv namespace create WINEDLE
+# then paste the id it prints into the line below.
+[[kv_namespaces]]
+binding = "WINEDLE"
+id = "PASTE_KV_NAMESPACE_ID_HERE"
